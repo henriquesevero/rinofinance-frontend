@@ -341,36 +341,40 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                   key={subscription.id}
                   {...subsDnd.getItemProps(subscription.id)}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50",
+                    "flex flex-col gap-1 rounded-md px-2 py-2 hover:bg-muted/50 sm:flex-row sm:items-center sm:gap-3",
                     subsDnd.draggingId === subscription.id && "opacity-40"
                   )}
                 >
-                  {canReorderSubs && <DragHandle {...subsDnd.getHandleProps(subscription.id)} />}
-                  <BrandLogo domain={subscription.domain} fallbackIcon={Repeat} />
-                  <span className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className="min-w-0 truncate font-medium" title={subscription.name}>
-                      {subscription.name}
+                  <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+                    {canReorderSubs && <DragHandle {...subsDnd.getHandleProps(subscription.id)} />}
+                    <BrandLogo domain={subscription.domain} fallbackIcon={Repeat} />
+                    <span className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className="min-w-0 truncate font-medium" title={subscription.name}>
+                        {subscription.name}
+                      </span>
+                      <CategoryChip categoryId={subscription.categoryId} />
                     </span>
-                    <CategoryChip categoryId={subscription.categoryId} />
-                  </span>
-                  <MoneyValue value={subscription.monthlyAmount} className="shrink-0 font-medium tabular-nums" />
-                  <div className="flex shrink-0 items-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Editar assinatura"
-                      onClick={() => setSubscriptionDialog({ mode: "edit", subscription })}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Remover assinatura"
-                      onClick={() => handleDeleteSubscription(subscription.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pl-11 sm:shrink-0 sm:justify-end sm:pl-0">
+                    <MoneyValue value={subscription.monthlyAmount} className="font-medium tabular-nums" />
+                    <div className="flex shrink-0 items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Editar assinatura"
+                        onClick={() => setSubscriptionDialog({ mode: "edit", subscription })}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remover assinatura"
+                        onClick={() => handleDeleteSubscription(subscription.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -453,48 +457,52 @@ function PurchaseRow({
     <li
       {...itemProps}
       className={cn(
-        "flex items-center gap-3 rounded-md px-2 py-2",
+        "flex flex-col gap-1 rounded-md px-2 py-2 sm:flex-row sm:items-center sm:gap-3",
         purchase.flagged ? "bg-red-500/10 hover:bg-red-500/15" : "hover:bg-muted/50",
         dragging && "opacity-40"
       )}
     >
-      {handleProps && <DragHandle {...handleProps} />}
-      <BrandLogo domain={purchase.domain} fallbackIcon={ShoppingBag} />
-      <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="min-w-0 truncate font-medium" title={purchase.name}>
-            {purchase.name}
-          </p>
-          <CategoryChip categoryId={purchase.categoryId} />
+      <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+        {handleProps && <DragHandle {...handleProps} />}
+        <BrandLogo domain={purchase.domain} fallbackIcon={ShoppingBag} />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="min-w-0 truncate font-medium" title={purchase.name}>
+              {purchase.name}
+            </p>
+            <CategoryChip categoryId={purchase.categoryId} />
+          </div>
+          {isInstallment && (
+            <p className="flex flex-wrap gap-x-1.5 text-xs leading-snug text-muted-foreground">
+              <span className="whitespace-nowrap">
+                Parcela {currentInstallment(purchase)}/{purchase.totalInstallments}
+              </span>
+              <span className="whitespace-nowrap">
+                · total <MoneyValue value={purchase.installmentAmount * purchase.totalInstallments} />
+              </span>
+              <span className="whitespace-nowrap">· termina em {installmentEndLabel(purchase)}</span>
+            </p>
+          )}
         </div>
-        {isInstallment && (
-          <p className="flex flex-wrap gap-x-1.5 text-xs leading-snug text-muted-foreground">
-            <span className="whitespace-nowrap">
-              Parcela {currentInstallment(purchase)}/{purchase.totalInstallments}
-            </span>
-            <span className="whitespace-nowrap">
-              · total <MoneyValue value={purchase.installmentAmount * purchase.totalInstallments} />
-            </span>
-            <span className="whitespace-nowrap">· termina em {installmentEndLabel(purchase)}</span>
-          </p>
-        )}
       </div>
-      <MoneyValue value={purchase.installmentAmount} className="shrink-0 font-medium tabular-nums" />
-      <div className="flex shrink-0 items-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={purchase.flagged ? "Remover atenção" : "Marcar em atenção"}
-          onClick={onToggleFlag}
-        >
-          <Flag className={cn("size-4", purchase.flagged && "fill-red-500 text-red-500")} />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Editar compra" onClick={onEdit}>
-          <Pencil className="size-4" />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Remover compra" onClick={onDelete}>
-          <Trash2 className="size-4" />
-        </Button>
+      <div className="flex items-center justify-between gap-2 pl-11 sm:shrink-0 sm:justify-end sm:pl-0">
+        <MoneyValue value={purchase.installmentAmount} className="font-medium tabular-nums" />
+        <div className="flex shrink-0 items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={purchase.flagged ? "Remover atenção" : "Marcar em atenção"}
+            onClick={onToggleFlag}
+          >
+            <Flag className={cn("size-4", purchase.flagged && "fill-red-500 text-red-500")} />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Editar compra" onClick={onEdit}>
+            <Pencil className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Remover compra" onClick={onDelete}>
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
       </div>
     </li>
   )
