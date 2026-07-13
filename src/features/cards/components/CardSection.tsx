@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Eraser, FileUp, Flag, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
+import { ChevronDown, Eraser, FileUp, Flag, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +45,9 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
   const [sortKey, setSortKey] = useState<PurchaseSortKey>("default")
   const [avulsaSortKey, setAvulsaSortKey] = useState<PurchaseSortKey>("default")
   const [subSortKey, setSubSortKey] = useState<SubscriptionSortKey>("default")
+  const [collapsed, setCollapsed] = useState({ avulsas: false, parceladas: false, subs: false })
+  const toggleCollapsed = (k: "avulsas" | "parceladas" | "subs") =>
+    setCollapsed((c) => ({ ...c, [k]: !c[k] }))
 
   const deleteCard = useCardsStore((s) => s.deleteCard)
   const createInstallmentPurchase = useCardsStore((s) => s.createInstallmentPurchase)
@@ -167,10 +170,18 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="flex flex-col gap-3 rounded-lg border p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => toggleCollapsed("avulsas")}
+                aria-expanded={!collapsed.avulsas}
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+              >
+                <ChevronDown
+                  className={cn("size-4 shrink-0 transition-transform", collapsed.avulsas && "-rotate-90")}
+                />
                 <ShoppingBag className="size-4" />
                 Compras avulsas
-              </h3>
+              </button>
               <div className="flex items-center gap-2">
                 {avulsas.length > 1 && (
                   <Select
@@ -199,7 +210,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                 </Button>
               </div>
             </div>
-            {avulsas.length === 0 ? (
+            {collapsed.avulsas ? null : avulsas.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma compra avulsa.</p>
             ) : (
               <ul className="flex flex-col gap-1">
@@ -221,10 +232,18 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
 
           <section className="flex flex-col gap-3 rounded-lg border p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => toggleCollapsed("parceladas")}
+                aria-expanded={!collapsed.parceladas}
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+              >
+                <ChevronDown
+                  className={cn("size-4 shrink-0 transition-transform", collapsed.parceladas && "-rotate-90")}
+                />
                 <ShoppingBag className="size-4" />
                 Compras parceladas
-              </h3>
+              </button>
               <div className="flex items-center gap-2">
                 {parceladas.length > 1 && (
                   <Select value={sortKey} onValueChange={(v) => setSortKey((v as PurchaseSortKey) ?? "default")}>
@@ -250,7 +269,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                 </Button>
               </div>
             </div>
-            {parceladas.length === 0 ? (
+            {collapsed.parceladas ? null : parceladas.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma compra parcelada.</p>
             ) : (
               <ul className="flex flex-col gap-1">
@@ -273,10 +292,18 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
 
         <section className="flex flex-col gap-3 rounded-lg border p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => toggleCollapsed("subs")}
+              aria-expanded={!collapsed.subs}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
+            >
+              <ChevronDown
+                className={cn("size-4 shrink-0 transition-transform", collapsed.subs && "-rotate-90")}
+              />
               <Repeat className="size-4" />
               Assinaturas mensais
-            </h3>
+            </button>
             <div className="flex items-center gap-2">
               {card.subscriptions.length > 1 && (
                 <Select
@@ -305,7 +332,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
               </Button>
             </div>
           </div>
-          {card.subscriptions.length === 0 ? (
+          {collapsed.subs ? null : card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
             <ul className="grid gap-1 lg:grid-cols-2">

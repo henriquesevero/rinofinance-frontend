@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { CheckCircle2, Circle, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { CheckCircle2, ChevronDown, Circle, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +21,7 @@ type DialogState = { mode: "create" } | { mode: "edit"; expense: Expense } | nul
 
 export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   const [dialogState, setDialogState] = useState<DialogState>(null)
+  const [collapsed, setCollapsed] = useState(false)
   const cards = useCardsStore((s) => s.cards)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const createExpense = useDashboardStore((s) => s.createExpense)
@@ -90,7 +91,17 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   return (
     <Card className="border-l-4 border-l-red-500/60">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle>Saídas do mês</CardTitle>
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="flex items-center gap-2 text-left"
+        >
+          <ChevronDown
+            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
+          />
+          <CardTitle>Saídas do mês</CardTitle>
+        </button>
         <div className="flex items-center gap-2">
           {expenses.length > 0 && (
             <BulkActionsMenu
@@ -118,6 +129,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           </Button>
         </div>
       </CardHeader>
+      {!collapsed && (
       <CardContent>
         {expenses.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
@@ -213,6 +225,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           </ul>
         )}
       </CardContent>
+      )}
 
       <ExpenseFormDialog
         open={dialogState !== null}

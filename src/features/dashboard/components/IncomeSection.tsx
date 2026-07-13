@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { CheckCircle2, Circle, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { CheckCircle2, ChevronDown, Circle, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,6 +20,7 @@ type DialogState = { mode: "create" } | { mode: "edit"; income: Income } | null
 
 export function IncomeSection({ incomes }: { incomes: Income[] }) {
   const [dialogState, setDialogState] = useState<DialogState>(null)
+  const [collapsed, setCollapsed] = useState(false)
   const createIncome = useDashboardStore((s) => s.createIncome)
   const createAccountLinkedIncome = useDashboardStore((s) => s.createAccountLinkedIncome)
   const updateIncome = useDashboardStore((s) => s.updateIncome)
@@ -82,7 +83,17 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
   return (
     <Card className="border-l-4 border-l-emerald-500/60">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle>Entradas do mês</CardTitle>
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="flex items-center gap-2 text-left"
+        >
+          <ChevronDown
+            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
+          />
+          <CardTitle>Entradas do mês</CardTitle>
+        </button>
         <div className="flex items-center gap-2">
           {incomes.length > 0 && (
             <BulkActionsMenu
@@ -110,6 +121,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
           </Button>
         </div>
       </CardHeader>
+      {!collapsed && (
       <CardContent>
         {incomes.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma entrada cadastrada ainda.</p>
@@ -194,6 +206,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
           </ul>
         )}
       </CardContent>
+      )}
 
       <IncomeFormDialog
         open={dialogState !== null}
