@@ -168,7 +168,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="flex flex-col gap-3 rounded-lg border p-4">
+          <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <button
                 type="button"
@@ -230,7 +230,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
             )}
           </section>
 
-          <section className="flex flex-col gap-3 rounded-lg border p-4">
+          <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <button
                 type="button"
@@ -290,7 +290,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           </section>
         </div>
 
-        <section className="flex flex-col gap-3 rounded-lg border p-4">
+        <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <button
               type="button"
@@ -335,7 +335,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           {collapsed.subs ? null : card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
-            <ul className="grid gap-1 lg:grid-cols-2">
+            <ul className="flex flex-col gap-1">
               {subsDnd.order.map((subscription) => (
                 <li
                   key={subscription.id}
