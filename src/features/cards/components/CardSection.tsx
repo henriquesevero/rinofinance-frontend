@@ -308,7 +308,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           {card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
-            <ul className="grid gap-1 sm:grid-cols-2">
+            <ul className="grid gap-1 lg:grid-cols-2">
               {subsDnd.order.map((subscription) => (
                 <li
                   key={subscription.id}
@@ -321,7 +321,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                   {canReorderSubs && <DragHandle {...subsDnd.getHandleProps(subscription.id)} />}
                   <BrandLogo domain={subscription.domain} fallbackIcon={Repeat} />
                   <span className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className="truncate font-medium" title={subscription.name}>
+                    <span className="min-w-0 truncate font-medium" title={subscription.name}>
                       {subscription.name}
                     </span>
                     <CategoryChip categoryId={subscription.categoryId} />
@@ -434,8 +434,8 @@ function PurchaseRow({
       {handleProps && <DragHandle {...handleProps} />}
       <BrandLogo domain={purchase.domain} fallbackIcon={ShoppingBag} />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate font-medium" title={purchase.name}>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="min-w-0 truncate font-medium" title={purchase.name}>
             {purchase.name}
           </p>
           <CategoryChip categoryId={purchase.categoryId} />

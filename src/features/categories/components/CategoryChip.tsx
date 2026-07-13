@@ -25,9 +25,9 @@ export function CategoryChip({ categoryId, dense }: CategoryChipProps) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
-      <CategoryIcon name={category.icon} className="size-3" style={{ color: category.color }} />
-      {category.name}
+    <span className="inline-flex min-w-0 shrink items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+      <CategoryIcon name={category.icon} className="size-3 shrink-0" style={{ color: category.color }} />
+      <span className="truncate">{category.name}</span>
     </span>
   )
 }
