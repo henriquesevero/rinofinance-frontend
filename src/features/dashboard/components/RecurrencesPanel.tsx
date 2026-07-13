@@ -156,7 +156,13 @@ export function RecurrencesPanel() {
               Cadastre cartões ou compras no débito das contas para ver a projeção.
             </p>
           ) : (
-            <MonthlyBarChart data={projection} series={visibleSeries} highlightIndex={currentMonth} />
+            // Scrolls horizontally inside the card on narrow screens instead
+            // of overflowing the page; 12 months × series stay legible.
+            <div className="-mx-2 overflow-x-auto px-2">
+              <div className="min-w-[440px]">
+                <MonthlyBarChart data={projection} series={visibleSeries} highlightIndex={currentMonth} />
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

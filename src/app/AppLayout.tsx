@@ -1,6 +1,6 @@
-import { useEffect } from "react"
-import { NavLink, Outlet } from "react-router-dom"
-import { CreditCard, LayoutDashboard, LogOut, PiggyBank, Tags, Wallet } from "lucide-react"
+import { useEffect, useState } from "react"
+import { NavLink, Outlet, useLocation } from "react-router-dom"
+import { CreditCard, LayoutDashboard, LogOut, Menu, PiggyBank, Tags, Wallet, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -22,6 +22,14 @@ export function AppLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const firstName = user?.name?.trim().split(/\s+/)[0]
+  const location = useLocation()
+  // On mobile the sidebar is a slide-in drawer; on md+ it's a static column.
+  const [navOpen, setNavOpen] = useState(false)
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setNavOpen(false)
+  }, [location.pathname])
 
   // Load categories once for the whole authenticated session so their names
   // (CategoryChip, sort-by-category, etc.) are ready across every page right
@@ -33,10 +41,36 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-svh">
-      <aside className="flex w-16 shrink-0 flex-col gap-6 border-r px-2 py-4 md:w-64 md:px-3">
-        <div className="flex items-center gap-2 px-1 md:px-2">
-          <Logo showWordmark={false} />
-          <span className="hidden text-lg font-semibold tracking-tight md:inline">RinoFinance</span>
+      {/* backdrop behind the mobile drawer */}
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setNavOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      {/* sidebar: static column on md+, slide-in drawer on mobile */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 border-r bg-background px-3 py-4 transition-transform duration-200 md:static md:z-auto md:translate-x-0",
+          navOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2">
+            <Logo showWordmark={false} />
+            <span className="text-lg font-semibold tracking-tight">RinoFinance</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setNavOpen(false)}
+            aria-label="Fechar menu"
+          >
+            <X className="size-5" />
+          </Button>
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -44,11 +78,9 @@ export function AppLayout() {
             <NavLink
               key={to}
               to={to}
-              title={label}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors md:px-3",
-                  "justify-center md:justify-start",
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -56,18 +88,30 @@ export function AppLayout() {
               }
             >
               <Icon className="size-4 shrink-0" />
-              <span className="hidden md:inline">{label}</span>
+              <span>{label}</span>
             </NavLink>
           ))}
         </nav>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b px-4 py-3">
-          <span className="truncate text-lg font-semibold tracking-tight">Olá, {firstName}</span>
-          <div className="flex items-center gap-2">
+        <header className="flex items-center gap-2 border-b px-3 py-3 sm:px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 md:hidden"
+            onClick={() => setNavOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <Menu className="size-5" />
+          </Button>
+          <span className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight sm:text-lg">
+            Olá, {firstName}
+          </span>
+          <div className="flex shrink-0 items-center gap-0.5 sm:gap-2">
             <NavLink
               to="/settings"
+              aria-label="Configurações"
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium transition-colors",
@@ -78,7 +122,7 @@ export function AppLayout() {
               }
             >
               <UserAvatar name={user?.name ?? ""} avatarUrl={user?.avatarUrl} />
-              <span className="hidden sm:inline">{user?.name}</span>
+              <span className="hidden md:inline">{user?.name}</span>
             </NavLink>
             <ValuesVisibilityToggle />
             <ThemeToggle />
@@ -88,7 +132,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 md:px-8">
           <Outlet />
         </main>
       </div>
