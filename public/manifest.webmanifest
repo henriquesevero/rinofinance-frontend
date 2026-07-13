@@ -1,0 +1,19 @@
+{
+  "name": "RinoFinance",
+  "short_name": "RinoFinance",
+  "description": "Suas finanças pessoais — cartões, contas, categorias e recorrências.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
