@@ -166,7 +166,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
       <CardContent className="flex flex-col gap-6">
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="flex flex-col gap-3 rounded-lg border p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <ShoppingBag className="size-4" />
                 Compras avulsas
@@ -177,7 +177,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                     value={avulsaSortKey}
                     onValueChange={(v) => setAvulsaSortKey((v as PurchaseSortKey) ?? "default")}
                   >
-                    <SelectTrigger size="sm" className="w-[140px]" aria-label="Ordenar avulsas">
+                    <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[140px] sm:flex-none" aria-label="Ordenar avulsas">
                       <SelectValue>
                         {(value: string | null) =>
                           ONE_OFF_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
@@ -220,7 +220,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           </section>
 
           <section className="flex flex-col gap-3 rounded-lg border p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <ShoppingBag className="size-4" />
                 Compras parceladas
@@ -228,7 +228,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
               <div className="flex items-center gap-2">
                 {parceladas.length > 1 && (
                   <Select value={sortKey} onValueChange={(v) => setSortKey((v as PurchaseSortKey) ?? "default")}>
-                    <SelectTrigger size="sm" className="w-[150px]" aria-label="Ordenar compras">
+                    <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[150px] sm:flex-none" aria-label="Ordenar compras">
                       <SelectValue>
                         {(value: string | null) =>
                           PURCHASE_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
@@ -272,7 +272,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
         </div>
 
         <section className="flex flex-col gap-3 rounded-lg border p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Repeat className="size-4" />
               Assinaturas mensais
@@ -283,7 +283,7 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                   value={subSortKey}
                   onValueChange={(v) => setSubSortKey((v as SubscriptionSortKey) ?? "default")}
                 >
-                  <SelectTrigger size="sm" className="w-[140px]" aria-label="Ordenar assinaturas">
+                  <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[140px] sm:flex-none" aria-label="Ordenar assinaturas">
                     <SelectValue>
                       {(value: string | null) =>
                         SUBSCRIPTION_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
