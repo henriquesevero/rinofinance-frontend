@@ -53,7 +53,7 @@ export function AppLayout() {
       {/* sidebar: static column on md+, slide-in drawer on mobile */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 border-r bg-background px-3 py-4 transition-transform duration-200 md:static md:z-auto md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 border-r bg-background px-3 pb-4 pt-[calc(env(safe-area-inset-top)_+_1rem)] transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:pt-4",
           navOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -95,7 +95,7 @@ export function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 border-b px-3 py-3 sm:px-4">
+        <header className="flex items-center gap-2 border-b px-3 pb-3 pt-[calc(env(safe-area-inset-top)_+_0.75rem)] sm:px-4">
           <Button
             variant="ghost"
             size="icon"
