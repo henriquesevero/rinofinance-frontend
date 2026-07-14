@@ -55,6 +55,8 @@ export type PurchaseSortKey =
   | "amount-asc"
   | "count-desc"
   | "count-asc"
+  | "remaining-asc"
+  | "remaining-desc"
   | "category"
 
 export const PURCHASE_SORT_OPTIONS: { value: PurchaseSortKey; label: string }[] = [
@@ -63,6 +65,8 @@ export const PURCHASE_SORT_OPTIONS: { value: PurchaseSortKey; label: string }[] 
   { value: "amount-asc", label: "Menor parcela" },
   { value: "count-desc", label: "Mais parcelas" },
   { value: "count-asc", label: "Menos parcelas" },
+  { value: "remaining-asc", label: "Termina antes" },
+  { value: "remaining-desc", label: "Termina depois" },
   { value: "category", label: "Categoria" },
 ]
 
@@ -93,6 +97,12 @@ export function sortPurchases(
       return sorted.sort((a, b) => b.totalInstallments - a.totalInstallments)
     case "count-asc":
       return sorted.sort((a, b) => a.totalInstallments - b.totalInstallments)
+    // Fewest remaining installments first = closest to being paid off.
+    case "remaining-asc":
+      return sorted.sort((a, b) => a.remainingInstallments - b.remainingInstallments)
+    // Most remaining installments first = will take the longest.
+    case "remaining-desc":
+      return sorted.sort((a, b) => b.remainingInstallments - a.remainingInstallments)
     case "category":
       return sorted.sort((a, b) => byCategory(a, b, categoryName))
     default:
