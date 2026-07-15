@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { CheckCircle2, ChevronDown, Circle, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MoneyValue } from "@/components/MoneyValue"
 import { BulkActionsMenu } from "@/components/BulkActionsMenu"
 import { DragHandle } from "@/components/DragHandle"
@@ -18,6 +19,23 @@ import type { Expense } from "../types"
 import { ExpenseFormDialog } from "./ExpenseFormDialog"
 
 type DialogState = { mode: "create" } | { mode: "edit"; expense: Expense } | null
+
+type ExpenseSortKey = "default" | "amount-desc" | "amount-asc"
+
+const EXPENSE_SORT_OPTIONS: { value: ExpenseSortKey; label: string }[] = [
+  { value: "default", label: "Ordem padrão" },
+  { value: "amount-desc", label: "Maior valor" },
+  { value: "amount-asc", label: "Menor valor" },
+]
+
+// Returns a new sorted array; "default" preserves the manual (reorder) order.
+function sortExpenses(list: Expense[], key: ExpenseSortKey): Expense[] {
+  if (key === "default") return list
+  const sorted = [...list]
+  return key === "amount-desc"
+    ? sorted.sort((a, b) => b.amount - a.amount)
+    : sorted.sort((a, b) => a.amount - b.amount)
+}
 
 export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   const [dialogState, setDialogState] = useState<DialogState>(null)
@@ -37,6 +55,11 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   const accounts = useAccountsStore((s) => s.accounts)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(expenses, reorderExpenses)
+  const [sortKey, setSortKey] = useState<ExpenseSortKey>("default")
+  // Sorting is a computed view, so manual drag-reorder only applies to the
+  // default order.
+  const canReorder = sortKey === "default"
+  const visible = useMemo(() => sortExpenses(order, sortKey), [order, sortKey])
 
   async function runBulk(action: () => Promise<void>) {
     try {
@@ -103,6 +126,24 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           <CardTitle>Saídas do mês</CardTitle>
         </button>
         <div className="flex items-center gap-2">
+          {expenses.length > 1 && (
+            <Select value={sortKey} onValueChange={(v) => setSortKey((v as ExpenseSortKey) ?? "default")}>
+              <SelectTrigger size="sm" className="w-[150px]" aria-label="Ordenar saídas">
+                <SelectValue>
+                  {(value: string | null) =>
+                    EXPENSE_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {EXPENSE_SORT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {expenses.length > 0 && (
             <BulkActionsMenu
               groups={[
@@ -135,7 +176,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
         ) : (
           <ul className="divide-y">
-            {order.map((expense) => {
+            {visible.map((expense) => {
               const accent = linkColor(expense)
               const cardColor = expense.cardId ? cards.find((c) => c.id === expense.cardId)?.color : undefined
               const hasMeta = Boolean(expense.categoryId || expense.accountId || expense.cardId)
@@ -150,10 +191,12 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                     draggingId === expense.id && "opacity-40"
                   )}
                 >
-                  <DragHandle
-                    {...getHandleProps(expense.id)}
-                    className="-ml-1 shrink-0 opacity-0 group-hover:opacity-100"
-                  />
+                  {canReorder && (
+                    <DragHandle
+                      {...getHandleProps(expense.id)}
+                      className="-ml-1 shrink-0 opacity-0 group-hover:opacity-100"
+                    />
+                  )}
                   <button
                     type="button"
                     onClick={() => handleTogglePaid(expense.id)}
