@@ -1,23 +1,14 @@
 import { create } from "zustand"
 
-const STORAGE_KEY = "rinofinance:charts-hidden"
-
-function loadInitial(): boolean {
-  return localStorage.getItem(STORAGE_KEY) === "1"
-}
-
 interface ChartsPrefState {
   hidden: boolean
   toggle: () => void
 }
 
-// Persisted "hide dashboard charts" preference, so users who prefer the
-// lists-only view keep it across sessions.
+// Dashboard charts always start closed on every site open — the user can
+// reveal them within the session via the toggle, but it's intentionally not
+// persisted, so each fresh load defaults back to the lists-only view.
 export const useChartsPrefStore = create<ChartsPrefState>((set, get) => ({
-  hidden: loadInitial(),
-  toggle: () => {
-    const next = !get().hidden
-    localStorage.setItem(STORAGE_KEY, next ? "1" : "0")
-    set({ hidden: next })
-  },
+  hidden: true,
+  toggle: () => set({ hidden: !get().hidden }),
 }))
