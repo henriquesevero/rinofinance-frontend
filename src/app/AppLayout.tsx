@@ -114,15 +114,12 @@ export function AppLayout() {
               aria-label="Configurações"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  "shrink-0 rounded-full ring-offset-2 ring-offset-background transition-opacity hover:opacity-80",
+                  isActive && "ring-2 ring-ring"
                 )
               }
             >
               <UserAvatar name={user?.name ?? ""} avatarUrl={user?.avatarUrl} />
-              <span className="hidden md:inline">{user?.name}</span>
             </NavLink>
             <ValuesVisibilityToggle />
             <ThemeToggle />

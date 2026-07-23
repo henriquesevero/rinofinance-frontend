@@ -1,10 +1,13 @@
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatMoney } from "@/lib/money"
 import { toErrorMessage } from "@/lib/errors"
+import { CategorySelect } from "@/features/categories/components/CategorySelect"
+import { useCategoriesStore } from "@/features/categories/store"
 import { extractPdfLines } from "../fatura/pdf"
+import { suggestCategoryId } from "../fatura/categoryRules"
 import {
   parseFaturaLines,
   type ParsedFatura,
@@ -30,15 +33,24 @@ type Stage = "select" | "parsing" | "preview" | "importing"
 interface PreviewInstallment extends ParsedInstallment {
   key: string
   checked: boolean
+  categoryId: string
 }
 interface PreviewSubscription extends ParsedSubscription {
   key: string
   checked: boolean
+  categoryId: string
 }
 
 export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: ImportFaturaDialogProps) {
   const importFatura = useCardsStore((s) => s.importFatura)
+  const categories = useCategoriesStore((s) => s.categories)
+  const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Ensure categories are loaded so auto-categorization can resolve them.
+  useEffect(() => {
+    if (categories.length === 0) fetchCategories()
+  }, [categories.length, fetchCategories])
   const [stage, setStage] = useState<Stage>("select")
   const [installments, setInstallments] = useState<PreviewInstallment[]>([])
   const [subscriptions, setSubscriptions] = useState<PreviewSubscription[]>([])
@@ -76,8 +88,22 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
         setStage("select")
         return
       }
-      setInstallments(parsed.installmentPurchases.map((p, i) => ({ ...p, key: `p-${i}`, checked: true })))
-      setSubscriptions(parsed.subscriptions.map((s, i) => ({ ...s, key: `s-${i}`, checked: true })))
+      setInstallments(
+        parsed.installmentPurchases.map((p, i) => ({
+          ...p,
+          key: `p-${i}`,
+          checked: true,
+          categoryId: suggestCategoryId(p.name, categories),
+        }))
+      )
+      setSubscriptions(
+        parsed.subscriptions.map((s, i) => ({
+          ...s,
+          key: `s-${i}`,
+          checked: true,
+          categoryId: suggestCategoryId(s.name, categories),
+        }))
+      )
       setNotImported(parsed.notImported)
       setStage("preview")
     } catch (err) {
@@ -86,7 +112,19 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     }
   }
 
-  const parceladas = useMemo(() => installments.filter((p) => !p.isSingle), [installments])
+  // Parceladas ordered by installments still remaining — most-remaining
+  // first, down to the ones closest to finishing.
+  const parceladas = useMemo(
+    () =>
+      installments
+        .filter((p) => !p.isSingle)
+        .sort((a, b) => {
+          const remA = a.totalInstallments - a.currentInstallment
+          const remB = b.totalInstallments - b.currentInstallment
+          return remB - remA || b.totalInstallments - a.totalInstallments
+        }),
+    [installments]
+  )
   const avulsas = useMemo(() => installments.filter((p) => p.isSingle), [installments])
 
   const selectedCount =
@@ -97,6 +135,12 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   }
   function toggleSubscription(key: string) {
     setSubscriptions((prev) => prev.map((s) => (s.key === key ? { ...s, checked: !s.checked } : s)))
+  }
+  function setInstallmentCategory(key: string, categoryId: string) {
+    setInstallments((prev) => prev.map((p) => (p.key === key ? { ...p, categoryId } : p)))
+  }
+  function setSubscriptionCategory(key: string, categoryId: string) {
+    setSubscriptions((prev) => prev.map((s) => (s.key === key ? { ...s, categoryId } : s)))
   }
   // Selects/deselects every installment matching the group predicate at
   // once (used by the group-header checkbox).
@@ -123,11 +167,11 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
             totalInstallments: p.totalInstallments,
             firstInstallmentDate: p.firstInstallmentDate,
             domain: p.domain,
-            categoryId: "",
+            categoryId: p.categoryId,
           })),
         subscriptions: subscriptions
           .filter((s) => s.checked)
-          .map((s) => ({ name: s.name, monthlyAmount: s.monthlyAmount, domain: s.domain, categoryId: "" })),
+          .map((s) => ({ name: s.name, monthlyAmount: s.monthlyAmount, domain: s.domain, categoryId: s.categoryId })),
       })
       toast.success(`Importado: ${result.installmentPurchases} compra(s) e ${result.subscriptions} assinatura(s)`)
       handleClose(false)
@@ -193,7 +237,16 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
                   onToggleAll={(checked) => setInstallmentGroup((p) => !p.isSingle, checked)}
                 >
                   {parceladas.map((p) => (
-                    <PreviewRow key={p.key} checked={p.checked} onToggle={() => toggleInstallment(p.key)}>
+                    <PreviewRow
+                      key={p.key}
+                      checked={p.checked}
+                      onToggle={() => toggleInstallment(p.key)}
+                      category={
+                        <div className="w-full sm:w-64">
+                          <CategorySelect value={p.categoryId} onChange={(id) => setInstallmentCategory(p.key, id)} />
+                        </div>
+                      }
+                    >
                       <span className="truncate" title={p.name}>
                         {p.name}
                       </span>
@@ -214,7 +267,16 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
                   onToggleAll={setSubscriptionGroup}
                 >
                   {subscriptions.map((s) => (
-                    <PreviewRow key={s.key} checked={s.checked} onToggle={() => toggleSubscription(s.key)}>
+                    <PreviewRow
+                      key={s.key}
+                      checked={s.checked}
+                      onToggle={() => toggleSubscription(s.key)}
+                      category={
+                        <div className="w-full sm:w-64">
+                          <CategorySelect value={s.categoryId} onChange={(id) => setSubscriptionCategory(s.key, id)} />
+                        </div>
+                      }
+                    >
                       <span className="truncate" title={s.name}>
                         {s.name}
                       </span>
@@ -233,7 +295,16 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
                   onToggleAll={(checked) => setInstallmentGroup((p) => p.isSingle, checked)}
                 >
                   {avulsas.map((p) => (
-                    <PreviewRow key={p.key} checked={p.checked} onToggle={() => toggleInstallment(p.key)}>
+                    <PreviewRow
+                      key={p.key}
+                      checked={p.checked}
+                      onToggle={() => toggleInstallment(p.key)}
+                      category={
+                        <div className="w-full sm:w-64">
+                          <CategorySelect value={p.categoryId} onChange={(id) => setInstallmentCategory(p.key, id)} />
+                        </div>
+                      }
+                    >
                       <span className="truncate" title={p.name}>
                         {p.name}
                       </span>
@@ -322,16 +393,21 @@ function PreviewGroup({
 function PreviewRow({
   checked,
   onToggle,
+  category,
   children,
 }: {
   checked: boolean
   onToggle: () => void
+  category?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-muted/40">
-      <input type="checkbox" className="size-4 shrink-0" checked={checked} onChange={onToggle} />
-      <div className="grid flex-1 grid-cols-[1fr_auto_auto] items-center gap-3 overflow-hidden">{children}</div>
-    </label>
+    <div className="px-3 py-2 hover:bg-muted/40">
+      <label className="flex cursor-pointer items-center gap-3 text-sm">
+        <input type="checkbox" className="size-4 shrink-0" checked={checked} onChange={onToggle} />
+        <div className="grid flex-1 grid-cols-[1fr_auto_auto] items-center gap-3 overflow-hidden">{children}</div>
+      </label>
+      {category && <div className="mt-1.5 pl-7">{category}</div>}
+    </div>
   )
 }

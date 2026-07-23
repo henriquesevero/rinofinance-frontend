@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { UserAvatar } from "@/components/UserAvatar"
 import { toErrorMessage } from "@/lib/errors"
 import { resizeImageToDataUrl } from "@/lib/image"
+import { gravatarUrl, imageExists } from "@/lib/gravatar"
 import { useAuthStore } from "./store"
 
 export function SettingsPage() {
@@ -37,6 +38,7 @@ export function SettingsPage() {
   const [name, setName] = useState(user?.name ?? "")
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl ?? "")
   const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [isLoadingGravatar, setIsLoadingGravatar] = useState(false)
 
   const [newEmail, setNewEmail] = useState(user?.email ?? "")
   const [emailPassword, setEmailPassword] = useState("")
@@ -59,6 +61,25 @@ export function SettingsPage() {
       setAvatarPreview(await resizeImageToDataUrl(file))
     } catch (err) {
       toast.error(toErrorMessage(err))
+    }
+  }
+
+  async function handleUseGravatar() {
+    const email = user?.email?.trim().toLowerCase()
+    if (!email) return
+    setIsLoadingGravatar(true)
+    try {
+      const probe = await gravatarUrl(email, 200, "404")
+      if (await imageExists(probe)) {
+        setAvatarPreview(await gravatarUrl(email, 200))
+        toast.success("Foto do Gravatar carregada — salve para aplicar")
+      } else {
+        toast.error("Nenhuma foto do Gravatar encontrada para este email")
+      }
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+    } finally {
+      setIsLoadingGravatar(false)
     }
   }
 
@@ -128,37 +149,49 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Link to="/dashboard" className="text-sm text-muted-foreground underline underline-offset-4">
-          ← Voltar ao painel
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Configurações da conta</h1>
+    <div className="mx-auto flex w-full max-w-lg flex-col gap-6">
+      <Link
+        to="/dashboard"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        ← Voltar ao painel
+      </Link>
+      <div className="text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">Minha conta</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Perfil, acesso e segurança.</p>
       </div>
 
       <Card>
-        <form onSubmit={handleSaveProfile}>
-          <CardHeader>
-            <CardTitle>Perfil</CardTitle>
-            <CardDescription>Sua foto e nome de exibição</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <UserAvatar name={name} avatarUrl={avatarPreview} className="size-16 text-base" />
-              <div className="flex flex-col gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  Alterar foto
+        <form onSubmit={handleSaveProfile} className="contents">
+          <CardContent className="flex flex-col items-center gap-5 pt-2">
+            <UserAvatar name={name} avatarUrl={avatarPreview} className="size-24 text-2xl" />
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                Enviar foto
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleUseGravatar}
+                disabled={isLoadingGravatar}
+              >
+                {isLoadingGravatar ? "Buscando..." : "Usar Gravatar"}
+              </Button>
+              {avatarPreview && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setAvatarPreview("")}>
+                  Remover
                 </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
-              </div>
+              )}
             </div>
-            <div className="flex flex-col gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            <div className="flex w-full flex-col gap-2">
               <Label htmlFor="settings-name">Nome</Label>
               <Input id="settings-name" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
@@ -172,7 +205,7 @@ export function SettingsPage() {
       </Card>
 
       <Card>
-        <form onSubmit={handleSaveEmail}>
+        <form onSubmit={handleSaveEmail} className="contents">
           <CardHeader>
             <CardTitle>Email</CardTitle>
             <CardDescription>Usado para entrar na sua conta</CardDescription>
@@ -209,7 +242,7 @@ export function SettingsPage() {
       </Card>
 
       <Card>
-        <form onSubmit={handleSavePassword}>
+        <form onSubmit={handleSavePassword} className="contents">
           <CardHeader>
             <CardTitle>Senha</CardTitle>
             <CardDescription>Recomendado trocar periodicamente</CardDescription>

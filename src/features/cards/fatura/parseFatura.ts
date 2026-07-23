@@ -33,19 +33,14 @@ export interface ParsedFatura {
   notImported: SkippedLine[]
 }
 
-// Lines that are totals, payments, previous-invoice or international
-// bookkeeping rather than real purchases — skipped entirely.
+// Structural totals and payments that are never real charges — always
+// skipped. IOF and currency conversion are intentionally NOT here: the user
+// wants those imported (as one-off items) so they can review/uncheck them.
 const SKIP_KEYWORDS = [
   "pagamento efetuado",
   "total ",
   "total da fatura",
   "saldo",
-  "dólar de conversão",
-  "dolar de conversao",
-  "valor em dólar",
-  "valor em dolar",
-  "iof ",
-  "iof-",
   "retirada no exterior",
   "encargos e serviços",
 ]
@@ -92,12 +87,19 @@ export function monthMinus(referenceMonth: string, months: number): string {
   return `${y}-${m}-01`
 }
 
-// Extracts the invoice reference month ("YYYY-MM") from the due date,
-// falling back to the current month when it can't be found.
+// Extracts the invoice's purchase-cycle reference month ("YYYY-MM"),
+// falling back to the current month when it can't be found. An invoice due
+// on the 1st of month M bills the purchases made in the previous cycle, and
+// the app totals cards by that cycle month — so we shift one month back from
+// the due date (e.g. venc 01/08 → cycle 2026-07). This keeps imported items
+// showing in the right month and the installment counts correct.
 export function extractReferenceMonth(lines: string[]): string {
   for (const line of lines) {
     const m = line.match(DUE_DATE_RE)
-    if (m) return `${m[3]}-${m[2]}`
+    if (m) {
+      const d = new Date(Number(m[3]), Number(m[2]) - 1 - 1, 1)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+    }
   }
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
@@ -106,6 +108,53 @@ export function extractReferenceMonth(lines: string[]): string {
 function shouldSkip(description: string): boolean {
   const lower = description.toLowerCase()
   return SKIP_KEYWORDS.some((k) => lower.includes(k))
+}
+
+// Classifies a purchase line (already stripped of date/skip noise) into an
+// installment, a subscription, or a one-off ("avulsa") purchase, pushing it
+// onto the right bucket. Shared by dated lines and dateless ones (e.g.
+// international charges listed under a conversion line).
+function classifyLine(
+  description: string,
+  amount: number,
+  referenceMonth: string,
+  installmentPurchases: ParsedInstallment[],
+  subscriptions: ParsedSubscription[]
+): void {
+  const brand = detectBrand(description)
+  const installmentMatch = description.match(INSTALLMENT_RE)
+
+  if (installmentMatch) {
+    const current = Number(installmentMatch[1])
+    const total = Number(installmentMatch[2])
+    const name = description.replace(INSTALLMENT_RE, "").trim()
+    if (!name || total < 1 || current < 1) return
+    installmentPurchases.push({
+      name,
+      installmentAmount: amount,
+      totalInstallments: total,
+      currentInstallment: current,
+      firstInstallmentDate: monthMinus(referenceMonth, current - 1),
+      domain: brand?.domain ?? "",
+      isSingle: false,
+    })
+    return
+  }
+
+  if (brand?.recurring) {
+    subscriptions.push({ name: brand.label, monthlyAmount: amount, domain: brand.domain })
+    return
+  }
+
+  installmentPurchases.push({
+    name: description,
+    installmentAmount: amount,
+    totalInstallments: 1,
+    currentInstallment: 1,
+    firstInstallmentDate: `${referenceMonth}-01`,
+    domain: brand?.domain ?? "",
+    isSingle: true,
+  })
 }
 
 // Parses reconstructed statement text lines into classified purchases and
@@ -131,11 +180,13 @@ export function parseFaturaLines(lines: string[]): ParsedFatura {
         const desc = dateless[1].trim()
         const value = parseBrazilianAmount(dateless[2])
         if (value > 0 && !STRUCTURAL_RE.test(desc)) {
-          notImported.push({
-            description: desc,
-            amount: value,
-            reason: shouldSkip(desc) ? skipReason(desc) : "Não reconhecido",
-          })
+          if (shouldSkip(desc)) {
+            notImported.push({ description: desc, amount: value, reason: skipReason(desc) })
+          } else {
+            // A real purchase listed without a leading date (e.g. an
+            // international charge shown under a conversion line) — import it.
+            classifyLine(desc, value, referenceMonth, installmentPurchases, subscriptions)
+          }
         }
       }
       continue
@@ -149,41 +200,7 @@ export function parseFaturaLines(lines: string[]): ParsedFatura {
     }
     if (!Number.isFinite(amount) || amount <= 0) continue
 
-    const brand = detectBrand(description)
-    const installmentMatch = description.match(INSTALLMENT_RE)
-
-    if (installmentMatch) {
-      const current = Number(installmentMatch[1])
-      const total = Number(installmentMatch[2])
-      const name = description.replace(INSTALLMENT_RE, "").trim()
-      if (!name || total < 1 || current < 1) continue
-      installmentPurchases.push({
-        name,
-        installmentAmount: amount,
-        totalInstallments: total,
-        currentInstallment: current,
-        firstInstallmentDate: monthMinus(referenceMonth, current - 1),
-        domain: brand?.domain ?? "",
-        isSingle: false,
-      })
-      continue
-    }
-
-    if (brand?.recurring) {
-      subscriptions.push({ name: brand.label, monthlyAmount: amount, domain: brand.domain })
-      continue
-    }
-
-    // One-off ("avulsa") purchase -> a 1x installment purchase.
-    installmentPurchases.push({
-      name: description,
-      installmentAmount: amount,
-      totalInstallments: 1,
-      currentInstallment: 1,
-      firstInstallmentDate: `${referenceMonth}-01`,
-      domain: brand?.domain ?? "",
-      isSingle: true,
-    })
+    classifyLine(description, amount, referenceMonth, installmentPurchases, subscriptions)
   }
 
   return { referenceMonth, installmentPurchases, subscriptions, notImported }
