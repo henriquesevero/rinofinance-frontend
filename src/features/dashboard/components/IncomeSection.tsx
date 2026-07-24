@@ -134,71 +134,75 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                   key={income.id}
                   {...getItemProps(income.id)}
                   className={cn(
-                    "group relative flex items-center gap-3 py-2 pr-1 text-sm",
+                    "group relative flex flex-col gap-1 py-2 text-sm sm:flex-row sm:items-center sm:gap-3 sm:pr-1",
                     !income.active && "opacity-55",
                     draggingId === income.id && "opacity-40"
                   )}
                 >
-                  <DragHandle
-                    {...getHandleProps(income.id)}
-                    className="-ml-1 shrink-0 opacity-0 group-hover:opacity-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleToggleReceived(income.id)}
-                    aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
-                    title={income.received ? "Recebida" : "Marcar recebida"}
-                    className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
-                  >
-                    {income.received ? (
-                      <CheckCircle2 className="size-5 text-emerald-500" />
-                    ) : (
-                      <Circle className="size-5" />
-                    )}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate leading-tight" title={income.name}>
-                      {income.name}
-                    </p>
-                    {hasMeta && (
-                      <div className="mt-0.5 flex items-center gap-x-1.5 overflow-hidden text-xs leading-tight text-muted-foreground [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
-                        <CategoryChip categoryId={income.categoryId} dense />
-                        <AccountChip accountId={income.accountId} dense />
-                      </div>
-                    )}
-                  </div>
-                  <MoneyValue
-                    value={income.amount}
-                    className="shrink-0 font-medium tabular-nums transition-opacity group-hover:opacity-0 [@media(hover:none)]:opacity-100"
-                  />
-                  <div className="absolute inset-y-0 right-1 flex items-center bg-card pl-6 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:bg-transparent [@media(hover:none)]:pl-1 [@media(hover:none)]:opacity-100">
+                  <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
+                    <DragHandle
+                      {...getHandleProps(income.id)}
+                      className="-ml-1 hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
+                    />
                     <button
                       type="button"
-                      onClick={() => handleToggle(income.id)}
-                      aria-label={income.active ? "Desativar entrada" : "Ativar entrada"}
-                      title={income.active ? "Ativa (desativar)" : "Inativa (ativar)"}
-                      className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={() => handleToggleReceived(income.id)}
+                      aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
+                      title={income.received ? "Recebida" : "Marcar recebida"}
+                      className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
                     >
-                      <Power className={cn("size-4", income.active ? "text-emerald-500" : "text-muted-foreground/50")} />
+                      {income.received ? (
+                        <CheckCircle2 className="size-5 text-emerald-500" />
+                      ) : (
+                        <Circle className="size-5" />
+                      )}
                     </button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label="Editar entrada"
-                      onClick={() => setDialogState({ mode: "edit", income })}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label="Remover entrada"
-                      onClick={() => handleDelete(income.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate leading-tight" title={income.name}>
+                        {income.name}
+                      </p>
+                      {hasMeta && (
+                        <div className="mt-0.5 flex items-center gap-x-1.5 overflow-hidden text-xs leading-tight text-muted-foreground [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
+                          <CategoryChip categoryId={income.categoryId} dense />
+                          <AccountChip accountId={income.accountId} dense />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
+                    <MoneyValue
+                      value={income.amount}
+                      className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                    />
+                    <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(income.id)}
+                        aria-label={income.active ? "Desativar entrada" : "Ativar entrada"}
+                        title={income.active ? "Ativa (desativar)" : "Inativa (ativar)"}
+                        className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
+                      >
+                        <Power className={cn("size-4", income.active ? "text-emerald-500" : "text-muted-foreground/50")} />
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label="Editar entrada"
+                        onClick={() => setDialogState({ mode: "edit", income })}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label="Remover entrada"
+                        onClick={() => handleDelete(income.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
                 </li>
               )

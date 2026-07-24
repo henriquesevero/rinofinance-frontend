@@ -186,81 +186,85 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                   {...getItemProps(expense.id)}
                   style={accent ? { borderLeftColor: accent } : undefined}
                   className={cn(
-                    "group relative flex items-center gap-3 border-l-2 border-l-transparent py-2 pl-2 pr-1 text-sm",
+                    "group relative flex flex-col gap-1 border-l-2 border-l-transparent py-2 pl-2 text-sm sm:flex-row sm:items-center sm:gap-3 sm:pr-1",
                     !expense.active && "opacity-55",
                     draggingId === expense.id && "opacity-40"
                   )}
                 >
-                  {canReorder && (
-                    <DragHandle
-                      {...getHandleProps(expense.id)}
-                      className="-ml-1 shrink-0 opacity-0 group-hover:opacity-100"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleTogglePaid(expense.id)}
-                    aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
-                    title={expense.paid ? "Paga" : "Marcar paga"}
-                    className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
-                  >
-                    {expense.paid ? (
-                      <CheckCircle2 className="size-5 text-emerald-500" />
-                    ) : (
-                      <Circle className="size-5" />
+                  <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
+                    {canReorder && (
+                      <DragHandle
+                        {...getHandleProps(expense.id)}
+                        className="-ml-1 hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
+                      />
                     )}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate leading-tight" title={expense.name}>
-                      {expense.name}
-                    </p>
-                    {hasMeta && (
-                      <div className="mt-0.5 flex items-center gap-x-1.5 overflow-hidden text-xs leading-tight text-muted-foreground [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
-                        <CategoryChip categoryId={expense.categoryId} dense />
-                        <AccountChip accountId={expense.accountId} dense />
-                        {expense.cardId && (
-                          <span className="inline-flex shrink-0 items-center gap-1" title={cardName(expense.cardId)}>
-                            <CreditCard className="size-3" style={{ color: cardColor || "#6B7280" }} />
-                            {cardName(expense.cardId)}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <MoneyValue
-                    value={expense.amount}
-                    className="shrink-0 font-medium tabular-nums transition-opacity group-hover:opacity-0 [@media(hover:none)]:opacity-100"
-                  />
-                  <div className="absolute inset-y-0 right-1 flex items-center bg-card pl-6 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:bg-transparent [@media(hover:none)]:pl-1 [@media(hover:none)]:opacity-100">
                     <button
                       type="button"
-                      onClick={() => handleToggle(expense.id)}
-                      aria-label={expense.active ? "Desativar saída" : "Ativar saída"}
-                      title={expense.active ? "Ativa (desativar)" : "Inativa (ativar)"}
-                      className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={() => handleTogglePaid(expense.id)}
+                      aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
+                      title={expense.paid ? "Paga" : "Marcar paga"}
+                      className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
                     >
-                      <Power className={cn("size-4", expense.active ? "text-emerald-500" : "text-muted-foreground/50")} />
+                      {expense.paid ? (
+                        <CheckCircle2 className="size-5 text-emerald-500" />
+                      ) : (
+                        <Circle className="size-5" />
+                      )}
                     </button>
-                    {!expense.cardId && (
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate leading-tight" title={expense.name}>
+                        {expense.name}
+                      </p>
+                      {hasMeta && (
+                        <div className="mt-0.5 flex items-center gap-x-1.5 overflow-hidden text-xs leading-tight text-muted-foreground [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
+                          <CategoryChip categoryId={expense.categoryId} dense />
+                          <AccountChip accountId={expense.accountId} dense />
+                          {expense.cardId && (
+                            <span className="inline-flex shrink-0 items-center gap-1" title={cardName(expense.cardId)}>
+                              <CreditCard className="size-3" style={{ color: cardColor || "#6B7280" }} />
+                              {cardName(expense.cardId)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
+                    <MoneyValue
+                      value={expense.amount}
+                      className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                    />
+                    <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(expense.id)}
+                        aria-label={expense.active ? "Desativar saída" : "Ativar saída"}
+                        title={expense.active ? "Ativa (desativar)" : "Inativa (ativar)"}
+                        className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
+                      >
+                        <Power className={cn("size-4", expense.active ? "text-emerald-500" : "text-muted-foreground/50")} />
+                      </button>
+                      {!expense.cardId && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          aria-label="Editar saída"
+                          onClick={() => setDialogState({ mode: "edit", expense })}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        aria-label="Editar saída"
-                        onClick={() => setDialogState({ mode: "edit", expense })}
+                        aria-label="Remover saída"
+                        onClick={() => handleDelete(expense.id)}
                       >
-                        <Pencil className="size-4" />
+                        <Trash2 className="size-4" />
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label="Remover saída"
-                      onClick={() => handleDelete(expense.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    </div>
                   </div>
                 </li>
               )
