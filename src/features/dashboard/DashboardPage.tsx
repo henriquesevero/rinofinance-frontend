@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 import { BarChart3, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { useCardsStore } from "@/features/cards/store"
 import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
 import { QuickActions } from "./components/QuickActions"
@@ -42,19 +41,6 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Painel</h1>
-          <p className="text-sm text-muted-foreground">
-            Sua visão financeira do mês — entradas, saídas e recorrências.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={toggleCharts}>
-          <BarChart3 className="size-4" />
-          {chartsHidden ? "Mostrar gráficos" : "Ocultar gráficos"}
-        </Button>
-      </div>
-
       <QuickActions />
 
       <SummaryCards
@@ -63,10 +49,27 @@ export function DashboardPage() {
         netBalance={summary.netBalance}
       />
 
-      {!chartsHidden && (
+      {chartsHidden ? (
+        <button
+          type="button"
+          onClick={toggleCharts}
+          className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <BarChart3 className="size-3.5" />
+          Mostrar gráficos
+        </button>
+      ) : (
         <>
           <RecurrencesPanel />
           <CategoryBreakdownPanel expenses={summary.expenses} />
+          <button
+            type="button"
+            onClick={toggleCharts}
+            className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <BarChart3 className="size-3.5" />
+            Ocultar gráficos
+          </button>
         </>
       )}
 

@@ -126,5 +126,15 @@
     }
   html {
     @apply font-sans;
+    /* Never let the whole page scroll sideways on mobile — inner scroll
+       containers (tables/charts) still scroll on their own. */
+    overflow-x: hidden;
+    }
+  /* Media never forces the page wider than its container. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
     }
 }

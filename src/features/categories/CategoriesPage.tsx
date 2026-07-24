@@ -40,8 +40,8 @@ export function CategoriesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">Categorias</h1>
           <p className="text-sm text-muted-foreground">
             Organize compras, assinaturas e saídas por categoria.

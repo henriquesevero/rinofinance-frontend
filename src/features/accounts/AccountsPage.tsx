@@ -42,8 +42,8 @@ export function AccountsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <Card className="flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <Card className="min-w-0 flex-1">
           <CardHeader>
             <CardDescription>Saldo total das contas</CardDescription>
             <CardTitle className="text-2xl">

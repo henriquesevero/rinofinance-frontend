@@ -4,8 +4,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MoneyValue } from "@/components/MoneyValue"
+import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { AssetFormDialog } from "./components/AssetFormDialog"
 import { useInvestmentsStore } from "./store"
@@ -61,8 +61,8 @@ export function InvestmentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <Card className="flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <Card className="min-w-0 flex-1">
           <CardHeader>
             <CardDescription>Patrimônio total</CardDescription>
             <CardTitle className="text-2xl">
@@ -84,51 +84,49 @@ export function InvestmentsPage() {
           {assets.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum ativo cadastrado ainda.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Categoria/Ativo</TableHead>
-                  <TableHead>Saldo atual</TableHead>
-                  <TableHead>Ativo</TableHead>
-                  <TableHead className="w-0" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assets.map((asset) => (
-                  <TableRow key={asset.id} className={!asset.active ? "opacity-50" : undefined}>
-                    <TableCell className="max-w-[260px] truncate" title={asset.name}>
+            <ul className="divide-y">
+              {assets.map((asset) => (
+                <li
+                  key={asset.id}
+                  className={cn("flex items-center gap-3 py-3", !asset.active && "opacity-55")}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium" title={asset.name}>
                       {asset.name}
-                    </TableCell>
-                    <TableCell>
-                      <MoneyValue value={asset.currentBalance} />
-                    </TableCell>
-                    <TableCell>
-                      <Switch checked={asset.active} onCheckedChange={() => handleToggle(asset.id)} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Editar ativo"
-                          onClick={() => setDialogState({ mode: "edit", asset })}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Remover ativo"
-                          onClick={() => handleDelete(asset.id)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </p>
+                    <MoneyValue
+                      value={asset.currentBalance}
+                      className="text-sm tabular-nums text-muted-foreground"
+                    />
+                  </div>
+                  <Switch
+                    checked={asset.active}
+                    onCheckedChange={() => handleToggle(asset.id)}
+                    aria-label={asset.active ? "Desativar ativo" : "Ativar ativo"}
+                  />
+                  <div className="flex shrink-0 items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label="Editar ativo"
+                      onClick={() => setDialogState({ mode: "edit", asset })}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label="Remover ativo"
+                      onClick={() => handleDelete(asset.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>

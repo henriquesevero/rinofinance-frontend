@@ -72,8 +72,8 @@ export function CardsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <Card className="flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <Card className="min-w-0 flex-1">
           <CardHeader>
             <CardDescription>Total geral dos cartões (mês atual)</CardDescription>
             <CardTitle className="text-2xl">
