@@ -113,7 +113,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
 
   return (
     <Card className="border-l-4 border-l-red-500/60">
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
@@ -125,10 +125,10 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           />
           <CardTitle>Saídas do mês</CardTitle>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {expenses.length > 1 && (
             <Select value={sortKey} onValueChange={(v) => setSortKey((v as ExpenseSortKey) ?? "default")}>
-              <SelectTrigger size="sm" className="w-[150px]" aria-label="Ordenar saídas">
+              <SelectTrigger size="sm" className="w-[136px]" aria-label="Ordenar saídas">
                 <SelectValue>
                   {(value: string | null) =>
                     EXPENSE_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
