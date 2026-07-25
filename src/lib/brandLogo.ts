@@ -55,6 +55,15 @@ const BANKS: { keyword: string; domain: string }[] = [
   { keyword: "bmg", domain: "bancobmg.com.br" },
   { keyword: "unicred", domain: "unicred.com.br" },
   { keyword: "xp", domain: "xpi.com.br" },
+  { keyword: "stone", domain: "stone.com.br" },
+  { keyword: "cora", domain: "cora.com.br" },
+  // International wallets / fintechs
+  { keyword: "wise", domain: "wise.com" },
+  { keyword: "nomad", domain: "nomadglobal.com" },
+  { keyword: "revolut", domain: "revolut.com" },
+  { keyword: "payoneer", domain: "payoneer.com" },
+  { keyword: "paypal", domain: "paypal.com" },
+  { keyword: "n26", domain: "n26.com" },
 ]
 
 // Resolves a bank/wallet domain from a card or account name, or "" when none
