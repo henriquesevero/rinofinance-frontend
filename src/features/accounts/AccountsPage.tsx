@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react"
-import { Loader2, Plus } from "lucide-react"
+import { Cable, Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoneyValue } from "@/components/MoneyValue"
 import { DragHandle } from "@/components/DragHandle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
@@ -14,7 +12,6 @@ import { useAccountsStore } from "./store"
 
 export function AccountsPage() {
   const accounts = useAccountsStore((s) => s.accounts)
-  const totalBalance = useAccountsStore((s) => s.totalBalance)
   const isLoading = useAccountsStore((s) => s.isLoading)
   const error = useAccountsStore((s) => s.error)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
@@ -41,41 +38,49 @@ export function AccountsPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <Card className="min-w-0 flex-1">
-          <CardHeader>
-            <CardDescription>Saldo total das contas</CardDescription>
-            <CardTitle className="text-2xl">
-              <MoneyValue value={totalBalance} />
-            </CardTitle>
-          </CardHeader>
-        </Card>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Contas</h1>
+          <p className="text-muted-foreground">Conecte, visualize e gerencie suas conexões financeiras.</p>
+        </div>
         <Button onClick={() => setIsCreateOpen(true)}>
           <Plus className="size-4" />
           Nova conta
         </Button>
       </div>
 
-      {accounts.length === 0 ? (
-        <p className="text-center text-sm text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
-      ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {order.map((account) => (
-            <li
-              key={account.id}
-              {...getItemProps(account.id)}
-              className={cn("group relative transition-opacity", draggingId === account.id && "opacity-40")}
-            >
-              <DragHandle
-                {...getHandleProps(account.id)}
-                className="absolute right-2 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
-              />
-              <AccountTile account={account} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2.5">
+          <Cable className="size-5 text-rose-500" />
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Conexões</h2>
+          {accounts.length > 0 && (
+            <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-500">
+              {accounts.length} {accounts.length === 1 ? "ativa" : "ativas"}
+            </span>
+          )}
+        </div>
+
+        {accounts.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
+        ) : (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {order.map((account) => (
+              <li
+                key={account.id}
+                {...getItemProps(account.id)}
+                className={cn("group relative transition-opacity", draggingId === account.id && "opacity-40")}
+              >
+                <DragHandle
+                  {...getHandleProps(account.id)}
+                  className="absolute left-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
+                />
+                <AccountTile account={account} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <AccountFormDialog
         open={isCreateOpen}

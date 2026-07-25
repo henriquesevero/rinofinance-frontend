@@ -35,12 +35,14 @@ export function CardArt({ card, className }: CardArtProps) {
         >
           {/* brand logo (uploaded or auto-detected), else a plain chip */}
           {logoSrc ? (
-            <img
-              src={logoSrc}
-              alt={card.name}
-              onError={() => setLogoFailed(true)}
-              className="h-9 max-w-[55%] rounded-md object-contain drop-shadow-md"
-            />
+            <span className="inline-block size-9 overflow-hidden rounded-md drop-shadow-md">
+              <img
+                src={logoSrc}
+                alt={card.name}
+                onError={() => setLogoFailed(true)}
+                className="size-full scale-[1.34] object-cover"
+              />
+            </span>
           ) : (
             <div className="h-6 w-8 rounded-md bg-white/70 shadow-inner" />
           )}

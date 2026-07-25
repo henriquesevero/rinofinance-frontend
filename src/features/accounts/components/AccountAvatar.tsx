@@ -23,7 +23,10 @@ export function AccountAvatar({ account, className }: AccountAvatarProps) {
           src={src}
           alt={account.name}
           onError={() => setFailed(true)}
-          className={cn("size-full object-cover", account.imageUrl ? "" : "rounded-lg")}
+          // Brand icons come from Brandfetch with a little padding (and some,
+          // like Itaú, on a white plate). Zoom in slightly so the mark fills
+          // edge-to-edge — the rounded, clipped frame removes any white border.
+          className={cn("size-full object-cover", account.imageUrl ? "" : "scale-[1.34]")}
         />
       ) : (
         <div

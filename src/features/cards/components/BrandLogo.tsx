@@ -26,12 +26,16 @@ export function BrandLogo({ domain, fallbackIcon: FallbackIcon, className, size 
 
   const src = brandLogoSrc(trimmedDomain, size)
 
+  // Zoom slightly inside a clipped, rounded frame so the icon fills the frame
+  // with no white border (Brandfetch icons carry padding / white plates).
   return (
-    <img
-      src={src}
-      alt={trimmedDomain}
-      className={cn("size-4 shrink-0 rounded-sm object-contain", className)}
-      onError={() => setFailed(true)}
-    />
+    <span className={cn("inline-flex size-4 shrink-0 overflow-hidden rounded-sm", className)}>
+      <img
+        src={src}
+        alt={trimmedDomain}
+        className="size-full scale-[1.34] object-cover"
+        onError={() => setFailed(true)}
+      />
+    </span>
   )
 }
