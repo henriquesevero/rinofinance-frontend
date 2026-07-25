@@ -1,4 +1,6 @@
+import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { bankDomain, brandLogoSrc } from "@/lib/brandLogo"
 import type { CardOverview } from "../types"
 
 interface CardArtProps {
@@ -8,10 +10,12 @@ interface CardArtProps {
 
 // Renders a credit card at real-card proportions (~1.586:1). When the
 // user uploaded a card image it fills the frame; otherwise we synthesize a
-// bank-like card from the chosen accent color, with a chip and the card's
-// name — so every card looks intentional even before an image is added.
+// bank-like card from the chosen accent color, with the bank's brand logo
+// (auto-detected from the name) and the card's name.
 export function CardArt({ card, className }: CardArtProps) {
   const color = card.color || "#6B7280"
+  const [logoFailed, setLogoFailed] = useState(false)
+  const logoSrc = card.logoUrl || (!logoFailed ? brandLogoSrc(bankDomain(card.name)) : "")
 
   return (
     <div
@@ -29,12 +33,13 @@ export function CardArt({ card, className }: CardArtProps) {
             background: `linear-gradient(135deg, ${color} 0%, rgba(0,0,0,0.45) 140%)`,
           }}
         >
-          {/* uploaded logo, falling back to a plain chip */}
-          {card.logoUrl ? (
+          {/* brand logo (uploaded or auto-detected), else a plain chip */}
+          {logoSrc ? (
             <img
-              src={card.logoUrl}
+              src={logoSrc}
               alt={card.name}
-              className="h-8 max-w-[45%] object-contain drop-shadow"
+              onError={() => setLogoFailed(true)}
+              className="h-9 max-w-[55%] rounded-md bg-white/95 object-contain p-1 shadow"
             />
           ) : (
             <div className="h-6 w-8 rounded-md bg-white/70 shadow-inner" />

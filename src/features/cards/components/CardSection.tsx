@@ -18,6 +18,7 @@ import {
   type PurchaseSortKey,
   type SubscriptionSortKey,
 } from "../installments"
+import { logoDomain } from "../fatura/brands"
 import { useCardsStore } from "../store"
 import type { CardOverview, InstallmentPurchase, Subscription } from "../types"
 import { CategoryChip } from "@/features/categories/components/CategoryChip"
@@ -335,46 +336,56 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           {collapsed.subs ? null : card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
-            <ul className="flex flex-col gap-1">
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {subsDnd.order.map((subscription) => (
                 <li
                   key={subscription.id}
                   {...subsDnd.getItemProps(subscription.id)}
                   className={cn(
-                    "flex flex-col gap-1 rounded-md px-2 py-2 hover:bg-muted/50 sm:flex-row sm:items-center sm:gap-3",
+                    "group relative flex flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition-colors hover:border-foreground/20",
                     subsDnd.draggingId === subscription.id && "opacity-40"
                   )}
                 >
-                  <div className="flex min-w-0 items-center gap-3 sm:flex-1">
-                    {canReorderSubs && <DragHandle {...subsDnd.getHandleProps(subscription.id)} />}
-                    <BrandLogo domain={subscription.domain} fallbackIcon={Repeat} />
-                    <span className="flex min-w-0 flex-1 items-center gap-2">
-                      <span className="min-w-0 truncate font-medium" title={subscription.name}>
-                        {subscription.name}
-                      </span>
-                      <CategoryChip categoryId={subscription.categoryId} />
-                    </span>
+                  {canReorderSubs && (
+                    <DragHandle
+                      {...subsDnd.getHandleProps(subscription.id)}
+                      className="absolute left-1 top-1 opacity-0 group-hover:opacity-100"
+                    />
+                  )}
+                  <div className="absolute right-0.5 top-0.5 flex opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label="Editar assinatura"
+                      onClick={() => setSubscriptionDialog({ mode: "edit", subscription })}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label="Remover assinatura"
+                      onClick={() => handleDeleteSubscription(subscription.id)}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
                   </div>
-                  <div className="flex items-center justify-between gap-2 pl-11 sm:shrink-0 sm:justify-end sm:pl-0">
-                    <MoneyValue value={subscription.monthlyAmount} className="font-medium tabular-nums" />
-                    <div className="flex shrink-0 items-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Editar assinatura"
-                        onClick={() => setSubscriptionDialog({ mode: "edit", subscription })}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Remover assinatura"
-                        onClick={() => handleDeleteSubscription(subscription.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
+                  <BrandLogo
+                    domain={logoDomain(subscription.name, subscription.domain)}
+                    fallbackIcon={Repeat}
+                    size={64}
+                    className="size-10 rounded-lg"
+                  />
+                  <div className="w-full min-w-0">
+                    <p className="truncate text-sm font-medium" title={subscription.name}>
+                      {subscription.name}
+                    </p>
+                    <MoneyValue
+                      value={subscription.monthlyAmount}
+                      className="text-sm font-semibold tabular-nums"
+                    />
                   </div>
                 </li>
               ))}
@@ -464,7 +475,7 @@ function PurchaseRow({
     >
       <div className="flex min-w-0 items-center gap-3 sm:flex-1">
         {handleProps && <DragHandle {...handleProps} />}
-        <BrandLogo domain={purchase.domain} fallbackIcon={ShoppingBag} />
+        <BrandLogo domain={logoDomain(purchase.name, purchase.domain)} fallbackIcon={ShoppingBag} />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
             <p className="min-w-0 truncate font-medium" title={purchase.name}>

@@ -1,4 +1,4 @@
-import { detectBrand } from "./brands"
+import { detectBrand, logoDomain } from "./brands"
 
 export interface ParsedInstallment {
   name: string
@@ -135,7 +135,8 @@ function classifyLine(
       totalInstallments: total,
       currentInstallment: current,
       firstInstallmentDate: monthMinus(referenceMonth, current - 1),
-      domain: brand?.domain ?? "",
+      // Detect the logo from the merchant name (no installment digits).
+      domain: logoDomain(name),
       isSingle: false,
     })
     return
@@ -152,7 +153,7 @@ function classifyLine(
     totalInstallments: 1,
     currentInstallment: 1,
     firstInstallmentDate: `${referenceMonth}-01`,
-    domain: brand?.domain ?? "",
+    domain: logoDomain(description),
     isSingle: true,
   })
 }

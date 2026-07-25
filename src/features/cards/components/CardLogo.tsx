@@ -1,4 +1,6 @@
+import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { bankDomain, brandLogoSrc } from "@/lib/brandLogo"
 
 interface CardLogoProps {
   name: string
@@ -7,16 +9,20 @@ interface CardLogoProps {
   className?: string
 }
 
-// Shows the card's uploaded logo when set, falling back to a badge in
-// the card's chosen color with its first letter — mirroring UserAvatar's
-// pattern so every "brand mark" in the app behaves consistently.
+// Shows the card's logo: an uploaded image if set, else the bank's brand
+// logo auto-detected from the card name (e.g. "Nubank" → Nubank logo), else
+// a badge in the card's color with its first letter.
 export function CardLogo({ name, color, logoUrl, className }: CardLogoProps) {
-  if (logoUrl) {
+  const [failed, setFailed] = useState(false)
+  const src = logoUrl || (!failed ? brandLogoSrc(bankDomain(name)) : "")
+
+  if (src) {
     return (
       <img
-        src={logoUrl}
+        src={src}
         alt={name}
-        className={cn("size-9 shrink-0 rounded-lg object-cover", className)}
+        onError={() => setFailed(true)}
+        className={cn("size-9 shrink-0 rounded-lg bg-white object-contain ring-1 ring-black/5", className)}
       />
     )
   }
