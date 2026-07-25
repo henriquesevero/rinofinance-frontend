@@ -3,6 +3,7 @@ import { LoginPage } from "@/features/auth/LoginPage"
 import { RegisterPage } from "@/features/auth/RegisterPage"
 import { SettingsPage } from "@/features/auth/SettingsPage"
 import { DashboardPage } from "@/features/dashboard/DashboardPage"
+import { EntriesPage } from "@/features/dashboard/EntriesPage"
 import { CardsPage } from "@/features/cards/CardsPage"
 import { CardDetailPage } from "@/features/cards/CardDetailPage"
 import { InvestmentsPage } from "@/features/investments/InvestmentsPage"
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "dashboard", element: <DashboardPage /> },
+      { path: "entradas-saidas", element: <EntriesPage /> },
       { path: "cards", element: <CardsPage /> },
       { path: "cards/:cardId", element: <CardDetailPage /> },
       { path: "investments", element: <InvestmentsPage /> },

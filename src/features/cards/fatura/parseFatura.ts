@@ -5,9 +5,34 @@ export interface ParsedInstallment {
   installmentAmount: number
   totalInstallments: number
   currentInstallment: number
-  firstInstallmentDate: string // YYYY-MM-01
+  firstInstallmentDate: string // YYYY-MM-DD (real purchase day when known)
   domain: string
   isSingle: boolean // true for one-off ("avulsa") purchases (1x)
+}
+
+// Brazilian month abbreviations as they appear on statement lines.
+const MONTH_ABBR: Record<string, number> = {
+  jan: 1, fev: 2, mar: 3, abr: 4, mai: 5, jun: 6,
+  jul: 7, ago: 8, set: 9, out: 10, nov: 11, dez: 12,
+}
+
+// Builds a full "YYYY-MM-DD" purchase date from a line's "DD / mmm" prefix,
+// inferring the year from the invoice's reference month (a month later than
+// the reference means it belongs to the previous year). Returns null when the
+// month abbreviation isn't recognized.
+function cycleDate(day: number, monthAbbr: string, referenceMonth: string): string | null {
+  const mn = MONTH_ABBR[monthAbbr.toLowerCase()]
+  if (!mn || !day || day < 1 || day > 31) return null
+  const [refY, refM] = referenceMonth.split("-").map(Number)
+  const year = mn > refM ? refY - 1 : refY
+  return `${year}-${String(mn).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+}
+
+// Replaces the day in a "YYYY-MM-01" string with the real purchase day, so an
+// installment keeps its computed first-installment month but shows the day it
+// was bought (the day is cosmetic — month totals ignore it).
+function withDay(monthFirst: string, day: string | null): string {
+  return day ? `${monthFirst.slice(0, 8)}${day}` : monthFirst
 }
 
 export interface ParsedSubscription {
@@ -119,10 +144,13 @@ function classifyLine(
   amount: number,
   referenceMonth: string,
   installmentPurchases: ParsedInstallment[],
-  subscriptions: ParsedSubscription[]
+  subscriptions: ParsedSubscription[],
+  // Real purchase date "YYYY-MM-DD" parsed from the line, when available.
+  purchaseDate: string | null = null
 ): void {
   const brand = detectBrand(description)
   const installmentMatch = description.match(INSTALLMENT_RE)
+  const day = purchaseDate ? purchaseDate.slice(8, 10) : null
 
   if (installmentMatch) {
     const current = Number(installmentMatch[1])
@@ -134,7 +162,8 @@ function classifyLine(
       installmentAmount: amount,
       totalInstallments: total,
       currentInstallment: current,
-      firstInstallmentDate: monthMinus(referenceMonth, current - 1),
+      // Keep the computed first-installment month, but carry the real day.
+      firstInstallmentDate: withDay(monthMinus(referenceMonth, current - 1), day),
       // Detect the logo from the merchant name (no installment digits).
       domain: logoDomain(name),
       isSingle: false,
@@ -152,7 +181,8 @@ function classifyLine(
     installmentAmount: amount,
     totalInstallments: 1,
     currentInstallment: 1,
-    firstInstallmentDate: `${referenceMonth}-01`,
+    // One-off: use the real purchase date when parsed, else the cycle's 1st.
+    firstInstallmentDate: purchaseDate ?? `${referenceMonth}-01`,
     domain: logoDomain(description),
     isSingle: true,
   })
@@ -201,7 +231,8 @@ export function parseFaturaLines(lines: string[]): ParsedFatura {
     }
     if (!Number.isFinite(amount) || amount <= 0) continue
 
-    classifyLine(description, amount, referenceMonth, installmentPurchases, subscriptions)
+    const purchaseDate = cycleDate(Number(match[1]), match[2], referenceMonth)
+    classifyLine(description, amount, referenceMonth, installmentPurchases, subscriptions, purchaseDate)
   }
 
   return { referenceMonth, installmentPurchases, subscriptions, notImported }

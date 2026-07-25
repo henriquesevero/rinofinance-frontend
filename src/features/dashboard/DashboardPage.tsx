@@ -1,18 +1,12 @@
 import { useEffect, useMemo } from "react"
-import { BarChart3, CalendarDays, Loader2 } from "lucide-react"
+import { CalendarDays, Loader2 } from "lucide-react"
 import { useCardsStore } from "@/features/cards/store"
 import { useCategoriesStore } from "@/features/categories/store"
 import { BudgetCard } from "./components/BudgetCard"
-import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
-import { QuickActions } from "./components/QuickActions"
-import { ExpenseSection } from "./components/ExpenseSection"
-import { IncomeSection } from "./components/IncomeSection"
-import { RecurrencesPanel } from "./components/RecurrencesPanel"
+import { FinancialOverview } from "./components/FinancialOverview"
 import { SpendingDonut } from "./components/SpendingDonut"
-import { SummaryCards } from "./components/SummaryCards"
-import { UpcomingBills } from "./components/UpcomingBills"
+import { TransactionsFeed } from "./components/TransactionsFeed"
 import { computeCategorySpending } from "./categorySpending"
-import { useChartsPrefStore } from "./chartsPrefStore"
 import { useDashboardStore } from "./store"
 
 // Current month name, e.g. "Julho de 2026" — capitalized.
@@ -29,8 +23,6 @@ export function DashboardPage() {
   const cards = useCardsStore((s) => s.cards)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const categories = useCategoriesStore((s) => s.categories)
-  const chartsHidden = useChartsPrefStore((s) => s.hidden)
-  const toggleCharts = useChartsPrefStore((s) => s.toggle)
 
   useEffect(() => {
     fetchSummary()
@@ -59,57 +51,27 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Visão Geral</h1>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
+          <p className="text-sm text-muted-foreground">Visão geral dos seus dados financeiros.</p>
+        </div>
         <span className="flex shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium">
           <CalendarDays className="size-4 text-muted-foreground" />
           {currentMonthLabel()}
         </span>
       </div>
 
-      <QuickActions />
+      {/* Pluggy-style overview: accounts, cards, investments */}
+      <FinancialOverview />
 
-      {/* hero row: budget on the left, spending donut on the right */}
+      {/* transaction feed: pick a source and see its flow */}
+      <TransactionsFeed incomes={summary.incomes} expenses={summary.expenses} />
+
+      {/* budget + spending distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
         <BudgetCard spent={spent} income={summary.totalIncome} />
         <SpendingDonut expenses={summary.expenses} incomes={summary.incomes} />
-      </div>
-
-      <UpcomingBills expenses={summary.expenses} />
-
-      <SummaryCards
-        totalIncome={summary.totalIncome}
-        totalExpense={summary.totalExpense}
-        netBalance={summary.netBalance}
-      />
-
-      {chartsHidden ? (
-        <button
-          type="button"
-          onClick={toggleCharts}
-          className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <BarChart3 className="size-3.5" />
-          Mostrar gráficos
-        </button>
-      ) : (
-        <>
-          <RecurrencesPanel />
-          <CategoryBreakdownPanel expenses={summary.expenses} />
-          <button
-            type="button"
-            onClick={toggleCharts}
-            className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <BarChart3 className="size-3.5" />
-            Ocultar gráficos
-          </button>
-        </>
-      )}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <IncomeSection incomes={summary.incomes} />
-        <ExpenseSection expenses={summary.expenses} />
       </div>
     </div>
   )
