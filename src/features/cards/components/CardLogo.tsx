@@ -22,7 +22,7 @@ export function CardLogo({ name, color, logoUrl, className }: CardLogoProps) {
         src={src}
         alt={name}
         onError={() => setFailed(true)}
-        className={cn("size-9 shrink-0 rounded-lg bg-white object-contain ring-1 ring-black/5", className)}
+        className={cn("size-9 shrink-0 rounded-lg object-cover", className)}
       />
     )
   }

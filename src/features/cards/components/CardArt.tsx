@@ -39,7 +39,7 @@ export function CardArt({ card, className }: CardArtProps) {
               src={logoSrc}
               alt={card.name}
               onError={() => setLogoFailed(true)}
-              className="h-9 max-w-[55%] rounded-md bg-white/95 object-contain p-1 shadow"
+              className="h-9 max-w-[55%] rounded-md object-contain drop-shadow-md"
             />
           ) : (
             <div className="h-6 w-8 rounded-md bg-white/70 shadow-inner" />

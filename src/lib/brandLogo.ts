@@ -2,17 +2,21 @@
 // bank accounts. Builds the image URL from a domain and resolves a bank's
 // domain from its name, so logos appear automatically without manual URLs.
 
-const LOGODEV_TOKEN = import.meta.env?.VITE_LOGODEV_TOKEN
+// Brandfetch Logo Link (CDN) client ID. It's a publishable, client-side key
+// (it appears in every logo URL), so it's safe to ship a default here; an env
+// var can still override it per environment.
+const BRANDFETCH_CLIENT = import.meta.env?.VITE_BRANDFETCH_CLIENT || "1id6tOCGJiVC9uvsmeB"
 
-// Builds the logo image URL for a domain: logo.dev (real brand logos) when a
-// token is configured, otherwise Google's favicon service (no token needed).
-// Returns "" for an empty domain.
+// Builds a high-resolution, transparent brand icon URL from Brandfetch for a
+// domain. We request the square "icon" (the brand symbol, no white plate) at
+// 2× the display size for crisp retina rendering, and `fallback/404` so an
+// unknown brand returns HTTP 404 — letting callers show their own fallback
+// instead of a generic placeholder. Returns "" for an empty domain.
 export function brandLogoSrc(domain: string, size = 64): string {
   const d = domain.trim()
   if (!d) return ""
-  return LOGODEV_TOKEN
-    ? `https://img.logo.dev/${d}?token=${LOGODEV_TOKEN}&size=${size}`
-    : `https://www.google.com/s2/favicons?domain=${d}&sz=${size >= 64 ? 64 : 32}`
+  const px = Math.min(512, Math.max(64, Math.round(size * 2)))
+  return `https://cdn.brandfetch.io/${d}/icon/w/${px}/h/${px}/fallback/404?c=${BRANDFETCH_CLIENT}`
 }
 
 function normalize(s: string): string {

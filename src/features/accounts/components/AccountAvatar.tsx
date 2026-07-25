@@ -23,7 +23,7 @@ export function AccountAvatar({ account, className }: AccountAvatarProps) {
           src={src}
           alt={account.name}
           onError={() => setFailed(true)}
-          className={cn("size-full", account.imageUrl ? "object-cover" : "bg-white object-contain p-1.5")}
+          className={cn("size-full object-cover", account.imageUrl ? "" : "rounded-lg")}
         />
       ) : (
         <div

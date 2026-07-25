@@ -1,5 +1,5 @@
 // Maps merchant keywords found in a statement line to a brand: a display
-// label, a domain for the logo.dev logo, and whether the charge is a
+// label, a domain for the Brandfetch logo, and whether the charge is a
 // recurring service (subscription) vs a one-off purchase. Matching is a
 // case-insensitive substring test against the raw description.
 interface Brand {
