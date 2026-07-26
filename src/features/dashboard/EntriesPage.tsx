@@ -56,6 +56,12 @@ export function EntriesPage() {
         netBalance={summary.netBalance}
       />
 
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <IncomeSection incomes={summary.incomes} />
+        <ExpenseSection expenses={summary.expenses} />
+      </div>
+
+      {/* charts live at the end — secondary to managing the month's lines */}
       {chartsHidden ? (
         <button
           type="button"
@@ -79,11 +85,6 @@ export function EntriesPage() {
           </button>
         </>
       )}
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <IncomeSection incomes={summary.incomes} />
-        <ExpenseSection expenses={summary.expenses} />
-      </div>
     </div>
   )
 }

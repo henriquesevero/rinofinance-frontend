@@ -179,7 +179,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                   <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
                     <MoneyValue
                       value={income.amount}
-                      className="shrink-0 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 sm:transition-opacity sm:group-hover:opacity-0"
+                      className="shrink-0 font-semibold tabular-nums text-emerald-500 sm:transition-opacity sm:group-hover:opacity-0"
                     />
                     <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
                       <button
