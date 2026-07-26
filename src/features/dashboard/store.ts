@@ -69,7 +69,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => incomeApi.createAccountLinked(name, accountId, categoryId)),
     updateIncome: (id, name, amount, categoryId) => mutate(() => incomeApi.update(id, name, amount, categoryId)),
     toggleIncome: (id) => mutate(() => incomeApi.toggle(id)),
-    toggleIncomeReceived: (id) => mutate(() => incomeApi.toggleReceived(id)),
+    toggleIncomeReceived: (id) => mutate(() => incomeApi.toggleReceived(id, useMonthStore.getState().month)),
     deleteIncome: (id) => mutate(() => incomeApi.remove(id)),
 
     createExpense: (name, amount, categoryId) => mutate(() => expenseApi.create(name, amount, categoryId)),
@@ -79,7 +79,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => expenseApi.createAccountLinked(name, accountId, categoryId)),
     updateExpense: (id, name, amount, categoryId) => mutate(() => expenseApi.update(id, name, amount, categoryId)),
     toggleExpense: (id) => mutate(() => expenseApi.toggle(id)),
-    toggleExpensePaid: (id) => mutate(() => expenseApi.togglePaid(id)),
+    toggleExpensePaid: (id) => mutate(() => expenseApi.togglePaid(id, useMonthStore.getState().month)),
     deleteExpense: (id) => mutate(() => expenseApi.remove(id)),
 
     reorderIncomes: (ids) => mutate(() => incomeApi.reorder(ids)),
@@ -99,7 +99,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
         Promise.all(
           (get().summary?.incomes ?? [])
             .filter((i) => i.received !== received)
-            .map((i) => incomeApi.toggleReceived(i.id))
+            .map((i) => incomeApi.toggleReceived(i.id, useMonthStore.getState().month))
         )
       ),
     setAllExpensesActive: (active) =>
@@ -111,7 +111,9 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
     setAllExpensesPaid: (paid) =>
       mutate(() =>
         Promise.all(
-          (get().summary?.expenses ?? []).filter((e) => e.paid !== paid).map((e) => expenseApi.togglePaid(e.id))
+          (get().summary?.expenses ?? [])
+            .filter((e) => e.paid !== paid)
+            .map((e) => expenseApi.togglePaid(e.id, useMonthStore.getState().month))
         )
       ),
   }

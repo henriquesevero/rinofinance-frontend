@@ -14,7 +14,8 @@ export const incomeApi = {
   update: (id: string, name: string, amount: number, categoryId: string) =>
     apiClient.put<Income>(`/api/incomes/${id}`, { name, amount, categoryId }),
   toggle: (id: string) => apiClient.patch<Income>(`/api/incomes/${id}/toggle`),
-  toggleReceived: (id: string) => apiClient.patch<Income>(`/api/incomes/${id}/received`),
+  toggleReceived: (id: string, month: string) =>
+    apiClient.patch<Income>(`/api/incomes/${id}/received?month=${month}`),
   remove: (id: string) => apiClient.delete(`/api/incomes/${id}`),
   reorder: (ids: string[]) => apiClient.put<void>("/api/incomes/order", { ids }),
 }
@@ -29,7 +30,7 @@ export const expenseApi = {
   update: (id: string, name: string, amount: number, categoryId: string) =>
     apiClient.put<Expense>(`/api/expenses/${id}`, { name, amount, categoryId }),
   toggle: (id: string) => apiClient.patch<Expense>(`/api/expenses/${id}/toggle`),
-  togglePaid: (id: string) => apiClient.patch<Expense>(`/api/expenses/${id}/paid`),
+  togglePaid: (id: string, month: string) => apiClient.patch<Expense>(`/api/expenses/${id}/paid?month=${month}`),
   remove: (id: string) => apiClient.delete(`/api/expenses/${id}`),
   reorder: (ids: string[]) => apiClient.put<void>("/api/expenses/order", { ids }),
 }
