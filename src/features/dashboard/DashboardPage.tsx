@@ -5,7 +5,6 @@ import { useCategoriesStore } from "@/features/categories/store"
 import { BudgetCard } from "./components/BudgetCard"
 import { FinancialOverview } from "./components/FinancialOverview"
 import { SpendingDonut } from "./components/SpendingDonut"
-import { TransactionsFeed } from "./components/TransactionsFeed"
 import { computeCategorySpending } from "./categorySpending"
 import { useDashboardStore } from "./store"
 
@@ -64,9 +63,6 @@ export function DashboardPage() {
 
       {/* financial overview: accounts, cards, investments */}
       <FinancialOverview />
-
-      {/* transaction feed: pick a source and see its flow */}
-      <TransactionsFeed incomes={summary.incomes} expenses={summary.expenses} />
 
       {/* budget + spending distribution */}
       <div className="grid gap-6 lg:grid-cols-2">

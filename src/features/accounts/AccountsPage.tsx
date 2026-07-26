@@ -52,7 +52,7 @@ export function AccountsPage() {
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2.5">
-          <Cable className="size-5 text-rose-500" />
+          <Cable className="size-5 text-cyan-500" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Conexões</h2>
           {accounts.length > 0 && (
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-500">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { CheckCircle2, ChevronDown, Circle, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowDownLeft, Check, ChevronDown, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -115,7 +115,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
               ]}
             />
           )}
-          <Button size="sm" onClick={() => setDialogState({ mode: "create" })}>
+          <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
             <Plus className="size-4" />
             Nova entrada
           </Button>
@@ -126,7 +126,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
         {incomes.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma entrada cadastrada ainda.</p>
         ) : (
-          <ul className="divide-y">
+          <ul className="max-h-[26rem] divide-y overflow-y-auto">
             {order.map((income) => {
               const hasMeta = Boolean(income.categoryId || income.accountId)
               return (
@@ -142,20 +142,21 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                   <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
                     <DragHandle
                       {...getHandleProps(income.id)}
-                      className="-ml-1 hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
+                      className="hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
                     />
                     <button
                       type="button"
                       onClick={() => handleToggleReceived(income.id)}
                       aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
-                      title={income.received ? "Recebida" : "Marcar recebida"}
-                      className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
-                    >
-                      {income.received ? (
-                        <CheckCircle2 className="size-5 text-emerald-500" />
-                      ) : (
-                        <Circle className="size-5" />
+                      title={income.received ? "Recebida (desmarcar)" : "Marcar recebida"}
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        income.received
+                          ? "bg-emerald-500 text-white"
+                          : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                       )}
+                    >
+                      {income.received ? <Check className="size-4" /> : <ArrowDownLeft className="size-4" />}
                     </button>
                     <div className="min-w-0 flex-1">
                       <p className="truncate leading-tight" title={income.name}>
@@ -172,7 +173,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                   <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
                     <MoneyValue
                       value={income.amount}
-                      className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                      className="shrink-0 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 sm:transition-opacity sm:group-hover:opacity-0"
                     />
                     <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
                       <button

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { CheckCircle2, ChevronDown, Circle, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowUpRight, Check, ChevronDown, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -164,7 +164,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
               ]}
             />
           )}
-          <Button size="sm" onClick={() => setDialogState({ mode: "create" })}>
+          <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
             <Plus className="size-4" />
             Nova saída
           </Button>
@@ -175,7 +175,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
         {expenses.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
         ) : (
-          <ul className="divide-y">
+          <ul className="max-h-[26rem] divide-y overflow-y-auto">
             {visible.map((expense) => {
               const accent = linkColor(expense)
               const cardColor = expense.cardId ? cards.find((c) => c.id === expense.cardId)?.color : undefined
@@ -195,21 +195,22 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                     {canReorder && (
                       <DragHandle
                         {...getHandleProps(expense.id)}
-                        className="-ml-1 hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
+                        className="hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block"
                       />
                     )}
                     <button
                       type="button"
                       onClick={() => handleTogglePaid(expense.id)}
                       aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
-                      title={expense.paid ? "Paga" : "Marcar paga"}
-                      className="shrink-0 text-muted-foreground/40 transition-colors hover:text-emerald-600"
-                    >
-                      {expense.paid ? (
-                        <CheckCircle2 className="size-5 text-emerald-500" />
-                      ) : (
-                        <Circle className="size-5" />
+                      title={expense.paid ? "Paga (desmarcar)" : "Marcar paga"}
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        expense.paid
+                          ? "bg-emerald-500 text-white"
+                          : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
                       )}
+                    >
+                      {expense.paid ? <Check className="size-4" /> : <ArrowUpRight className="size-4" />}
                     </button>
                     <div className="min-w-0 flex-1">
                       <p className="truncate leading-tight" title={expense.name}>
@@ -232,7 +233,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                   <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
                     <MoneyValue
                       value={expense.amount}
-                      className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                      className="shrink-0 font-semibold tabular-nums text-red-600 dark:text-red-400 sm:transition-opacity sm:group-hover:opacity-0"
                     />
                     <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
                       <button

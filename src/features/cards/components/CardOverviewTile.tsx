@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { CalendarClock, Flag, Hourglass, Repeat } from "lucide-react"
+import { CalendarClock, ChevronRight, Flag, Hourglass, Repeat } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 import { CardArt } from "./CardArt"
@@ -11,8 +11,9 @@ interface CardOverviewTileProps {
 }
 
 // One card in the overview grid: the card visual plus its month total,
-// limit usage, due-date countdown and quick status badges. The whole tile
-// links to the card's detail page.
+// limit usage, due-date countdown and quick status badges. Styled like the
+// accounts "connection" tiles — on hover it lifts, zooms slightly and gets a
+// soft blue glow. The whole tile links to the card's detail page.
 export function CardOverviewTile({ card }: CardOverviewTileProps) {
   const stats = computeCardStats(card)
   const usedPct = stats.limitUsedFraction === null ? null : Math.round(stats.limitUsedFraction * 100)
@@ -20,9 +21,9 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
   return (
     <Link
       to={`/cards/${card.id}`}
-      className="group flex flex-col gap-4 rounded-xl border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30"
+      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-[0_16px_50px_-16px_rgba(97,218,251,0.45)]"
     >
-      <CardArt card={card} className="transition-transform group-hover:-translate-y-0.5" />
+      <CardArt card={card} />
 
       <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
@@ -79,6 +80,13 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
             {stats.subscriptionCount} assinatura{stats.subscriptionCount === 1 ? "" : "s"}
           </span>
         </div>
+      </div>
+
+      <div className="mt-auto border-t border-border/60 pt-3">
+        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-cyan-500">
+          Ver detalhes
+          <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   )

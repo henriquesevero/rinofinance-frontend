@@ -79,8 +79,8 @@ function CardsCard() {
 
   return (
     <Card className="flex flex-col gap-4 p-5">
-      <SectionHeader icon={CreditCard} label="Cartões de crédito" accent="text-rose-500" />
-      <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-rose-500" />
+      <SectionHeader icon={CreditCard} label="Cartões de crédito" accent="text-red-500" />
+      <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-red-500" />
 
       {limit > 0 && (
         <div className="flex flex-col gap-1.5">
@@ -89,7 +89,7 @@ function CardsCard() {
             <span className="tabular-nums">Limite: {formatMoney(limit)}</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-rose-500" style={{ width: `${Math.min(used, 100)}%` }} />
+            <div className="h-full rounded-full bg-red-500" style={{ width: `${Math.min(used, 100)}%` }} />
           </div>
         </div>
       )}
@@ -105,7 +105,7 @@ function CardsCard() {
             </div>
             <MoneyValue
               value={c.monthlyTotal}
-              className={cn("shrink-0 text-sm font-semibold tabular-nums", c.monthlyTotal > 0 ? "text-rose-500" : "text-muted-foreground")}
+              className={cn("shrink-0 text-sm font-semibold tabular-nums", c.monthlyTotal > 0 ? "text-red-500" : "text-muted-foreground")}
             />
           </li>
         ))}

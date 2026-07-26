@@ -6,12 +6,12 @@ import type { Account } from "../types"
 // One account rendered as a "connection" card: brand logo, an
 // active status dot, the name and last-sync line, then a "Ver detalhes" CTA.
 // On hover the border glows, the whole card lifts and zooms ever so slightly,
-// and the CTA turns rose — all animated. The card links to the detail page.
+// and the CTA turns blue — all animated. The card links to the detail page.
 export function AccountTile({ account }: { account: Account }) {
   return (
     <Link
       to={`/accounts/${account.id}`}
-      className="group relative flex min-h-[13rem] flex-col overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-rose-500/40 hover:shadow-[0_16px_50px_-16px_rgba(244,63,94,0.45)]"
+      className="group relative flex min-h-[13rem] flex-col overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-[0_16px_50px_-16px_rgba(97,218,251,0.45)]"
     >
       {/* active status dot */}
       <span className="absolute right-5 top-5 size-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_2px] shadow-emerald-500/50" />
@@ -29,7 +29,7 @@ export function AccountTile({ account }: { account: Account }) {
       </div>
 
       <div className="mt-auto border-t border-border/60 pt-4">
-        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-rose-500">
+        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-cyan-500">
           Ver detalhes
           <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>
