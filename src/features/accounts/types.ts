@@ -4,9 +4,6 @@ export interface AccountPurchase {
   amount: number
   date: string
   categoryId?: string
-  // "debit" (saída) or "credit" (entrada). Synced accounts import both;
-  // manually added purchases are debits. Absent is treated as a debit.
-  direction?: "debit" | "credit"
 }
 
 export interface Account {
@@ -24,12 +21,6 @@ export interface Account {
 export interface AccountsOverview {
   accounts: Account[]
   totalBalance: number
-}
-
-export interface PluggySyncResult {
-  accountsSynced: number
-  transactionsImported: number
-  transactionsSkipped: number
 }
 
 export interface AccountInput {
