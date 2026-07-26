@@ -40,7 +40,7 @@ export function CardArt({ card, className }: CardArtProps) {
                 src={logoSrc}
                 alt={card.name}
                 onError={() => setLogoFailed(true)}
-                className="size-full scale-[1.34] object-cover"
+                className="size-full scale-[1.45] object-cover"
               />
             </span>
           ) : (

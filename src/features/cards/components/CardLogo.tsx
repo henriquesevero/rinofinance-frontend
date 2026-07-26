@@ -22,7 +22,7 @@ export function CardLogo({ name, color, logoUrl, className }: CardLogoProps) {
     // plate; this removes any white border.
     return (
       <span className={cn("block size-9 shrink-0 overflow-hidden rounded-lg", className)}>
-        <img src={src} alt={name} onError={() => setFailed(true)} className="size-full scale-[1.34] object-cover" />
+        <img src={src} alt={name} onError={() => setFailed(true)} className="size-full scale-[1.45] object-cover" />
       </span>
     )
   }

@@ -33,7 +33,7 @@ export function BrandLogo({ domain, fallbackIcon: FallbackIcon, className, size 
       <img
         src={src}
         alt={trimmedDomain}
-        className="size-full scale-[1.34] object-cover"
+        className="size-full scale-[1.45] object-cover"
         onError={() => setFailed(true)}
       />
     </span>
