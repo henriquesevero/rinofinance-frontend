@@ -3,7 +3,7 @@ import { ChevronRight, Clock } from "lucide-react"
 import { AccountAvatar } from "./AccountAvatar"
 import type { Account } from "../types"
 
-// One account rendered as a "connection" card (Pluggy-style): brand logo, an
+// One account rendered as a "connection" card: brand logo, an
 // active status dot, the name and last-sync line, then a "Ver detalhes" CTA.
 // On hover the border glows, the whole card lifts and zooms ever so slightly,
 // and the CTA turns rose — all animated. The card links to the detail page.

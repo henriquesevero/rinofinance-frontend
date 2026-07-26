@@ -62,7 +62,7 @@ export function DashboardPage() {
         </span>
       </div>
 
-      {/* Pluggy-style overview: accounts, cards, investments */}
+      {/* financial overview: accounts, cards, investments */}
       <FinancialOverview />
 
       {/* transaction feed: pick a source and see its flow */}

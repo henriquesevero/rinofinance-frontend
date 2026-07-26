@@ -14,7 +14,7 @@ const pctOf = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100
 const fmtPct = (v: number) => `${v.toFixed(1)}%`
 
 // The three-card financial overview at the top of the dashboard — bank
-// accounts, credit cards and investments — modeled on the reference (Pluggy).
+// accounts, credit cards and investments.
 export function FinancialOverview() {
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const fetchAssets = useInvestmentsStore((s) => s.fetchAssets)

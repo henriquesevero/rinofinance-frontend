@@ -32,7 +32,7 @@ function dayHeading(dateStr: string) {
   return { day: d, weekday: titleCase(wd) }
 }
 
-// A Pluggy-style transaction feed: pick a source (account or card) or all,
+// A transaction feed: pick a source (account or card) or all,
 // filter by type/search, page by month, and see the day-grouped flow.
 export function TransactionsFeed({ incomes, expenses }: TransactionsFeedProps) {
   const accounts = useAccountsStore((s) => s.accounts)
@@ -160,7 +160,7 @@ export function TransactionsFeed({ incomes, expenses }: TransactionsFeedProps) {
         </div>
       </div>
 
-      {/* feed — fixed height, scrolls internally like Pluggy */}
+      {/* feed — fixed height, scrolls internally */}
       {days.length === 0 && recurring.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">Nenhuma transação encontrada.</p>
       ) : (
