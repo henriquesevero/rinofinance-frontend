@@ -94,12 +94,12 @@ export function CardsPage() {
       {/* total geral — compacto e discreto */}
       <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[13rem]">
         <div className="flex items-center gap-1.5">
-          <CreditCard className="size-3.5 text-red-500" />
+          <CreditCard className="size-3.5 text-cyan-500" />
           <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Total geral · mês atual
           </h2>
         </div>
-        <MoneyValue value={grandTotal} className="text-xl font-bold tracking-tight tabular-nums text-red-500" />
+        <MoneyValue value={grandTotal} className="text-xl font-bold tracking-tight tabular-nums text-cyan-500" />
       </Card>
 
       {order.length === 0 ? (

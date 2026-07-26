@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import { CreditCard } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { BrandLogo } from "./BrandLogo"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatMoney } from "@/lib/money"
 import { toErrorMessage } from "@/lib/errors"
@@ -28,6 +30,14 @@ interface ImportFaturaDialogProps {
 
 type Stage = "select" | "parsing" | "preview" | "importing"
 
+// Only these two invoice formats are understood by the parsers. The chosen
+// source decides which parser runs, instead of guessing from the file type.
+type Source = "itau" | "nubank"
+const SOURCES: Record<Source, { label: string; domain: string; fileHint: string; accept: string }> = {
+  itau: { label: "Itaú", domain: "itau.com.br", fileHint: "Fatura em PDF", accept: "application/pdf" },
+  nubank: { label: "Nubank", domain: "nubank.com.br", fileHint: "Fatura em CSV", accept: ".csv,text/csv" },
+}
+
 // Rows shown in the preview, each with a checkbox so the user can drop
 // mis-read or unwanted lines before confirming.
 interface PreviewInstallment extends ParsedInstallment {
@@ -52,12 +62,14 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     if (categories.length === 0) fetchCategories()
   }, [categories.length, fetchCategories])
   const [stage, setStage] = useState<Stage>("select")
+  const [source, setSource] = useState<Source | null>(null)
   const [installments, setInstallments] = useState<PreviewInstallment[]>([])
   const [subscriptions, setSubscriptions] = useState<PreviewSubscription[]>([])
   const [notImported, setNotImported] = useState<SkippedLine[]>([])
 
   function reset() {
     setStage("select")
+    setSource(null)
     setInstallments([])
     setSubscriptions([])
     setNotImported([])
@@ -71,9 +83,9 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   async function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ""
-    if (!file) return
+    if (!file || !source) return
 
-    const isCsv = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv"
+    const isCsv = source === "nubank"
 
     setStage("parsing")
     try {
@@ -192,23 +204,56 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
           <DialogTitle>Importar fatura — {cardName}</DialogTitle>
         </DialogHeader>
 
-        {(stage === "select" || stage === "parsing") && (
-          <div className="flex flex-col items-center gap-4 py-8 text-center">
+        {/* Step 1 — pick the bank. Only Itaú and Nubank are supported. */}
+        {stage === "select" && source === null && (
+          <div className="flex flex-col gap-4 py-4">
+            <p className="text-center text-sm text-muted-foreground">
+              De qual banco é esta fatura? Só reconhecemos os formatos do <strong>Itaú</strong> e do{" "}
+              <strong>Nubank</strong>.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(SOURCES) as Source[]).map((key) => {
+                const s = SOURCES[key]
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSource(key)}
+                    className="flex flex-col items-center gap-2 rounded-xl border p-5 transition-colors hover:border-foreground/30 hover:bg-muted/50"
+                  >
+                    <BrandLogo domain={s.domain} fallbackIcon={CreditCard} size={96} className="size-12 rounded-lg" />
+                    <span className="text-sm font-medium">{s.label}</span>
+                    <span className="text-xs text-muted-foreground">{s.fileHint}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 — pick the file for the chosen bank. */}
+        {source !== null && (stage === "select" || stage === "parsing") && (
+          <div className="flex flex-col items-center gap-4 py-6 text-center">
+            <BrandLogo domain={SOURCES[source].domain} fallbackIcon={CreditCard} size={96} className="size-12 rounded-lg" />
             <p className="text-sm text-muted-foreground">
-              Selecione a fatura deste cartão — <strong>PDF</strong> (ex.: Itaú) ou <strong>CSV</strong> (ex.:
-              Nubank). As compras parceladas, avulsas e assinaturas serão detectadas automaticamente para você
-              revisar antes de importar.
+              Selecione o arquivo da fatura do <strong>{SOURCES[source].label}</strong> ({SOURCES[source].fileHint}). As
+              compras serão detectadas automaticamente para você revisar antes de importar.
             </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept="application/pdf,.csv,text/csv"
+              accept={SOURCES[source].accept}
               className="hidden"
               onChange={handleFile}
             />
-            <Button disabled={stage === "parsing"} onClick={() => fileInputRef.current?.click()}>
-              {stage === "parsing" ? "Lendo fatura..." : "Selecionar fatura"}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setSource(null)} disabled={stage === "parsing"}>
+                Trocar banco
+              </Button>
+              <Button disabled={stage === "parsing"} onClick={() => fileInputRef.current?.click()}>
+                {stage === "parsing" ? "Lendo fatura..." : "Selecionar arquivo"}
+              </Button>
+            </div>
           </div>
         )}
 

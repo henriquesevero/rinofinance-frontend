@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, Eraser, FileUp, Flag, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
+import { ChevronDown, Eraser, FileUp, Flag, Layers, MoreHorizontal, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
+import { BulkActionsMenu, type SortConfig } from "@/components/BulkActionsMenu"
 import { toErrorMessage } from "@/lib/errors"
 import { cn } from "@/lib/utils"
 import {
@@ -26,7 +32,6 @@ import { useCategoriesStore } from "@/features/categories/store"
 import { DragHandle } from "@/components/DragHandle"
 import { useReorder } from "@/lib/useReorder"
 import { BrandLogo } from "./BrandLogo"
-import { CardLogo } from "./CardLogo"
 import { ClearCardDialog } from "./ClearCardDialog"
 import { ImportFaturaDialog } from "./ImportFaturaDialog"
 import { InstallmentPurchaseFormDialog } from "./InstallmentPurchaseFormDialog"
@@ -47,14 +52,18 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
   const [avulsaSortKey, setAvulsaSortKey] = useState<PurchaseSortKey>("default")
   const [subSortKey, setSubSortKey] = useState<SubscriptionSortKey>("default")
   const [collapsed, setCollapsed] = useState({ avulsas: false, parceladas: false, subs: false })
-  const toggleCollapsed = (k: "avulsas" | "parceladas" | "subs") =>
-    setCollapsed((c) => ({ ...c, [k]: !c[k] }))
+  const toggleCollapsed = (k: "avulsas" | "parceladas" | "subs") => setCollapsed((c) => ({ ...c, [k]: !c[k] }))
 
   const deleteCard = useCardsStore((s) => s.deleteCard)
   const createInstallmentPurchase = useCardsStore((s) => s.createInstallmentPurchase)
   const updateInstallmentPurchase = useCardsStore((s) => s.updateInstallmentPurchase)
   const toggleInstallmentPurchaseFlag = useCardsStore((s) => s.toggleInstallmentPurchaseFlag)
   const deleteInstallmentPurchase = useCardsStore((s) => s.deleteInstallmentPurchase)
+  const createSubscription = useCardsStore((s) => s.createSubscription)
+  const updateSubscription = useCardsStore((s) => s.updateSubscription)
+  const deleteSubscription = useCardsStore((s) => s.deleteSubscription)
+  const reorderInstallmentPurchases = useCardsStore((s) => s.reorderInstallmentPurchases)
+  const reorderSubscriptions = useCardsStore((s) => s.reorderSubscriptions)
 
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
@@ -68,37 +77,21 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
   }, [categories])
 
   const avulsas = useMemo(
-    () =>
-      sortPurchases(
-        card.installmentPurchases.filter((p) => p.totalInstallments === 1),
-        avulsaSortKey,
-        categoryName
-      ),
+    () => sortPurchases(card.installmentPurchases.filter((p) => p.totalInstallments === 1), avulsaSortKey, categoryName),
     [card.installmentPurchases, avulsaSortKey, categoryName]
   )
   const parceladas = useMemo(
-    () =>
-      sortPurchases(
-        card.installmentPurchases.filter((p) => p.totalInstallments > 1),
-        sortKey,
-        categoryName
-      ),
+    () => sortPurchases(card.installmentPurchases.filter((p) => p.totalInstallments > 1), sortKey, categoryName),
     [card.installmentPurchases, sortKey, categoryName]
   )
   const sortedSubscriptions = useMemo(
     () => sortSubscriptions(card.subscriptions, subSortKey, categoryName),
     [card.subscriptions, subSortKey, categoryName]
   )
-  const createSubscription = useCardsStore((s) => s.createSubscription)
-  const updateSubscription = useCardsStore((s) => s.updateSubscription)
-  const deleteSubscription = useCardsStore((s) => s.deleteSubscription)
-  const reorderInstallmentPurchases = useCardsStore((s) => s.reorderInstallmentPurchases)
-  const reorderSubscriptions = useCardsStore((s) => s.reorderSubscriptions)
 
-  // Manual reordering only applies to the "Ordem padrão" (position) sort;
-  // other sorts are computed views. Avulsas and parceladas share one
-  // entity, so each group persists the full purchase order with the other
-  // group left in place.
+  // Manual reordering only applies to the "Ordem padrão" (position) sort.
+  // Avulsas and parceladas share one entity, so each group persists the full
+  // purchase order with the other group left in place.
   const canReorderAvulsas = avulsaSortKey === "default"
   const canReorderParceladas = sortKey === "default"
   const canReorderSubs = subSortKey === "default"
@@ -146,75 +139,71 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
     }
   }
 
+  const avulsaSort: SortConfig | undefined =
+    avulsas.length > 1
+      ? { value: avulsaSortKey, onChange: (v) => setAvulsaSortKey((v as PurchaseSortKey) ?? "default"), options: ONE_OFF_SORT_OPTIONS }
+      : undefined
+  const parceladaSort: SortConfig | undefined =
+    parceladas.length > 1
+      ? { value: sortKey, onChange: (v) => setSortKey((v as PurchaseSortKey) ?? "default"), options: PURCHASE_SORT_OPTIONS }
+      : undefined
+  const subSort: SortConfig | undefined =
+    card.subscriptions.length > 1
+      ? { value: subSortKey, onChange: (v) => setSubSortKey((v as SubscriptionSortKey) ?? "default"), options: SUBSCRIPTION_SORT_OPTIONS }
+      : undefined
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-3">
-          <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} />
-          <CardTitle className="truncate">{card.name}</CardTitle>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" onClick={() => setIsImporting(true)}>
-            <FileUp className="size-4" />
-            Importar fatura
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsClearing(true)}>
-            <Eraser className="size-4" />
-            Limpar
-          </Button>
-          <Button variant="ghost" size="icon" aria-label="Remover cartão" onClick={handleDeleteCard}>
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <button
-                type="button"
-                onClick={() => toggleCollapsed("avulsas")}
-                aria-expanded={!collapsed.avulsas}
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
-              >
-                <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", collapsed.avulsas && "-rotate-90")}
-                />
-                <ShoppingBag className="size-4" />
-                Compras avulsas
-              </button>
-              <div className="flex items-center gap-2">
-                {avulsas.length > 1 && (
-                  <Select
-                    value={avulsaSortKey}
-                    onValueChange={(v) => setAvulsaSortKey((v as PurchaseSortKey) ?? "default")}
-                  >
-                    <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[140px] sm:flex-none" aria-label="Ordenar avulsas">
-                      <SelectValue>
-                        {(value: string | null) =>
-                          ONE_OFF_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ONE_OFF_SORT_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <Button variant="outline" size="sm" onClick={() => setPurchaseDialog({ mode: "create", oneOff: true })}>
-                  <Plus className="size-4" />
-                  Nova avulsa
-                </Button>
-              </div>
-            </div>
-            {collapsed.avulsas ? null : avulsas.length === 0 ? (
+    <div className="flex flex-col gap-6">
+      {/* toolbar: primary action + a discreet menu for destructive ones */}
+      <div className="flex items-center justify-end gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={() => setIsImporting(true)}
+          aria-label="Importar fatura"
+          title="Importar fatura"
+        >
+          <FileUp className="size-4" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-8" aria-label="Mais opções do cartão" title="Mais opções">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setIsClearing(true)}>
+              <Eraser className="size-4" />
+              Limpar fatura
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDeleteCard} className="text-destructive">
+              <Trash2 className="size-4" />
+              Excluir cartão
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card className="flex flex-col gap-4 p-5">
+          <GroupHeader
+            icon={ShoppingBag}
+            title="Compras avulsas"
+            count={avulsas.length}
+            collapsed={collapsed.avulsas}
+            onToggle={() => toggleCollapsed("avulsas")}
+            sort={avulsaSort}
+            onAdd={() => setPurchaseDialog({ mode: "create", oneOff: true })}
+            addLabel="Nova compra avulsa"
+          />
+          {!collapsed.avulsas &&
+            (avulsas.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma compra avulsa.</p>
             ) : (
-              <ul className="flex flex-col gap-1">
+              <ul className="scrollbar-hide -mx-2 flex max-h-[22rem] flex-col gap-1 overflow-y-auto px-2">
                 {avulsasDnd.order.map((purchase) => (
                   <PurchaseRow
                     key={purchase.id}
@@ -228,52 +217,25 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                   />
                 ))}
               </ul>
-            )}
-          </section>
+            ))}
+        </Card>
 
-          <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <button
-                type="button"
-                onClick={() => toggleCollapsed("parceladas")}
-                aria-expanded={!collapsed.parceladas}
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
-              >
-                <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", collapsed.parceladas && "-rotate-90")}
-                />
-                <ShoppingBag className="size-4" />
-                Compras parceladas
-              </button>
-              <div className="flex items-center gap-2">
-                {parceladas.length > 1 && (
-                  <Select value={sortKey} onValueChange={(v) => setSortKey((v as PurchaseSortKey) ?? "default")}>
-                    <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[150px] sm:flex-none" aria-label="Ordenar compras">
-                      <SelectValue>
-                        {(value: string | null) =>
-                          PURCHASE_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
-                        }
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PURCHASE_SORT_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <Button variant="outline" size="sm" onClick={() => setPurchaseDialog({ mode: "create", oneOff: false })}>
-                  <Plus className="size-4" />
-                  Nova compra
-                </Button>
-              </div>
-            </div>
-            {collapsed.parceladas ? null : parceladas.length === 0 ? (
+        <Card className="flex flex-col gap-4 p-5">
+          <GroupHeader
+            icon={Layers}
+            title="Compras parceladas"
+            count={parceladas.length}
+            collapsed={collapsed.parceladas}
+            onToggle={() => toggleCollapsed("parceladas")}
+            sort={parceladaSort}
+            onAdd={() => setPurchaseDialog({ mode: "create", oneOff: false })}
+            addLabel="Nova compra parcelada"
+          />
+          {!collapsed.parceladas &&
+            (parceladas.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nenhuma compra parcelada.</p>
             ) : (
-              <ul className="flex flex-col gap-1">
+              <ul className="scrollbar-hide -mx-2 flex max-h-[22rem] flex-col gap-1 overflow-y-auto px-2">
                 {parceladasDnd.order.map((purchase) => (
                   <PurchaseRow
                     key={purchase.id}
@@ -287,72 +249,58 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                   />
                 ))}
               </ul>
-            )}
-          </section>
-        </div>
+            ))}
+        </Card>
+      </div>
 
-        <section className="flex min-w-0 flex-col gap-3 rounded-lg border p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <button
-              type="button"
-              onClick={() => toggleCollapsed("subs")}
-              aria-expanded={!collapsed.subs}
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground"
-            >
-              <ChevronDown
-                className={cn("size-4 shrink-0 transition-transform", collapsed.subs && "-rotate-90")}
-              />
-              <Repeat className="size-4" />
-              Assinaturas mensais
-            </button>
-            <div className="flex items-center gap-2">
-              {card.subscriptions.length > 1 && (
-                <Select
-                  value={subSortKey}
-                  onValueChange={(v) => setSubSortKey((v as SubscriptionSortKey) ?? "default")}
-                >
-                  <SelectTrigger size="sm" className="min-w-0 flex-1 sm:w-[140px] sm:flex-none" aria-label="Ordenar assinaturas">
-                    <SelectValue>
-                      {(value: string | null) =>
-                        SUBSCRIPTION_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SUBSCRIPTION_SORT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button variant="outline" size="sm" onClick={() => setSubscriptionDialog({ mode: "create" })}>
-                <Plus className="size-4" />
-                Nova assinatura
-              </Button>
-            </div>
-          </div>
-          {collapsed.subs ? null : card.subscriptions.length === 0 ? (
+      <Card className="flex flex-col gap-4 p-5">
+        <GroupHeader
+          icon={Repeat}
+          title="Assinaturas mensais"
+          count={card.subscriptions.length}
+          collapsed={collapsed.subs}
+          onToggle={() => toggleCollapsed("subs")}
+          sort={subSort}
+          onAdd={() => setSubscriptionDialog({ mode: "create" })}
+          addLabel="Nova assinatura"
+        />
+        {!collapsed.subs &&
+          (card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <ul className="scrollbar-hide grid max-h-[22rem] grid-cols-2 gap-2.5 overflow-y-auto sm:grid-cols-3 lg:grid-cols-5">
               {subsDnd.order.map((subscription) => (
                 <li
                   key={subscription.id}
                   {...subsDnd.getItemProps(subscription.id)}
                   className={cn(
-                    "group relative flex flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition-colors hover:border-foreground/20",
+                    "group relative flex items-center gap-2.5 rounded-lg border bg-card p-2.5 transition-colors hover:border-foreground/20",
                     subsDnd.draggingId === subscription.id && "opacity-40"
                   )}
                 >
                   {canReorderSubs && (
                     <DragHandle
                       {...subsDnd.getHandleProps(subscription.id)}
-                      className="absolute left-1 top-1 opacity-0 group-hover:opacity-100"
+                      className="absolute left-0.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100"
                     />
                   )}
-                  <div className="absolute right-0.5 top-0.5 flex opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+                  <BrandLogo
+                    domain={logoDomain(subscription.name, subscription.domain)}
+                    fallbackIcon={Repeat}
+                    size={64}
+                    className="size-9 shrink-0 rounded-md"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium" title={subscription.name}>
+                      {subscription.name}
+                    </p>
+                    <MoneyValue
+                      value={subscription.monthlyAmount}
+                      className="text-xs font-medium text-muted-foreground tabular-nums"
+                    />
+                  </div>
+                  {/* hover actions overlay the value area, keeping the tile compact */}
+                  <div className="absolute inset-y-0 right-0 flex items-center gap-0.5 rounded-r-lg bg-card pl-4 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:bg-transparent [@media(hover:none)]:pl-0 [@media(hover:none)]:opacity-100">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -372,35 +320,13 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
                       <Trash2 className="size-3.5" />
                     </Button>
                   </div>
-                  <BrandLogo
-                    domain={logoDomain(subscription.name, subscription.domain)}
-                    fallbackIcon={Repeat}
-                    size={64}
-                    className="size-10 rounded-lg"
-                  />
-                  <div className="w-full min-w-0">
-                    <p className="truncate text-sm font-medium" title={subscription.name}>
-                      {subscription.name}
-                    </p>
-                    <MoneyValue
-                      value={subscription.monthlyAmount}
-                      className="text-sm font-semibold tabular-nums"
-                    />
-                  </div>
                 </li>
               ))}
             </ul>
-          )}
-        </section>
-      </CardContent>
+          ))}
+      </Card>
 
-      <ImportFaturaDialog
-        open={isImporting}
-        onOpenChange={setIsImporting}
-        cardId={card.id}
-        cardName={card.name}
-      />
-
+      <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} />
       <ClearCardDialog open={isClearing} onOpenChange={setIsClearing} card={card} />
 
       <InstallmentPurchaseFormDialog
@@ -439,7 +365,46 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
           }
         }}
       />
-    </Card>
+    </div>
+  )
+}
+
+// Header row shared by the three groups: a collapse toggle (chevron + icon +
+// title + count) and, on the right, a discreet "..." sort menu plus a "+".
+function GroupHeader({
+  icon: Icon,
+  title,
+  count,
+  collapsed,
+  onToggle,
+  sort,
+  onAdd,
+  addLabel,
+}: {
+  icon: typeof ShoppingBag
+  title: string
+  count: number
+  collapsed: boolean
+  onToggle: () => void
+  sort?: SortConfig
+  onAdd: () => void
+  addLabel: string
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <button type="button" onClick={onToggle} aria-expanded={!collapsed} className="flex min-w-0 items-center gap-2 text-left">
+        <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")} />
+        <Icon className="size-4 shrink-0 text-muted-foreground" />
+        <span className="truncate text-sm font-semibold">{title}</span>
+        {count > 0 && <span className="shrink-0 text-xs text-muted-foreground">({count})</span>}
+      </button>
+      <div className="flex shrink-0 items-center gap-1">
+        {sort && <BulkActionsMenu groups={[]} sort={sort} />}
+        <Button variant="ghost" size="icon" className="size-8" onClick={onAdd} aria-label={addLabel} title={addLabel}>
+          <Plus className="size-4" />
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -468,13 +433,13 @@ function PurchaseRow({
     <li
       {...itemProps}
       className={cn(
-        "flex flex-col gap-1 rounded-md px-2 py-2 sm:flex-row sm:items-center sm:gap-3",
+        "group relative flex flex-col gap-1 rounded-md px-2 py-2 sm:flex-row sm:items-center sm:gap-3",
         purchase.flagged ? "bg-red-500/10 hover:bg-red-500/15" : "hover:bg-muted/50",
         dragging && "opacity-40"
       )}
     >
       <div className="flex min-w-0 items-center gap-3 sm:flex-1">
-        {handleProps && <DragHandle {...handleProps} />}
+        {handleProps && <DragHandle {...handleProps} className="hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block" />}
         <BrandLogo domain={logoDomain(purchase.name, purchase.domain)} fallbackIcon={ShoppingBag} />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
@@ -496,21 +461,25 @@ function PurchaseRow({
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 pl-11 sm:shrink-0 sm:justify-end sm:pl-0">
-        <MoneyValue value={purchase.installmentAmount} className="font-medium tabular-nums" />
-        <div className="flex shrink-0 items-center">
+      <div className="flex items-center justify-between gap-2 pl-11 sm:contents sm:pl-0">
+        <MoneyValue
+          value={purchase.installmentAmount}
+          className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+        />
+        <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <Button
             variant="ghost"
             size="icon"
+            className="size-8"
             aria-label={purchase.flagged ? "Remover atenção" : "Marcar em atenção"}
             onClick={onToggleFlag}
           >
             <Flag className={cn("size-4", purchase.flagged && "fill-red-500 text-red-500")} />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Editar compra" onClick={onEdit}>
+          <Button variant="ghost" size="icon" className="size-8" aria-label="Editar compra" onClick={onEdit}>
             <Pencil className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Remover compra" onClick={onDelete}>
+          <Button variant="ghost" size="icon" className="size-8" aria-label="Remover compra" onClick={onDelete}>
             <Trash2 className="size-4" />
           </Button>
         </div>
