@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react"
+import { Check, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -8,29 +8,47 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 export interface BulkActionGroup {
   label: string
   actions: { label: string; run: () => void }[]
 }
 
-// A proper dropdown menu for bulk "mark all" actions, grouped by field.
-// The menu auto-sizes to its content, so long labels are never clipped.
-export function BulkActionsMenu({ groups }: { groups: BulkActionGroup[] }) {
+export interface SortConfig {
+  value: string
+  onChange: (value: string) => void
+  options: { value: string; label: string }[]
+}
+
+// A single discreet "..." menu holding a section's secondary controls:
+// an optional sort (single choice, checkmarked) plus grouped bulk "mark all"
+// actions — so the section header stays clean (just title · ... · +).
+export function BulkActionsMenu({ groups, sort }: { groups: BulkActionGroup[]; sort?: SortConfig }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm">
-            Marcar tudo
-            <ChevronDown className="size-4" />
+          <Button variant="ghost" size="icon" className="size-8" aria-label="Mais opções" title="Mais opções">
+            <MoreHorizontal className="size-4" />
           </Button>
         }
       />
       <DropdownMenuContent>
+        {sort && (
+          <>
+            <DropdownMenuLabel>Ordenar</DropdownMenuLabel>
+            {sort.options.map((o) => (
+              <DropdownMenuItem key={o.value} onClick={() => sort.onChange(o.value)}>
+                <Check className={cn("size-4", sort.value === o.value ? "opacity-100" : "opacity-0")} />
+                {o.label}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
         {groups.map((group, i) => (
           <div key={group.label}>
-            {i > 0 && <DropdownMenuSeparator />}
+            {(sort || i > 0) && <DropdownMenuSeparator />}
             <DropdownMenuLabel>{group.label}</DropdownMenuLabel>
             {group.actions.map((action) => (
               <DropdownMenuItem key={action.label} onClick={action.run}>

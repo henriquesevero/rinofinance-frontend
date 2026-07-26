@@ -81,7 +81,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
   }
 
   return (
-    <Card className="border-l-4 border-l-emerald-500/60">
+    <Card>
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
@@ -94,7 +94,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
           />
           <CardTitle>Entradas do mês</CardTitle>
         </button>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1">
           {incomes.length > 0 && (
             <BulkActionsMenu
               groups={[
@@ -132,7 +132,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
         {incomes.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma entrada cadastrada ainda.</p>
         ) : (
-          <ul className="max-h-[26rem] divide-y overflow-y-auto">
+          <ul className="scrollbar-hide max-h-[26rem] divide-y overflow-y-auto">
             {order.map((income) => {
               const hasMeta = Boolean(income.categoryId || income.accountId)
               return (

@@ -3,7 +3,6 @@ import { ArrowUpRight, Check, ChevronDown, CreditCard, Pencil, Plus, Power, Tras
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MoneyValue } from "@/components/MoneyValue"
 import { BulkActionsMenu } from "@/components/BulkActionsMenu"
 import { DragHandle } from "@/components/DragHandle"
@@ -112,7 +111,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   }
 
   return (
-    <Card className="border-l-4 border-l-red-500/60">
+    <Card>
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
@@ -125,27 +124,18 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           />
           <CardTitle>Saídas do mês</CardTitle>
         </button>
-        <div className="flex flex-wrap items-center gap-2">
-          {expenses.length > 1 && (
-            <Select value={sortKey} onValueChange={(v) => setSortKey((v as ExpenseSortKey) ?? "default")}>
-              <SelectTrigger size="sm" className="w-[136px]" aria-label="Ordenar saídas">
-                <SelectValue>
-                  {(value: string | null) =>
-                    EXPENSE_SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Ordenar"
-                  }
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {EXPENSE_SORT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+        <div className="flex items-center gap-1">
           {expenses.length > 0 && (
             <BulkActionsMenu
+              sort={
+                expenses.length > 1
+                  ? {
+                      value: sortKey,
+                      onChange: (v) => setSortKey((v as ExpenseSortKey) ?? "default"),
+                      options: EXPENSE_SORT_OPTIONS,
+                    }
+                  : undefined
+              }
               groups={[
                 {
                   label: "Pago",
@@ -181,7 +171,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
         {expenses.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
         ) : (
-          <ul className="max-h-[26rem] divide-y overflow-y-auto">
+          <ul className="scrollbar-hide max-h-[26rem] divide-y overflow-y-auto">
             {visible.map((expense) => {
               const accent = linkColor(expense)
               const cardColor = expense.cardId ? cards.find((c) => c.id === expense.cardId)?.color : undefined

@@ -172,3 +172,12 @@
 [data-sonner-toast][data-type="success"] {
   --normal-border: color-mix(in oklch, var(--primary) 45%, var(--border));
 }
+
+/* Hide the scrollbar while keeping the element scrollable (wheel/touch). */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
