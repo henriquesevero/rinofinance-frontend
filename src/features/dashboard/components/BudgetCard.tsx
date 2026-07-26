@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Check, Pencil, Sparkles, X } from "lucide-react"
+import { Check, Pencil, Sparkles, Wallet, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,14 +67,19 @@ export function BudgetCard({ spent, income }: BudgetCardProps) {
     <Card className="relative flex flex-col gap-4 overflow-hidden p-5 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">Você ainda pode gastar</p>
+          <div className="flex items-center gap-2">
+            <Wallet className="size-4 text-emerald-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Você ainda pode gastar
+            </h2>
+          </div>
           {budget > 0 ? (
-            <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
               <MoneyValue
                 value={Math.max(remaining, 0)}
                 className={cn(
-                  "text-3xl font-bold tracking-tight tabular-nums sm:text-4xl",
-                  remaining < 0 && "text-destructive"
+                  "text-3xl font-bold tracking-tight tabular-nums",
+                  remaining < 0 ? "text-red-500" : "text-emerald-500"
                 )}
               />
               <span className="text-sm text-muted-foreground tabular-nums">/ {formatMoney(budget)}</span>

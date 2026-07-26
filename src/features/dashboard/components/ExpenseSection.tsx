@@ -245,17 +245,15 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                       >
                         <Power className={cn("size-4", expense.active ? "text-emerald-500" : "text-muted-foreground/50")} />
                       </button>
-                      {!expense.cardId && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          aria-label="Editar saída"
-                          onClick={() => setDialogState({ mode: "edit", expense })}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        aria-label="Editar saída"
+                        onClick={() => setDialogState({ mode: "edit", expense })}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

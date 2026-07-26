@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
-import { TrendingDown, TrendingUp } from "lucide-react"
+import { PieChart, TrendingDown, TrendingUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
 import { CategoryIcon } from "@/features/categories/categoryIcons"
-import { useCardsStore } from "@/features/cards/store"
 import { useCategoriesStore } from "@/features/categories/store"
 import { cn } from "@/lib/utils"
-import { computeCategorySpending, type CategorySlice } from "../categorySpending"
+import type { CategorySlice } from "../categorySpending"
 import { monthKey, previousTotals, recordSnapshot, trendFor } from "../spendingHistory"
 import type { Expense, Income } from "../types"
 
@@ -21,7 +20,6 @@ const UNCATEGORIZED = { id: "__none__", name: "Sem categoria", color: "#9CA3AF" 
 // with a ranked list (share, value, and a real month-over-month trend arrow).
 // The Gastos/Entradas toggle flips it to income by category.
 export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
-  const cards = useCardsStore((s) => s.cards)
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const [mode, setMode] = useState<"gastos" | "entradas">("gastos")
@@ -30,10 +28,25 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
     if (categories.length === 0) fetchCategories()
   }, [categories.length, fetchCategories])
 
-  const expenseData = useMemo(
-    () => computeCategorySpending(cards, expenses, categories),
-    [cards, expenses, categories]
-  )
+  // The spending distribution comes straight from the expenses ("saídas")
+  // defined on the Entradas & Saídas screen, grouped by category (active
+  // ones only) — same shape as the income breakdown below.
+  const expenseData = useMemo(() => {
+    const byId = new Map(categories.map((c) => [c.id, c]))
+    const totals = new Map<string, number>()
+    for (const e of expenses) {
+      if (!e.active) continue
+      const key = e.categoryId || UNCATEGORIZED.id
+      totals.set(key, (totals.get(key) ?? 0) + e.amount)
+    }
+    const slices: CategorySlice[] = [...totals.entries()]
+      .map(([id, total]) => {
+        const cat = byId.get(id)
+        return cat ? { id: cat.id, name: cat.name, color: cat.color, icon: cat.icon, total } : { ...UNCATEGORIZED, total }
+      })
+      .sort((a, b) => b.total - a.total)
+    return { slices, total: slices.reduce((s, x) => s + x.total, 0) }
+  }, [expenses, categories])
 
   // Income grouped by category, mirroring the expense breakdown's shape.
   const incomeData = useMemo(() => {
@@ -82,7 +95,12 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
   return (
     <Card className="flex flex-col gap-5 p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">Distribuição dos {mode === "gastos" ? "gastos" : "entradas"}</h2>
+        <div className="flex items-center gap-2">
+          <PieChart className={cn("size-4", mode === "gastos" ? "text-red-500" : "text-emerald-500")} />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Distribuição dos {mode === "gastos" ? "gastos" : "entradas"}
+          </h2>
+        </div>
         <div className="flex shrink-0 rounded-lg bg-muted p-0.5 text-xs font-medium">
           {(["gastos", "entradas"] as const).map((m) => (
             <button

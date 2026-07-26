@@ -1,11 +1,9 @@
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { CalendarDays, Loader2 } from "lucide-react"
 import { useCardsStore } from "@/features/cards/store"
-import { useCategoriesStore } from "@/features/categories/store"
 import { BudgetCard } from "./components/BudgetCard"
 import { FinancialOverview } from "./components/FinancialOverview"
 import { SpendingDonut } from "./components/SpendingDonut"
-import { computeCategorySpending } from "./categorySpending"
 import { useDashboardStore } from "./store"
 
 // Current month name, e.g. "Julho de 2026" — capitalized.
@@ -19,19 +17,12 @@ export function DashboardPage() {
   const isLoading = useDashboardStore((s) => s.isLoading)
   const error = useDashboardStore((s) => s.error)
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
-  const cards = useCardsStore((s) => s.cards)
   const fetchCards = useCardsStore((s) => s.fetchCards)
-  const categories = useCategoriesStore((s) => s.categories)
 
   useEffect(() => {
     fetchSummary()
     fetchCards()
   }, [fetchSummary, fetchCards])
-
-  const spent = useMemo(
-    () => (summary ? computeCategorySpending(cards, summary.expenses, categories).total : 0),
-    [cards, summary, categories]
-  )
 
   if (isLoading && !summary) {
     return (
@@ -47,6 +38,10 @@ export function DashboardPage() {
   }
 
   if (!summary) return null
+
+  // Spent = sum of the month's active expenses ("saídas"), matching the
+  // spending-distribution donut so both figures agree.
+  const spent = summary.expenses.reduce((sum, e) => (e.active ? sum + e.amount : sum), 0)
 
   return (
     <div className="flex flex-col gap-6">

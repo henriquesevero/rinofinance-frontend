@@ -1,4 +1,5 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowDownLeft, ArrowUpRight, Wallet } from "lucide-react"
+import { Card } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 
@@ -8,37 +9,41 @@ interface SummaryCardsProps {
   netBalance: number
 }
 
+// Header + big value styled to match the dashboard's financial-overview cards
+// (accounts / credit cards): an accent icon, an uppercase muted label, and a
+// bold 3xl tabular value in the semantic color.
 export function SummaryCards({ totalIncome, totalExpense, netBalance }: SummaryCardsProps) {
+  const balancePositive = netBalance >= 0
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardDescription>Entradas ativas</CardDescription>
-          <CardTitle className="text-2xl text-emerald-600 dark:text-emerald-400">
-            <MoneyValue value={totalIncome} />
-          </CardTitle>
-        </CardHeader>
+      <Card className="flex flex-col gap-3 p-5">
+        <div className="flex items-center gap-2">
+          <ArrowDownLeft className="size-4 text-emerald-500" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entradas ativas</h2>
+        </div>
+        <MoneyValue value={totalIncome} className="text-3xl font-bold tracking-tight tabular-nums text-emerald-500" />
       </Card>
-      <Card>
-        <CardHeader>
-          <CardDescription>Saídas ativas</CardDescription>
-          <CardTitle className="text-2xl text-red-600 dark:text-red-400">
-            <MoneyValue value={totalExpense} />
-          </CardTitle>
-        </CardHeader>
+
+      <Card className="flex flex-col gap-3 p-5">
+        <div className="flex items-center gap-2">
+          <ArrowUpRight className="size-4 text-red-500" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Saídas ativas</h2>
+        </div>
+        <MoneyValue value={totalExpense} className="text-3xl font-bold tracking-tight tabular-nums text-red-500" />
       </Card>
-      <Card>
-        <CardHeader>
-          <CardDescription>Saldo líquido do mês</CardDescription>
-          <CardTitle
-            className={cn(
-              "text-2xl",
-              netBalance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
-            )}
-          >
-            <MoneyValue value={netBalance} />
-          </CardTitle>
-        </CardHeader>
+
+      <Card className="flex flex-col gap-3 p-5">
+        <div className="flex items-center gap-2">
+          <Wallet className={cn("size-4", balancePositive ? "text-emerald-500" : "text-red-500")} />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Saldo do mês</h2>
+        </div>
+        <MoneyValue
+          value={netBalance}
+          className={cn(
+            "text-3xl font-bold tracking-tight tabular-nums",
+            balancePositive ? "text-emerald-500" : "text-red-500"
+          )}
+        />
       </Card>
     </div>
   )
