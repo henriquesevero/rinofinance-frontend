@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { CalendarDays, Loader2 } from "lucide-react"
 import { useCardsStore } from "@/features/cards/store"
-import { BudgetCard } from "./components/BudgetCard"
+import { MonthBalanceCard } from "./components/MonthBalanceCard"
 import { FinancialOverview } from "./components/FinancialOverview"
 import { SpendingDonut } from "./components/SpendingDonut"
 import { useDashboardStore } from "./store"
@@ -59,9 +59,9 @@ export function DashboardPage() {
       {/* financial overview: accounts, cards, investments */}
       <FinancialOverview />
 
-      {/* budget + spending distribution */}
+      {/* month balance + spending distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <BudgetCard spent={spent} income={summary.totalIncome} />
+        <MonthBalanceCard income={summary.totalIncome} spent={spent} />
         <SpendingDonut expenses={summary.expenses} incomes={summary.incomes} />
       </div>
     </div>
