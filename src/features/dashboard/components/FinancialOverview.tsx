@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { Link } from "react-router-dom"
 import { ChevronRight, CreditCard, Landmark, TrendingUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
@@ -53,17 +54,22 @@ function AccountsCard() {
       <ul className="-mx-2 flex flex-col border-t pt-1">
         {accounts.length === 0 && <li className="px-2 py-4 text-sm text-muted-foreground">Nenhuma conta cadastrada.</li>}
         {accounts.map((a) => (
-          <li key={a.id} className="flex items-center gap-3 rounded-lg px-2 py-2.5">
-            <AccountAvatar account={a} className="size-9" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{a.name}</p>
-              <p className="text-xs text-muted-foreground tabular-nums">{fmtPct(pctOf(a.balance, total))} do total</p>
-            </div>
-            <MoneyValue
-              value={a.balance}
-              className={cn("shrink-0 text-sm font-semibold tabular-nums", a.balance > 0 ? "text-emerald-500" : "text-muted-foreground")}
-            />
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          <li key={a.id}>
+            <Link
+              to={`/accounts/${a.id}`}
+              className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50"
+            >
+              <AccountAvatar account={a} className="size-9" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{a.name}</p>
+                <p className="text-xs text-muted-foreground tabular-nums">{fmtPct(pctOf(a.balance, total))} do total</p>
+              </div>
+              <MoneyValue
+                value={a.balance}
+                className={cn("shrink-0 text-sm font-semibold tabular-nums", a.balance > 0 ? "text-emerald-500" : "text-muted-foreground")}
+              />
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </Link>
           </li>
         ))}
       </ul>
@@ -97,16 +103,22 @@ function CardsCard() {
       <ul className="-mx-2 flex flex-col border-t pt-1">
         {cards.length === 0 && <li className="px-2 py-4 text-sm text-muted-foreground">Nenhum cartão cadastrado.</li>}
         {cards.map((c) => (
-          <li key={c.id} className="flex items-center gap-3 rounded-lg px-2 py-2.5">
-            <CardLogo name={c.name} color={c.color} logoUrl={c.logoUrl} className="size-9" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{c.name}</p>
-              <p className="text-xs text-muted-foreground">{c.dueDay ? `Vence dia ${c.dueDay}` : "Fatura do mês"}</p>
-            </div>
-            <MoneyValue
-              value={c.monthlyTotal}
-              className={cn("shrink-0 text-sm font-semibold tabular-nums", c.monthlyTotal > 0 ? "text-red-500" : "text-muted-foreground")}
-            />
+          <li key={c.id}>
+            <Link
+              to={`/cards/${c.id}`}
+              className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50"
+            >
+              <CardLogo name={c.name} color={c.color} logoUrl={c.logoUrl} className="size-9" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{c.name}</p>
+                <p className="text-xs text-muted-foreground">{c.dueDay ? `Vence dia ${c.dueDay}` : "Fatura do mês"}</p>
+              </div>
+              <MoneyValue
+                value={c.monthlyTotal}
+                className={cn("shrink-0 text-sm font-semibold tabular-nums", c.monthlyTotal > 0 ? "text-red-500" : "text-muted-foreground")}
+              />
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </Link>
           </li>
         ))}
       </ul>
@@ -132,17 +144,25 @@ function InvestmentsCard() {
       <ul className="flex flex-col gap-3 border-t pt-3">
         {assets.length === 0 && <li className="py-1 text-sm text-muted-foreground">Nenhum investimento cadastrado.</li>}
         {assets.map((a) => (
-          <li key={a.id} className={cn("flex flex-col gap-1.5", !a.active && "opacity-50")}>
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="truncate font-medium">{a.name}</span>
-              <span className="flex shrink-0 items-center gap-2 text-muted-foreground tabular-nums">
-                {fmtPct(pctOf(a.currentBalance, total))}
-                <MoneyValue value={a.currentBalance} className="font-semibold text-foreground" />
-              </span>
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(pctOf(a.currentBalance, total), 100)}%` }} />
-            </div>
+          <li key={a.id}>
+            <Link
+              to="/investments"
+              className={cn(
+                "-mx-2 flex flex-col gap-1.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50",
+                !a.active && "opacity-50"
+              )}
+            >
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="truncate font-medium">{a.name}</span>
+                <span className="flex shrink-0 items-center gap-2 text-muted-foreground tabular-nums">
+                  {fmtPct(pctOf(a.currentBalance, total))}
+                  <MoneyValue value={a.currentBalance} className="font-semibold text-foreground" />
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(pctOf(a.currentBalance, total), 100)}%` }} />
+              </div>
+            </Link>
           </li>
         ))}
       </ul>
