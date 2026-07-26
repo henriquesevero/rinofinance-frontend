@@ -9,6 +9,9 @@ import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/features/auth/store"
 import { useCategoriesStore } from "@/features/categories/store"
+import { useAccountsStore } from "@/features/accounts/store"
+import { useCardsStore } from "@/features/cards/store"
+import { useDashboardStore } from "@/features/dashboard/store"
 
 const tabs = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
@@ -39,6 +42,25 @@ export function AppLayout() {
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
+
+  // Auto-update: Pluggy re-syncs connections server-side (via webhook), so
+  // when the user returns to the tab we refetch the data that a sync can
+  // change — accounts, cards and the dashboard summary — to reflect it
+  // without any manual action. Uses getState() to avoid re-subscribing.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return
+      useAccountsStore.getState().fetchAccounts()
+      useCardsStore.getState().fetchCards()
+      useDashboardStore.getState().fetchSummary()
+    }
+    window.addEventListener("focus", refresh)
+    document.addEventListener("visibilitychange", refresh)
+    return () => {
+      window.removeEventListener("focus", refresh)
+      document.removeEventListener("visibilitychange", refresh)
+    }
+  }, [])
 
   return (
     <div className="flex min-h-svh">
