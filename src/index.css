@@ -138,3 +138,26 @@
     max-width: 100%;
     }
 }
+
+/* Subtle entrance for dashboard sections — a short fade + rise, staggered by
+   the caller via inline animation-delay. Disabled for reduced-motion users. */
+@keyframes rf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rf-fade-up {
+  animation: rf-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-fade-up {
+    animation: none;
+  }
+}

@@ -43,6 +43,22 @@ function SectionHeader({ icon: Icon, label, accent }: { icon: typeof Landmark; l
   )
 }
 
+// A friendly empty state: a muted icon, a short line, and a discreet link to
+// add the first item — shown inside a card's list when there's nothing yet.
+function EmptyState({ icon: Icon, label, to, cta }: { icon: typeof Landmark; label: string; to: string; cta: string }) {
+  return (
+    <li className="flex flex-col items-center gap-2 py-6 text-center">
+      <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Icon className="size-5" />
+      </span>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <Link to={to} className="text-xs font-medium text-primary hover:underline">
+        {cta}
+      </Link>
+    </li>
+  )
+}
+
 function AccountsCard() {
   const accounts = useAccountsStore((s) => s.accounts)
   const total = useAccountsStore((s) => s.totalBalance)
@@ -52,7 +68,7 @@ function AccountsCard() {
       <SectionHeader icon={Landmark} label="Contas bancárias" accent="text-emerald-500" />
       <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-emerald-500" />
       <ul className="-mx-2 flex flex-col border-t pt-1">
-        {accounts.length === 0 && <li className="px-2 py-4 text-sm text-muted-foreground">Nenhuma conta cadastrada.</li>}
+        {accounts.length === 0 && <EmptyState icon={Landmark} label="Nenhuma conta ainda" to="/accounts" cta="Adicionar conta" />}
         {accounts.map((a) => (
           <li key={a.id}>
             <Link
@@ -101,7 +117,7 @@ function CardsCard() {
       )}
 
       <ul className="-mx-2 flex flex-col border-t pt-1">
-        {cards.length === 0 && <li className="px-2 py-4 text-sm text-muted-foreground">Nenhum cartão cadastrado.</li>}
+        {cards.length === 0 && <EmptyState icon={CreditCard} label="Nenhum cartão ainda" to="/cards" cta="Adicionar cartão" />}
         {cards.map((c) => (
           <li key={c.id}>
             <Link
@@ -142,7 +158,7 @@ function InvestmentsCard() {
         </p>
       </div>
       <ul className="flex flex-col gap-3 border-t pt-3">
-        {assets.length === 0 && <li className="py-1 text-sm text-muted-foreground">Nenhum investimento cadastrado.</li>}
+        {assets.length === 0 && <EmptyState icon={TrendingUp} label="Nenhum investimento ainda" to="/investments" cta="Adicionar investimento" />}
         {assets.map((a) => (
           <li key={a.id}>
             <Link
