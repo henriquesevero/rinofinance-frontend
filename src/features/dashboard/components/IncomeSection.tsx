@@ -115,9 +115,15 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
               ]}
             />
           )}
-          <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => setDialogState({ mode: "create" })}
+            aria-label="Nova entrada"
+            title="Nova entrada"
+          >
             <Plus className="size-4" />
-            Nova entrada
           </Button>
         </div>
       </CardHeader>

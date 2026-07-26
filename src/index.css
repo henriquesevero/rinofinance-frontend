@@ -161,3 +161,14 @@
     animation: none;
   }
 }
+
+/* Success toasts ("categoria criada", "saída criada", ...) use the platform
+   blue instead of the default green — the check icon and the toast border. */
+[data-sonner-toast][data-type="success"] [data-icon],
+[data-sonner-toast][data-type="success"] [data-icon] svg {
+  color: var(--primary);
+}
+
+[data-sonner-toast][data-type="success"] {
+  --normal-border: color-mix(in oklch, var(--primary) 45%, var(--border));
+}

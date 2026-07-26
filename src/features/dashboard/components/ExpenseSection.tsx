@@ -164,9 +164,15 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
               ]}
             />
           )}
-          <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => setDialogState({ mode: "create" })}
+            aria-label="Nova saída"
+            title="Nova saída"
+          >
             <Plus className="size-4" />
-            Nova saída
           </Button>
         </div>
       </CardHeader>

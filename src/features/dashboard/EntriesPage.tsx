@@ -42,12 +42,13 @@ export function EntriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Entradas & Saídas</h1>
-        <p className="text-sm text-muted-foreground">Gerencie suas receitas e despesas do mês.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Entradas & Saídas</h1>
+          <p className="text-sm text-muted-foreground">Gerencie suas receitas e despesas do mês.</p>
+        </div>
+        <QuickActions />
       </div>
-
-      <QuickActions />
 
       <SummaryCards
         totalIncome={summary.totalIncome}
