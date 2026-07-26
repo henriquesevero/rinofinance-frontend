@@ -23,6 +23,8 @@ export function AppLayout() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const firstName = user?.name?.trim().split(/\s+/)[0]
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
   const location = useLocation()
   // On mobile the sidebar is a slide-in drawer; on md+ it's a static column.
   const [navOpen, setNavOpen] = useState(false)
@@ -44,11 +46,7 @@ export function AppLayout() {
     <div className="flex min-h-svh">
       {/* backdrop behind the mobile drawer */}
       {navOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setNavOpen(false)}
-          aria-hidden
-        />
+        <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setNavOpen(false)} aria-hidden />
       )}
 
       {/* sidebar: static column on md+, slide-in drawer on mobile */}
@@ -93,40 +91,45 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-      </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 border-b px-3 pb-3 pt-[calc(env(safe-area-inset-top)_+_0.75rem)] sm:px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 md:hidden"
-            onClick={() => setNavOpen(true)}
-            aria-label="Abrir menu"
+        {/* account + quick controls, pinned to the bottom of the sidebar */}
+        <div className="mt-auto flex flex-col gap-1 border-t pt-3">
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-md px-2 py-2 transition-colors",
+                isActive ? "bg-primary/10" : "hover:bg-muted"
+              )
+            }
           >
-            <Menu className="size-5" />
-          </Button>
-          <span className="min-w-0 flex-1 truncate text-base font-semibold tracking-tight sm:text-lg">
-            Olá, {firstName}
-          </span>
-          <div className="flex shrink-0 items-center gap-0.5 sm:gap-2">
-            <NavLink
-              to="/settings"
-              aria-label="Configurações"
-              className={({ isActive }) =>
-                cn(
-                  "shrink-0 rounded-full ring-offset-2 ring-offset-background transition-opacity hover:opacity-80",
-                  isActive && "ring-2 ring-ring"
-                )
-              }
-            >
-              <UserAvatar name={user?.name ?? ""} avatarUrl={user?.avatarUrl} />
-            </NavLink>
-            <ValuesVisibilityToggle />
-            <ThemeToggle />
+            <UserAvatar name={user?.name ?? ""} avatarUrl={user?.avatarUrl} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{firstName ? `${greeting}, ${firstName}` : greeting}</p>
+              <p className="truncate text-xs text-muted-foreground">Ver conta</p>
+            </div>
+          </NavLink>
+          <div className="flex items-center gap-0.5 px-1">
             <Button variant="ghost" size="icon" onClick={logout} aria-label="Sair">
               <LogOut className="size-4" />
             </Button>
+            <div className="ml-auto flex items-center gap-0.5">
+              <ValuesVisibilityToggle />
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* mobile-only top bar: just the drawer opener + brand */}
+        <header className="flex items-center gap-2 border-b px-3 pb-2 pt-[calc(env(safe-area-inset-top)_+_0.5rem)] md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setNavOpen(true)} aria-label="Abrir menu">
+            <Menu className="size-5" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <Logo showWordmark={false} markClassName="size-6" />
+            <span className="text-base font-semibold tracking-tight">RinoFinance</span>
           </div>
         </header>
 
