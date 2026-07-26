@@ -6,6 +6,7 @@ import { ExpenseSection } from "./components/ExpenseSection"
 import { IncomeSection } from "./components/IncomeSection"
 import { RecurrencesPanel } from "./components/RecurrencesPanel"
 import { SummaryCards } from "./components/SummaryCards"
+import { useMonthStore } from "@/lib/monthStore"
 import { useChartsPrefStore } from "./chartsPrefStore"
 import { useDashboardStore } from "./store"
 
@@ -18,10 +19,11 @@ export function EntriesPage() {
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
   const chartsHidden = useChartsPrefStore((s) => s.hidden)
   const toggleCharts = useChartsPrefStore((s) => s.toggle)
+  const month = useMonthStore((s) => s.month)
 
   useEffect(() => {
     fetchSummary()
-  }, [fetchSummary])
+  }, [fetchSummary, month])
 
   if (isLoading && !summary) {
     return (

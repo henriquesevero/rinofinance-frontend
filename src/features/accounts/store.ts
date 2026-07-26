@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { toErrorMessage } from "@/lib/errors"
+import { useMonthStore } from "@/lib/monthStore"
 import { accountsApi } from "./api"
 import type { Account, AccountInput, AccountPurchaseInput } from "./types"
 
@@ -45,7 +46,7 @@ export const useAccountsStore = create<AccountsState>((set, get) => {
     fetchAccounts: async () => {
       set({ isLoading: true, error: null })
       try {
-        const overview = await accountsApi.list()
+        const overview = await accountsApi.list(useMonthStore.getState().month)
         set({ accounts: overview.accounts, totalBalance: overview.totalBalance, isLoading: false })
       } catch (err) {
         set({ isLoading: false, error: toErrorMessage(err) })

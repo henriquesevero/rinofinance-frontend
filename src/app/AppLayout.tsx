@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { ArrowRightLeft, CreditCard, LayoutDashboard, LogOut, Menu, PiggyBank, Tags, Wallet, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
+import { MonthSelector } from "@/components/MonthSelector"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { UserAvatar } from "@/components/UserAvatar"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
@@ -91,6 +92,9 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* global month picker — drives what period every screen shows */}
+        <MonthSelector />
 
         {/* account + quick controls, pinned to the bottom of the sidebar */}
         <div className="mt-auto flex flex-col gap-1 border-t pt-3">

@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { toErrorMessage } from "@/lib/errors"
+import { useMonthStore } from "@/lib/monthStore"
 import { dashboardApi, expenseApi, incomeApi } from "./api"
 import type { DashboardSummary } from "./types"
 
@@ -56,7 +57,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
     fetchSummary: async () => {
       set({ isLoading: true, error: null })
       try {
-        const summary = await dashboardApi.getSummary()
+        const summary = await dashboardApi.getSummary(useMonthStore.getState().month)
         set({ summary, isLoading: false })
       } catch (err) {
         set({ isLoading: false, error: toErrorMessage(err) })

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CardFormDialog } from "./components/CardFormDialog"
 import { CardOverviewTile } from "./components/CardOverviewTile"
+import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "./store"
 import type { CardOverview } from "./types"
 
@@ -20,6 +21,7 @@ export function CardsPage() {
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const createCard = useCardsStore((s) => s.createCard)
   const reorderCards = useCardsStore((s) => s.reorderCards)
+  const month = useMonthStore((s) => s.month)
 
   // Local working copy so drag reordering feels instant; kept in sync with
   // the store's order whenever it changes.
@@ -29,7 +31,7 @@ export function CardsPage() {
 
   useEffect(() => {
     fetchCards()
-  }, [fetchCards])
+  }, [fetchCards, month])
 
   useEffect(() => {
     setOrder(cards)

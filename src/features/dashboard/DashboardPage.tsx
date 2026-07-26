@@ -3,16 +3,11 @@ import { CalendarDays } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCardsStore } from "@/features/cards/store"
+import { monthLabel, useMonthStore } from "@/lib/monthStore"
 import { MonthBalanceCard } from "./components/MonthBalanceCard"
 import { FinancialOverview } from "./components/FinancialOverview"
 import { SpendingDonut } from "./components/SpendingDonut"
 import { useDashboardStore } from "./store"
-
-// Current month name, e.g. "Julho de 2026" — capitalized.
-function currentMonthLabel() {
-  const s = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
 
 export function DashboardPage() {
   const summary = useDashboardStore((s) => s.summary)
@@ -20,11 +15,13 @@ export function DashboardPage() {
   const error = useDashboardStore((s) => s.error)
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
   const fetchCards = useCardsStore((s) => s.fetchCards)
+  const month = useMonthStore((s) => s.month)
 
+  // Re-fetch whenever the selected month changes so the whole page reflects it.
   useEffect(() => {
     fetchSummary()
     fetchCards()
-  }, [fetchSummary, fetchCards])
+  }, [fetchSummary, fetchCards, month])
 
   if (isLoading && !summary) {
     return <DashboardSkeleton />
@@ -49,7 +46,7 @@ export function DashboardPage() {
         </div>
         <span className="flex shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium">
           <CalendarDays className="size-4 text-muted-foreground" />
-          {currentMonthLabel()}
+          {monthLabel(month)}
         </span>
       </div>
 

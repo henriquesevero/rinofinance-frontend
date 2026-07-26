@@ -6,6 +6,7 @@ import { DragHandle } from "@/components/DragHandle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { useReorder } from "@/lib/useReorder"
+import { useMonthStore } from "@/lib/monthStore"
 import { AccountFormDialog } from "./components/AccountFormDialog"
 import { AccountTile } from "./components/AccountTile"
 import { useAccountsStore } from "./store"
@@ -17,12 +18,13 @@ export function AccountsPage() {
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const createAccount = useAccountsStore((s) => s.createAccount)
   const reorderAccounts = useAccountsStore((s) => s.reorderAccounts)
+  const month = useMonthStore((s) => s.month)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, reorderAccounts)
 
   useEffect(() => {
     fetchAccounts()
-  }, [fetchAccounts])
+  }, [fetchAccounts, month])
 
   if (isLoading && accounts.length === 0) {
     return (

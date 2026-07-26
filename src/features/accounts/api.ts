@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client"
 import type { Account, AccountInput, AccountPurchase, AccountPurchaseInput, AccountsOverview } from "./types"
 
 export const accountsApi = {
-  list: () => apiClient.get<AccountsOverview>("/api/accounts"),
+  list: (month?: string) => apiClient.get<AccountsOverview>(`/api/accounts${month ? `?month=${month}` : ""}`),
   create: (input: AccountInput) => apiClient.post<Account>("/api/accounts", input),
   update: (id: string, input: AccountInput) => apiClient.put<Account>(`/api/accounts/${id}`, input),
   remove: (id: string) => apiClient.delete(`/api/accounts/${id}`),

@@ -2,7 +2,8 @@ import { apiClient } from "@/lib/api-client"
 import type { DashboardSummary, Expense, Income } from "./types"
 
 export const dashboardApi = {
-  getSummary: () => apiClient.get<DashboardSummary>("/api/dashboard/summary"),
+  getSummary: (month?: string) =>
+    apiClient.get<DashboardSummary>(`/api/dashboard/summary${month ? `?month=${month}` : ""}`),
 }
 
 export const incomeApi = {

@@ -14,7 +14,7 @@ import type {
 } from "./types"
 
 export const cardsApi = {
-  list: () => apiClient.get<CardsOverview>("/api/cards"),
+  list: (month?: string) => apiClient.get<CardsOverview>(`/api/cards${month ? `?month=${month}` : ""}`),
   create: (input: CardInput) => apiClient.post<CardOverview>("/api/cards", input),
   update: (id: string, input: CardInput) => apiClient.put<CardOverview>(`/api/cards/${id}`, input),
   remove: (id: string) => apiClient.delete(`/api/cards/${id}`),

@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { toErrorMessage } from "@/lib/errors"
+import { useMonthStore } from "@/lib/monthStore"
 import { cardsApi } from "./api"
 import type {
   CardInput,
@@ -62,7 +63,7 @@ export const useCardsStore = create<CardsState>((set, get) => {
     fetchCards: async () => {
       set({ isLoading: true, error: null })
       try {
-        const overview = await cardsApi.list()
+        const overview = await cardsApi.list(useMonthStore.getState().month)
         set({ cards: overview.cards, grandTotal: overview.grandTotal, isLoading: false })
       } catch (err) {
         set({ isLoading: false, error: toErrorMessage(err) })

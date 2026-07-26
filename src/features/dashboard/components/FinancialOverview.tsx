@@ -8,6 +8,7 @@ import { CardLogo } from "@/features/cards/components/CardLogo"
 import { useAccountsStore } from "@/features/accounts/store"
 import { useCardsStore } from "@/features/cards/store"
 import { useInvestmentsStore } from "@/features/investments/store"
+import { useMonthStore } from "@/lib/monthStore"
 import { cn } from "@/lib/utils"
 import { formatMoney } from "@/lib/money"
 
@@ -19,11 +20,12 @@ const fmtPct = (v: number) => `${v.toFixed(1)}%`
 export function FinancialOverview() {
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const fetchAssets = useInvestmentsStore((s) => s.fetchAssets)
+  const month = useMonthStore((s) => s.month)
 
   useEffect(() => {
     fetchAccounts()
     fetchAssets()
-  }, [fetchAccounts, fetchAssets])
+  }, [fetchAccounts, fetchAssets, month])
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
