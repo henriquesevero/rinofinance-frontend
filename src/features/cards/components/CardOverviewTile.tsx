@@ -27,19 +27,12 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
       <CardArt card={card} />
 
       <div className="flex items-end justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Fatura do mês</p>
-          <MoneyValue
-            value={card.monthlyTotal}
-            className={cn(
-              "text-xl font-bold tracking-tight tabular-nums",
-              card.monthlyTotal > 0 ? "text-red-500" : "text-muted-foreground"
-            )}
-          />
-        </div>
+        <MoneyValue value={card.monthlyTotal} className="min-w-0 text-xl font-bold tracking-tight tabular-nums" />
         {stats.daysUntilDue !== null && (
           <span className="shrink-0 text-xs text-muted-foreground">
-            {stats.daysUntilDue === 0 ? "Vence hoje" : `Vence em ${stats.daysUntilDue}d`}
+            {stats.daysUntilDue === 0
+              ? "Vence hoje"
+              : `Vence em ${stats.daysUntilDue} ${stats.daysUntilDue === 1 ? "dia" : "dias"}`}
           </span>
         )}
       </div>

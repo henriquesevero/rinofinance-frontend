@@ -100,7 +100,9 @@ export function CardDetailPage() {
               </dt>
               <dd className="text-xl font-semibold">dia {card.dueDay}</dd>
               <span className="text-xs text-muted-foreground">
-                {stats.daysUntilDue === 0 ? "vence hoje" : `em ${stats.daysUntilDue} dias`}
+                {stats.daysUntilDue === 0
+                  ? "vence hoje"
+                  : `em ${stats.daysUntilDue} ${stats.daysUntilDue === 1 ? "dia" : "dias"}`}
               </span>
             </div>
           )}
