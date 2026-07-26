@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { GripVertical, Loader2, Plus } from "lucide-react"
+import { CreditCard, GripVertical, Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
@@ -74,20 +74,33 @@ export function CardsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <Card className="min-w-0 flex-1">
-          <CardHeader>
-            <CardDescription>Total geral dos cartões (mês atual)</CardDescription>
-            <CardTitle className="text-2xl">
-              <MoneyValue value={grandTotal} />
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="size-4" />
-          Novo cartão
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Cartões</h1>
+          <p className="text-muted-foreground">Faturas, limites e parcelas dos seus cartões.</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9 shrink-0"
+          onClick={() => setIsCreateOpen(true)}
+          aria-label="Novo cartão"
+          title="Novo cartão"
+        >
+          <Plus className="size-5" />
         </Button>
       </div>
+
+      {/* total geral — compacto e discreto */}
+      <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[13rem]">
+        <div className="flex items-center gap-1.5">
+          <CreditCard className="size-3.5 text-red-500" />
+          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Total geral · mês atual
+          </h2>
+        </div>
+        <MoneyValue value={grandTotal} className="text-xl font-bold tracking-tight tabular-nums text-red-500" />
+      </Card>
 
       {order.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">Nenhum cartão cadastrado ainda.</p>

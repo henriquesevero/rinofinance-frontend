@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown, CreditCard, Landmark, Layers, Plus } from "lucide-react"
+import { CreditCard, Landmark, Layers, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -22,10 +22,8 @@ export function QuickActions() {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="outline" size="sm" className="shrink-0">
-              <Plus className="size-4" />
-              Lançar compra
-              <ChevronDown className="size-4" />
+            <Button variant="ghost" size="icon" className="size-9 shrink-0" aria-label="Lançar compra" title="Lançar compra">
+              <Plus className="size-5" />
             </Button>
           }
         />
