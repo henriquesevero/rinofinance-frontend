@@ -1,8 +1,18 @@
 import { apiClient } from "@/lib/api-client"
-import type { Account, AccountInput, AccountPurchase, AccountPurchaseInput, AccountsOverview } from "./types"
+import type {
+  Account,
+  AccountInput,
+  AccountPurchase,
+  AccountPurchaseInput,
+  AccountsOverview,
+  PluggySyncResult,
+} from "./types"
 
 export const accountsApi = {
   list: () => apiClient.get<AccountsOverview>("/api/accounts"),
+
+  // Imports a Pluggy connection (item) into the user's accounts.
+  syncPluggy: (itemId: string) => apiClient.post<PluggySyncResult>("/api/pluggy/sync", { itemId }),
   create: (input: AccountInput) => apiClient.post<Account>("/api/accounts", input),
   update: (id: string, input: AccountInput) => apiClient.put<Account>(`/api/accounts/${id}`, input),
   remove: (id: string) => apiClient.delete(`/api/accounts/${id}`),

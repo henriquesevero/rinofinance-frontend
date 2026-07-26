@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { toErrorMessage } from "@/lib/errors"
 import { accountsApi } from "./api"
-import type { Account, AccountInput, AccountPurchaseInput } from "./types"
+import type { Account, AccountInput, AccountPurchaseInput, PluggySyncResult } from "./types"
 
 interface AccountsState {
   accounts: Account[]
@@ -16,6 +16,7 @@ interface AccountsState {
   createPurchase: (accountId: string, input: AccountPurchaseInput) => Promise<void>
   updatePurchase: (id: string, input: AccountPurchaseInput) => Promise<void>
   deletePurchase: (id: string) => Promise<void>
+  syncPluggy: (itemId: string) => Promise<PluggySyncResult>
   byId: (id?: string) => Account | undefined
   // Clears all data back to the empty initial state (used on logout).
   reset: () => void
@@ -56,6 +57,19 @@ export const useAccountsStore = create<AccountsState>((set, get) => {
     updateAccount: (id, input) => mutate(() => accountsApi.update(id, input)),
     deleteAccount: (id) => mutate(() => accountsApi.remove(id)),
     reorderAccounts: (ids) => mutate(() => accountsApi.reorder(ids)),
+
+    // Imports a Pluggy connection, then refetches so the new account and its
+    // transactions appear. Returns the counts for the caller to surface.
+    syncPluggy: async (itemId) => {
+      try {
+        const result = await accountsApi.syncPluggy(itemId)
+        await get().fetchAccounts()
+        return result
+      } catch (err) {
+        set({ error: toErrorMessage(err) })
+        throw err
+      }
+    },
 
     createPurchase: (accountId, input) => mutate(() => accountsApi.createPurchase(accountId, input)),
     updatePurchase: (id, input) => mutate(() => accountsApi.updatePurchase(id, input)),

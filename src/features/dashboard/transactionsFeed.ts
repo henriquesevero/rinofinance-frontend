@@ -83,7 +83,7 @@ export function buildFeed(
         name: p.name,
         amount: p.amount,
         date: (p.date || "").slice(0, 10) || null,
-        direction: "out",
+        direction: p.direction === "credit" ? "in" : "out",
         sourceId: account.id,
         sourceName: account.name,
         categoryId: p.categoryId,

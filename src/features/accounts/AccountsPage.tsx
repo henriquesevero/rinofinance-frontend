@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Cable, Loader2, Plus } from "lucide-react"
+import { Cable, Loader2, Plus, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { DragHandle } from "@/components/DragHandle"
@@ -8,6 +8,7 @@ import { toErrorMessage } from "@/lib/errors"
 import { useReorder } from "@/lib/useReorder"
 import { AccountFormDialog } from "./components/AccountFormDialog"
 import { AccountTile } from "./components/AccountTile"
+import { PluggySyncDialog } from "./components/PluggySyncDialog"
 import { useAccountsStore } from "./store"
 
 export function AccountsPage() {
@@ -18,6 +19,7 @@ export function AccountsPage() {
   const createAccount = useAccountsStore((s) => s.createAccount)
   const reorderAccounts = useAccountsStore((s) => s.reorderAccounts)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isSyncOpen, setIsSyncOpen] = useState(false)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, reorderAccounts)
 
   useEffect(() => {
@@ -44,10 +46,16 @@ export function AccountsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Contas</h1>
           <p className="text-muted-foreground">Conecte, visualize e gerencie suas conexões financeiras.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="size-4" />
-          Nova conta
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button variant="outline" onClick={() => setIsSyncOpen(true)}>
+            <RefreshCw className="size-4" />
+            Conectar banco
+          </Button>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="size-4" />
+            Nova conta
+          </Button>
+        </div>
       </div>
 
       <section className="flex flex-col gap-4">
@@ -81,6 +89,8 @@ export function AccountsPage() {
           </ul>
         )}
       </section>
+
+      <PluggySyncDialog open={isSyncOpen} onOpenChange={setIsSyncOpen} />
 
       <AccountFormDialog
         open={isCreateOpen}
