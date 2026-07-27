@@ -1,8 +1,16 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { formatMoney } from "@/lib/money"
 import { AccountSelect } from "@/features/accounts/components/AccountSelect"
 import { useAccountsStore } from "@/features/accounts/store"
@@ -30,7 +38,7 @@ export function IncomeFormDialog({
   const accounts = useAccountsStore((s) => s.accounts)
   const isEdit = Boolean(income)
   const [name, setName] = useState("")
-  const [amount, setAmount] = useState("")
+  const [amount, setAmount] = useState(0)
   const [categoryId, setCategoryId] = useState("")
   const [linkToAccount, setLinkToAccount] = useState(false)
   const [accountId, setAccountId] = useState("")
@@ -39,7 +47,7 @@ export function IncomeFormDialog({
   useEffect(() => {
     if (open) {
       setName(income?.name ?? "")
-      setAmount(income ? String(income.amount) : "")
+      setAmount(income?.amount ?? 0)
       setCategoryId(income?.categoryId ?? "")
       setLinkToAccount(false)
       setAccountId("")
@@ -55,7 +63,7 @@ export function IncomeFormDialog({
       if (!isEdit && linkToAccount) {
         await onSubmitAccountLinked(name, accountId, categoryId)
       } else {
-        await onSubmit(name, Number(amount), categoryId)
+        await onSubmit(name, amount, categoryId)
       }
       onOpenChange(false)
     } finally {
@@ -68,8 +76,9 @@ export function IncomeFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{income ? "Editar entrada" : "Nova entrada"}</DialogTitle>
+          <DialogDescription>Um valor que entra no seu mês (salário, renda, reembolso).</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="income-name">Nome</Label>
             <Input id="income-name" required value={name} onChange={(e) => setName(e.target.value)} />
@@ -112,16 +121,14 @@ export function IncomeFormDialog({
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="income-amount">Valor</Label>
-              <Input
+              <MoneyInput
                 id="income-amount"
-                type="number"
-                step="0.01"
-                min="0"
                 required
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onValueChange={setAmount}
+                className="h-11 text-lg"
               />
             </div>
           )}
@@ -132,6 +139,9 @@ export function IncomeFormDialog({
           </div>
 
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isSubmitting || (linkToAccount && !accountId)}>
               {isSubmitting ? "Salvando..." : "Salvar"}
             </Button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Loader2, Pencil, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { DragHandle } from "@/components/DragHandle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
@@ -22,6 +23,7 @@ export function CategoriesPage() {
   const deleteCategory = useCategoriesStore((s) => s.deleteCategory)
   const reorderCategories = useCategoriesStore((s) => s.reorderCategories)
   const [dialog, setDialog] = useState<DialogState>(null)
+  const [toDelete, setToDelete] = useState<Category | null>(null)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(categories, reorderCategories)
 
   useEffect(() => {
@@ -29,7 +31,6 @@ export function CategoriesPage() {
   }, [fetchCategories])
 
   async function handleDelete(category: Category) {
-    if (!confirm(`Remover a categoria "${category.name}"? Os itens ficarão sem categoria.`)) return
     try {
       await deleteCategory(category.id)
       toast.success("Categoria removida")
@@ -99,7 +100,7 @@ export function CategoriesPage() {
                   size="icon"
                   className="size-7"
                   aria-label="Remover categoria"
-                  onClick={() => handleDelete(category)}
+                  onClick={() => setToDelete(category)}
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -130,6 +131,24 @@ export function CategoriesPage() {
             toast.error(toErrorMessage(err))
             throw err
           }
+        }}
+      />
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        onOpenChange={(open) => !open && setToDelete(null)}
+        title="Remover categoria"
+        description={
+          toDelete ? (
+            <>
+              Remover a categoria <strong>{toDelete.name}</strong>? Os itens ligados a ela ficarão sem categoria.
+            </>
+          ) : null
+        }
+        confirmLabel="Remover"
+        destructive
+        onConfirm={() => {
+          if (toDelete) return handleDelete(toDelete)
         }}
       />
     </div>

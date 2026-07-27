@@ -1,8 +1,16 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import type { Asset } from "../types"
 
 interface AssetFormDialogProps {
@@ -14,13 +22,13 @@ interface AssetFormDialogProps {
 
 export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFormDialogProps) {
   const [name, setName] = useState("")
-  const [currentBalance, setCurrentBalance] = useState("")
+  const [currentBalance, setCurrentBalance] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (open) {
       setName(asset?.name ?? "")
-      setCurrentBalance(asset ? String(asset.currentBalance) : "")
+      setCurrentBalance(asset?.currentBalance ?? 0)
     }
   }, [open, asset])
 
@@ -28,7 +36,7 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFo
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await onSubmit(name, Number(currentBalance))
+      await onSubmit(name, currentBalance)
       onOpenChange(false)
     } finally {
       setIsSubmitting(false)
@@ -37,12 +45,23 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{asset ? "Editar ativo" : "Novo ativo"}</DialogTitle>
+          <DialogDescription>Uma reserva ou investimento que você acompanha (ex: FGTS, Tesouro).</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="asset-balance">Saldo atual</Label>
+            <MoneyInput
+              id="asset-balance"
+              required
+              value={currentBalance}
+              onValueChange={setCurrentBalance}
+              className="h-11 text-lg"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="asset-name">Nome da categoria/ativo</Label>
             <Input
               id="asset-name"
@@ -52,19 +71,10 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFo
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="asset-balance">Saldo atual</Label>
-            <Input
-              id="asset-balance"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              value={currentBalance}
-              onChange={(e) => setCurrentBalance(e.target.value)}
-            />
-          </div>
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Salvando..." : "Salvar"}
             </Button>

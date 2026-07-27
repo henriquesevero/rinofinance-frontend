@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { resizeImageToDataUrl } from "@/lib/image"
 import { toErrorMessage } from "@/lib/errors"
 import { COLOR_PRESETS } from "@/lib/colorPresets"
@@ -23,7 +24,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
   const [name, setName] = useState("")
   const [color, setColor] = useState(COLOR_PRESETS[0])
   const [imageUrl, setImageUrl] = useState("")
-  const [balance, setBalance] = useState("")
+  const [balance, setBalance] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
       setName(initial?.name ?? "")
       setColor(initial?.color || COLOR_PRESETS[0])
       setImageUrl(initial?.imageUrl ?? "")
-      setBalance(initial ? String(initial.balance) : "")
+      setBalance(initial?.balance ?? 0)
     }
   }, [open, initial])
 
@@ -50,7 +51,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await onSubmit({ name, color, imageUrl, balance: balance ? Number(balance) : 0 })
+      await onSubmit({ name, color, imageUrl, balance })
       onOpenChange(false)
     } finally {
       setIsSubmitting(false)
@@ -96,14 +97,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="account-balance">Saldo atual</Label>
-            <Input
-              id="account-balance"
-              type="number"
-              step="0.01"
-              placeholder="0,00"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-            />
+            <MoneyInput id="account-balance" value={balance} onValueChange={setBalance} />
           </div>
           <div className="flex flex-col gap-2">
             <Label>Cor</Label>
@@ -129,6 +123,9 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
             </div>
           </div>
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Salvando..." : "Salvar"}
             </Button>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toErrorMessage } from "@/lib/errors"
 import { useCardsStore } from "@/features/cards/store"
@@ -29,7 +30,7 @@ export function CardPurchaseDialog({
 
   const [cardId, setCardId] = useState("")
   const [name, setName] = useState("")
-  const [amount, setAmount] = useState("")
+  const [amount, setAmount] = useState(0)
   const [totalInstallments, setTotalInstallments] = useState("2")
   const [date, setDate] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -40,7 +41,7 @@ export function CardPurchaseDialog({
       if (cards.length === 0) fetchCards()
       setCardId(cards[0]?.id ?? "")
       setName("")
-      setAmount("")
+      setAmount(0)
       setTotalInstallments("2")
       setDate(new Date().toISOString().slice(0, 10))
       setCategoryId("")
@@ -55,7 +56,7 @@ export function CardPurchaseDialog({
     try {
       await createInstallmentPurchase(cardId, {
         name,
-        installmentAmount: Number(amount),
+        installmentAmount: amount,
         totalInstallments: isInstallment ? Number(totalInstallments) : 1,
         firstInstallmentDate: date,
         domain: "",
@@ -111,15 +112,7 @@ export function CardPurchaseDialog({
                 <Label htmlFor="cardpurchase-amount">
                   {isInstallment ? "Valor da parcela" : "Valor"}
                 </Label>
-                <Input
-                  id="cardpurchase-amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
+                <MoneyInput id="cardpurchase-amount" required value={amount} onValueChange={setAmount} />
               </div>
               {isInstallment && (
                 <div className="flex flex-col gap-2">

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { toErrorMessage } from "@/lib/errors"
 import { AccountSelect } from "@/features/accounts/components/AccountSelect"
 import { useAccountsStore } from "@/features/accounts/store"
@@ -18,7 +19,7 @@ export function AccountDebitQuickDialog({ open, onOpenChange }: { open: boolean;
   const createPurchase = useAccountsStore((s) => s.createPurchase)
   const [accountId, setAccountId] = useState("")
   const [name, setName] = useState("")
-  const [amount, setAmount] = useState("")
+  const [amount, setAmount] = useState(0)
   const [date, setDate] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,7 +29,7 @@ export function AccountDebitQuickDialog({ open, onOpenChange }: { open: boolean;
       if (accounts.length === 0) fetchAccounts()
       setAccountId("")
       setName("")
-      setAmount("")
+      setAmount(0)
       setDate(new Date().toISOString().slice(0, 10))
       setCategoryId("")
     }
@@ -38,7 +39,7 @@ export function AccountDebitQuickDialog({ open, onOpenChange }: { open: boolean;
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await createPurchase(accountId, { name, amount: Number(amount), date, categoryId })
+      await createPurchase(accountId, { name, amount, date, categoryId })
       toast.success("Compra no débito lançada")
       onOpenChange(false)
     } catch (err) {
@@ -71,15 +72,7 @@ export function AccountDebitQuickDialog({ open, onOpenChange }: { open: boolean;
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="debit-amount">Valor</Label>
-                <Input
-                  id="debit-amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
+                <MoneyInput id="debit-amount" required value={amount} onValueChange={setAmount} />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="debit-date">Data</Label>

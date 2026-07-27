@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Loader2, Pencil, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
@@ -30,6 +31,7 @@ export function AccountDetailPage() {
   const deletePurchase = useAccountsStore((s) => s.deletePurchase)
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [purchaseDialog, setPurchaseDialog] = useState<PurchaseDialogState>(null)
 
   useEffect(() => {
@@ -59,7 +61,6 @@ export function AccountDetailPage() {
 
   async function handleDeleteAccount() {
     if (!account) return
-    if (!confirm(`Remover a conta "${account.name}" e suas compras?`)) return
     try {
       await deleteAccount(account.id)
       toast.success("Conta removida")
@@ -121,7 +122,7 @@ export function AccountDetailPage() {
           <Button variant="ghost" size="icon" aria-label="Editar conta" onClick={() => setIsEditing(true)}>
             <Pencil className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Remover conta" onClick={handleDeleteAccount}>
+          <Button variant="ghost" size="icon" aria-label="Remover conta" onClick={() => setIsDeletingAccount(true)}>
             <Trash2 className="size-4" />
           </Button>
         </div>
@@ -210,6 +211,20 @@ export function AccountDetailPage() {
             toast.success("Compra lançada")
           }
         }}
+      />
+
+      <ConfirmDialog
+        open={isDeletingAccount}
+        onOpenChange={setIsDeletingAccount}
+        title="Remover conta"
+        description={
+          <>
+            Remover a conta <strong>{account.name}</strong> e todas as suas compras? Esta ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Remover"
+        destructive
+        onConfirm={handleDeleteAccount}
       />
     </div>
   )

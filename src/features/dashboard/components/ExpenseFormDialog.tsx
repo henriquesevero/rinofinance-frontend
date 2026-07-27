@@ -1,8 +1,16 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import { AccountSelect } from "@/features/accounts/components/AccountSelect"
@@ -39,7 +47,7 @@ export function ExpenseFormDialog({
   const isEdit = Boolean(expense)
   const [linkType, setLinkType] = useState<LinkType>("manual")
   const [name, setName] = useState("")
-  const [amount, setAmount] = useState("")
+  const [amount, setAmount] = useState(0)
   const [cardId, setCardId] = useState("")
   const [accountId, setAccountId] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -50,7 +58,7 @@ export function ExpenseFormDialog({
   useEffect(() => {
     if (open) {
       setName(expense?.name ?? "")
-      setAmount(expense ? String(expense.amount) : "")
+      setAmount(expense?.amount ?? 0)
       setCategoryId(expense?.categoryId ?? "")
       setLinkType("manual")
       setCardId(cards[0]?.id ?? "")
@@ -67,7 +75,7 @@ export function ExpenseFormDialog({
       } else if (!isEdit && linkType === "account") {
         await onSubmitAccountLinked(name, accountId, categoryId)
       } else {
-        await onSubmitManual(name, Number(amount), categoryId)
+        await onSubmitManual(name, amount, categoryId)
       }
       onOpenChange(false)
     } finally {
@@ -82,8 +90,9 @@ export function ExpenseFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Editar saída" : "Nova saída"}</DialogTitle>
+          <DialogDescription>Um gasto do mês — valor manual ou vinculado a um cartão/conta.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="expense-name">Nome</Label>
             <Input id="expense-name" required value={name} onChange={(e) => setName(e.target.value)} />
@@ -166,16 +175,14 @@ export function ExpenseFormDialog({
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="expense-amount">Valor</Label>
-              <Input
+              <MoneyInput
                 id="expense-amount"
-                type="number"
-                step="0.01"
-                min="0"
                 required
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onValueChange={setAmount}
+                className="h-11 text-lg"
               />
             </div>
           )}
@@ -186,6 +193,9 @@ export function ExpenseFormDialog({
           </div>
 
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Cancelar
+            </Button>
             <Button
               type="submit"
               disabled={

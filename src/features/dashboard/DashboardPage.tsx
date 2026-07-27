@@ -1,11 +1,13 @@
-import { useEffect } from "react"
-import { CalendarDays } from "lucide-react"
+import { useEffect, useState } from "react"
+import { BarChart3, CalendarDays } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useCardsStore } from "@/features/cards/store"
 import { monthLabel, useMonthStore } from "@/lib/monthStore"
+import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
 import { MonthBalanceCard } from "./components/MonthBalanceCard"
 import { FinancialOverview } from "./components/FinancialOverview"
+import { RecurrencesPanel } from "./components/RecurrencesPanel"
 import { SpendingDonut } from "./components/SpendingDonut"
 import { useDashboardStore } from "./store"
 
@@ -16,6 +18,8 @@ export function DashboardPage() {
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const month = useMonthStore((s) => s.month)
+  // Charts are secondary here — collapsed by default like on Entradas & Saídas.
+  const [showCharts, setShowCharts] = useState(false)
 
   // Re-fetch whenever the selected month changes so the whole page reflects it.
   useEffect(() => {
@@ -60,6 +64,31 @@ export function DashboardPage() {
         <MonthBalanceCard income={summary.totalIncome} spent={spent} />
         <SpendingDonut expenses={summary.expenses} incomes={summary.incomes} />
       </div>
+
+      {/* charts at the end — collapsed by default, same as Entradas & Saídas */}
+      {showCharts ? (
+        <>
+          <RecurrencesPanel />
+          <CategoryBreakdownPanel expenses={summary.expenses} />
+          <button
+            type="button"
+            onClick={() => setShowCharts(false)}
+            className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <BarChart3 className="size-3.5" />
+            Ocultar gráficos
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowCharts(true)}
+          className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <BarChart3 className="size-3.5" />
+          Mostrar gráficos
+        </button>
+      )}
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MoneyInput } from "@/components/MoneyInput"
 import { CardArt } from "./CardArt"
 import { CardLogo } from "./CardLogo"
 import { resizeImageToDataUrl } from "@/lib/image"
@@ -65,7 +66,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
   const [color, setColor] = useState(initial?.color || "#6B7280")
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "")
   const [logoUrl, setLogoUrl] = useState(initial?.logoUrl ?? "")
-  const [creditLimit, setCreditLimit] = useState(initial?.creditLimit ? String(initial.creditLimit) : "")
+  const [creditLimit, setCreditLimit] = useState(initial?.creditLimit ?? 0)
   const [dueDay, setDueDay] = useState(initial?.dueDay ? String(initial.dueDay) : "")
   const [closingDay, setClosingDay] = useState(initial?.closingDay ? String(initial.closingDay) : "")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -76,7 +77,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
       setColor(initial?.color || "#6B7280")
       setImageUrl(initial?.imageUrl ?? "")
       setLogoUrl(initial?.logoUrl ?? "")
-      setCreditLimit(initial?.creditLimit ? String(initial.creditLimit) : "")
+      setCreditLimit(initial?.creditLimit ?? 0)
       setDueDay(initial?.dueDay ? String(initial.dueDay) : "")
       setClosingDay(initial?.closingDay ? String(initial.closingDay) : "")
     }
@@ -115,7 +116,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
         color,
         logoUrl,
         imageUrl,
-        creditLimit: creditLimit ? Number(creditLimit) : 0,
+        creditLimit,
         dueDay: dueDay ? Number(dueDay) : 0,
         closingDay: closingDay ? Number(closingDay) : 0,
       })
@@ -196,16 +197,8 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 flex flex-col gap-2 sm:col-span-1">
-              <Label htmlFor="card-limit">Limite (R$)</Label>
-              <Input
-                id="card-limit"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="5000"
-                value={creditLimit}
-                onChange={(e) => setCreditLimit(e.target.value)}
-              />
+              <Label htmlFor="card-limit">Limite</Label>
+              <MoneyInput id="card-limit" value={creditLimit} onValueChange={setCreditLimit} />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="card-due">Dia de vencimento</Label>
