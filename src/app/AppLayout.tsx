@@ -6,7 +6,6 @@ import { Logo } from "@/components/Logo"
 import { MonthSelector } from "@/components/MonthSelector"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { UserAvatar } from "@/components/UserAvatar"
-import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { useAuthStore } from "@/features/auth/store"
 import { useCategoriesStore } from "@/features/categories/store"
@@ -53,7 +52,7 @@ export function AppLayout() {
       {/* sidebar: static column on md+, slide-in drawer on mobile */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 border-r bg-background px-3 pb-4 pt-[calc(env(safe-area-inset-top)_+_1rem)] transition-transform duration-200 md:static md:z-auto md:translate-x-0 md:pt-4",
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r bg-background px-3 pb-4 pt-[calc(env(safe-area-inset-top)_+_1rem)] transition-transform duration-200 md:translate-x-0 md:pt-4",
           navOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -118,14 +117,13 @@ export function AppLayout() {
               <LogOut className="size-4" />
             </Button>
             <div className="ml-auto flex items-center gap-0.5">
-              <ValuesVisibilityToggle />
               <ThemeToggle />
             </div>
           </div>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col md:ml-64">
         {/* mobile-only top bar: just the drawer opener + brand */}
         <header className="flex items-center gap-2 border-b px-3 pb-2 pt-[calc(env(safe-area-inset-top)_+_0.5rem)] md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setNavOpen(true)} aria-label="Abrir menu">

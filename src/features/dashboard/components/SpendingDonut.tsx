@@ -128,7 +128,7 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
           {/* donut */}
           <div className="relative shrink-0">
-            <svg viewBox="0 0 42 42" className="size-40">
+            <svg viewBox="0 0 42 42" className="size-44">
               <circle cx="21" cy="21" r={r} fill="none" className="stroke-muted" strokeWidth="4" />
               {arcs.map((a) => (
                 <circle
@@ -145,9 +145,9 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
                 />
               ))}
             </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[11px] text-muted-foreground">{label}</span>
-              <MoneyValue value={total} className="text-lg font-bold tabular-nums" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+              <span className="text-[10px] text-muted-foreground">{label}</span>
+              <MoneyValue value={total} className="text-sm font-bold leading-tight tabular-nums" />
             </div>
           </div>
 

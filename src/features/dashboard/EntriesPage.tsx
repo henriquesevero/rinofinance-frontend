@@ -1,13 +1,11 @@
 import { useEffect } from "react"
-import { BarChart3, Loader2 } from "lucide-react"
-import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
+import { Loader2 } from "lucide-react"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { QuickActions } from "./components/QuickActions"
 import { ExpenseSection } from "./components/ExpenseSection"
 import { IncomeSection } from "./components/IncomeSection"
-import { RecurrencesPanel } from "./components/RecurrencesPanel"
 import { SummaryCards } from "./components/SummaryCards"
 import { useMonthStore } from "@/lib/monthStore"
-import { useChartsPrefStore } from "./chartsPrefStore"
 import { useDashboardStore } from "./store"
 
 // Entradas & Saídas: everything about managing the month's recurring income
@@ -17,8 +15,6 @@ export function EntriesPage() {
   const isLoading = useDashboardStore((s) => s.isLoading)
   const error = useDashboardStore((s) => s.error)
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
-  const chartsHidden = useChartsPrefStore((s) => s.hidden)
-  const toggleCharts = useChartsPrefStore((s) => s.toggle)
   const month = useMonthStore((s) => s.month)
 
   useEffect(() => {
@@ -47,7 +43,10 @@ export function EntriesPage() {
           <h1 className="text-xl font-semibold tracking-tight">Entradas & Saídas</h1>
           <p className="text-sm text-muted-foreground">Gerencie suas receitas e despesas do mês.</p>
         </div>
-        <QuickActions />
+        <div className="flex shrink-0 items-center gap-1">
+          <ValuesVisibilityToggle />
+          <QuickActions />
+        </div>
       </div>
 
       <SummaryCards
@@ -60,31 +59,6 @@ export function EntriesPage() {
         <IncomeSection incomes={summary.incomes} />
         <ExpenseSection expenses={summary.expenses} />
       </div>
-
-      {/* charts live at the end — secondary to managing the month's lines */}
-      {chartsHidden ? (
-        <button
-          type="button"
-          onClick={toggleCharts}
-          className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <BarChart3 className="size-3.5" />
-          Mostrar gráficos
-        </button>
-      ) : (
-        <>
-          <RecurrencesPanel />
-          <CategoryBreakdownPanel expenses={summary.expenses} />
-          <button
-            type="button"
-            onClick={toggleCharts}
-            className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <BarChart3 className="size-3.5" />
-            Ocultar gráficos
-          </button>
-        </>
-      )}
     </div>
   )
 }

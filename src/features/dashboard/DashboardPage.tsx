@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { BarChart3, CalendarDays } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { useCardsStore } from "@/features/cards/store"
 import { monthLabel, useMonthStore } from "@/lib/monthStore"
 import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
@@ -48,10 +49,13 @@ export function DashboardPage() {
           <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
           <p className="text-sm text-muted-foreground">Visão geral dos seus dados financeiros.</p>
         </div>
-        <span className="flex shrink-0 items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium">
-          <CalendarDays className="size-4 text-muted-foreground" />
-          {monthLabel(month)}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <ValuesVisibilityToggle />
+          <span className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium">
+            <CalendarDays className="size-4 text-muted-foreground" />
+            {monthLabel(month)}
+          </span>
+        </div>
       </div>
 
       {/* financial overview: accounts, cards, investments */}

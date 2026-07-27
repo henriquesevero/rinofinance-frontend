@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CardFormDialog } from "./components/CardFormDialog"
@@ -81,16 +82,19 @@ export function CardsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Cartões</h1>
           <p className="text-muted-foreground">Faturas, limites e parcelas dos seus cartões.</p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-9 shrink-0"
-          onClick={() => setIsCreateOpen(true)}
-          aria-label="Novo cartão"
-          title="Novo cartão"
-        >
-          <Plus className="size-5" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <ValuesVisibilityToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={() => setIsCreateOpen(true)}
+            aria-label="Novo cartão"
+            title="Novo cartão"
+          >
+            <Plus className="size-5" />
+          </Button>
+        </div>
       </div>
 
       {/* total geral — compacto e discreto */}

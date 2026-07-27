@@ -14,8 +14,8 @@ export interface SeriesMeta {
 
 export const SERIES: SeriesMeta[] = [
   { key: "installments", label: "Parcelamentos", color: "bg-amber-500" },
-  { key: "subscriptions", label: "Assinaturas", color: "bg-cyan-500" },
-  { key: "oneOff", label: "Avulsas", color: "bg-sky-500" },
+  { key: "subscriptions", label: "Assinaturas", color: "bg-violet-500" },
+  { key: "oneOff", label: "Avulsas", color: "bg-zinc-400" },
   { key: "debit", label: "Débito (conta)", color: "bg-red-500" },
 ]
 

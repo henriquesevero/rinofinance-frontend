@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CardLogo } from "./components/CardLogo"
@@ -89,6 +90,7 @@ export function CardDetailPage() {
           <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <ValuesVisibilityToggle />
           <Button
             variant="ghost"
             size="icon"

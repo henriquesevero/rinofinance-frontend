@@ -3,6 +3,7 @@ import { Cable, Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { DragHandle } from "@/components/DragHandle"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { useReorder } from "@/lib/useReorder"
@@ -46,15 +47,18 @@ export function AccountsPage() {
           <h1 className="text-2xl font-bold tracking-tight">Contas</h1>
           <p className="text-muted-foreground">Conecte, visualize e gerencie suas conexões financeiras.</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="size-4" />
-          Nova conta
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <ValuesVisibilityToggle />
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="size-4" />
+            Nova conta
+          </Button>
+        </div>
       </div>
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2.5">
-          <Cable className="size-5 text-cyan-500" />
+          <Cable className="size-5 text-muted-foreground" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Conexões</h2>
           {accounts.length > 0 && (
             <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-500">

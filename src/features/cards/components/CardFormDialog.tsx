@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
-import { ImagePlus, X } from "lucide-react"
+import { ImagePlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/MoneyInput"
 import { CardArt } from "./CardArt"
-import { CardLogo } from "./CardLogo"
 import { resizeImageToDataUrl } from "@/lib/image"
 import { toErrorMessage } from "@/lib/errors"
 import { toast } from "sonner"
@@ -128,63 +134,61 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{initial ? "Editar cartão" : "Novo cartão"}</DialogTitle>
+          <DialogDescription>Aparência, limite e datas da fatura.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label>Imagem do cartão</Label>
-            <div className="mx-auto w-full max-w-[280px]">
+          {/* appearance: compact preview + upload controls */}
+          <div className="flex items-center gap-4">
+            <div className="w-32 shrink-0">
               <CardArt card={{ name: name || "Cartão", color, imageUrl }} />
             </div>
-            <div className="flex justify-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <ImagePlus className="size-4" />
-                {imageUrl ? "Trocar imagem" : "Enviar imagem"}
-              </Button>
-              {imageUrl && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setImageUrl("")}>
-                  <X className="size-4" />
-                  Remover
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImagePlus className="size-4" />
+                  {imageUrl ? "Trocar imagem" : "Imagem"}
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  <ImagePlus className="size-4" />
+                  {logoUrl ? "Trocar logo" : "Logo"}
+                </Button>
+              </div>
+              {(imageUrl || logoUrl) && (
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                  {imageUrl && (
+                    <button type="button" className="hover:text-foreground" onClick={() => setImageUrl("")}>
+                      Remover imagem
+                    </button>
+                  )}
+                  {logoUrl && (
+                    <button type="button" className="hover:text-foreground" onClick={() => setLogoUrl("")}>
+                      Remover logo
+                    </button>
+                  )}
+                </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
+              <p className="text-xs text-muted-foreground">A logo aparece no lugar do chip e nas listas.</p>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label>Logotipo</Label>
-            <p className="text-xs text-muted-foreground">Aparece no cartão (no lugar do chip) e nas listas.</p>
-            <div className="flex items-center gap-3">
-              <CardLogo name={name || "?"} color={color} logoUrl={logoUrl} className="size-12" />
-              <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
-                <ImagePlus className="size-4" />
-                {logoUrl ? "Trocar logotipo" : "Enviar logotipo"}
-              </Button>
-              {logoUrl && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setLogoUrl("")}>
-                  <X className="size-4" />
-                  Remover
-                </Button>
-              )}
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLogoChange}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="card-name">Nome do cartão</Label>
             <Input
               id="card-name"
@@ -195,13 +199,13 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 flex flex-col gap-2 sm:col-span-1">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-1">
               <Label htmlFor="card-limit">Limite</Label>
               <MoneyInput id="card-limit" value={creditLimit} onValueChange={setCreditLimit} />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="card-due">Dia de vencimento</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="card-due">Vencimento</Label>
               <Input
                 id="card-due"
                 type="number"
@@ -212,8 +216,8 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
                 onChange={(e) => setDueDay(e.target.value)}
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="card-closing">Dia de fechamento</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="card-closing">Fechamento</Label>
               <Input
                 id="card-closing"
                 type="number"
@@ -226,17 +230,16 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label>Cor do cartão</Label>
-            <p className="text-xs text-muted-foreground">Usada quando não há imagem enviada.</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-1">
               {COLOR_PRESETS.map((preset) => (
                 <button
                   key={preset.value}
                   type="button"
                   title={preset.label}
                   onClick={() => setColor(preset.value)}
-                  className="size-7 rounded-full ring-1 ring-foreground/10 ring-offset-2 ring-offset-background data-[selected=true]:ring-2 data-[selected=true]:ring-foreground"
+                  className="size-7 shrink-0 rounded-full ring-1 ring-foreground/10 ring-offset-2 ring-offset-background data-[selected=true]:ring-2 data-[selected=true]:ring-foreground"
                   data-selected={color.toLowerCase() === preset.value.toLowerCase()}
                   style={{ backgroundColor: preset.value }}
                 />
@@ -245,13 +248,16 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="size-7 cursor-pointer rounded-full border-0 bg-transparent p-0"
+                className="size-7 shrink-0 cursor-pointer rounded-full border-0 bg-transparent p-0"
                 aria-label="Escolher cor personalizada"
               />
             </div>
           </div>
 
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Salvando..." : "Salvar"}
             </Button>

@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CategoryChip } from "@/features/categories/components/CategoryChip"
@@ -119,6 +120,7 @@ export function AccountDetailPage() {
           </div>
         </dl>
         <div className="flex gap-1 self-start">
+          <ValuesVisibilityToggle />
           <Button variant="ghost" size="icon" aria-label="Editar conta" onClick={() => setIsEditing(true)}>
             <Pencil className="size-4" />
           </Button>

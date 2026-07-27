@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { MoneyValue } from "@/components/MoneyValue"
+import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { AssetFormDialog } from "./components/AssetFormDialog"
@@ -70,10 +71,13 @@ export function InvestmentsPage() {
             </CardTitle>
           </CardHeader>
         </Card>
-        <Button onClick={() => setDialogState({ mode: "create" })}>
-          <Plus className="size-4" />
-          Novo ativo
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <ValuesVisibilityToggle />
+          <Button onClick={() => setDialogState({ mode: "create" })}>
+            <Plus className="size-4" />
+            Novo ativo
+          </Button>
+        </div>
       </div>
 
       <Card>
