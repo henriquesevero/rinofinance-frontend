@@ -223,7 +223,7 @@ export function CardSection({ card }: { card: CardOverview }) {
       <Card className="flex flex-col gap-4 p-5">
         <GroupHeader
           icon={Repeat}
-          title="Assinaturas mensais"
+          title="Assinaturas"
           count={card.subscriptions.length}
           collapsed={collapsed.subs}
           onToggle={() => toggleCollapsed("subs")}
