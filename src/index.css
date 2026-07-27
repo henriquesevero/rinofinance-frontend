@@ -181,3 +181,15 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
+
+/* Hide scrollbars app-wide — no visible scroll track anywhere, but every
+   scroll container still scrolls via wheel/touch/keys. */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
+}
