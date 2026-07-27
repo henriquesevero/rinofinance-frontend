@@ -60,7 +60,7 @@ export function AccountPurchaseFormDialog({ open, onOpenChange, purchase, onSubm
             <Label htmlFor="acc-purchase-name">Descrição</Label>
             <Input id="acc-purchase-name" required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="acc-purchase-amount">Valor</Label>
               <MoneyInput id="acc-purchase-amount" required value={amount} onValueChange={setAmount} />

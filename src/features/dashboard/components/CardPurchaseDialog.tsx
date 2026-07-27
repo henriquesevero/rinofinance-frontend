@@ -107,7 +107,7 @@ export function CardPurchaseDialog({
               <Input id="cardpurchase-name" required value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="cardpurchase-amount">
                   {isInstallment ? "Valor da parcela" : "Valor"}
