@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { CreditCard, GripVertical, Loader2, Plus } from "lucide-react"
+import { CreditCard, GripVertical, Loader2, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -14,12 +14,14 @@ import type { CardOverview } from "./types"
 
 export function CardsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [editingCard, setEditingCard] = useState<CardOverview | null>(null)
   const cards = useCardsStore((s) => s.cards)
   const grandTotal = useCardsStore((s) => s.grandTotal)
   const isLoading = useCardsStore((s) => s.isLoading)
   const error = useCardsStore((s) => s.error)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const createCard = useCardsStore((s) => s.createCard)
+  const updateCard = useCardsStore((s) => s.updateCard)
   const reorderCards = useCardsStore((s) => s.reorderCards)
   const month = useMonthStore((s) => s.month)
 
@@ -130,6 +132,19 @@ export function CardsPage() {
               >
                 <GripVertical className="size-4" />
               </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setEditingCard(card)
+                }}
+                title="Editar cartão"
+                aria-label="Editar cartão"
+                className="absolute right-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100"
+              >
+                <Pencil className="size-4" />
+              </button>
               <CardOverviewTile card={card} />
             </div>
           ))}
@@ -143,6 +158,34 @@ export function CardsPage() {
           try {
             await createCard(input)
             toast.success("Cartão criado")
+          } catch (err) {
+            toast.error(toErrorMessage(err))
+            throw err
+          }
+        }}
+      />
+
+      <CardFormDialog
+        open={editingCard !== null}
+        onOpenChange={(open) => !open && setEditingCard(null)}
+        initial={
+          editingCard
+            ? {
+                name: editingCard.name,
+                color: editingCard.color ?? "",
+                logoUrl: editingCard.logoUrl ?? "",
+                imageUrl: editingCard.imageUrl ?? "",
+                creditLimit: editingCard.creditLimit,
+                dueDay: editingCard.dueDay ?? 0,
+                closingDay: editingCard.closingDay ?? 0,
+              }
+            : undefined
+        }
+        onSubmit={async (input) => {
+          if (!editingCard) return
+          try {
+            await updateCard(editingCard.id, input)
+            toast.success("Cartão atualizado")
           } catch (err) {
             toast.error(toErrorMessage(err))
             throw err

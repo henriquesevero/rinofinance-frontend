@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, CalendarCheck2, CalendarClock, CreditCard, Loader2, Pencil, Wallet } from "lucide-react"
+import { ArrowLeft, CalendarCheck2, CalendarClock, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CardLogo } from "./components/CardLogo"
-import { CardFormDialog } from "./components/CardFormDialog"
 import { CardSection } from "./components/CardSection"
+import { ClearCardDialog } from "./components/ClearCardDialog"
+import { ImportFaturaDialog } from "./components/ImportFaturaDialog"
 import { computeCardStats } from "./cardStats"
 import { useCardsStore } from "./store"
 
@@ -20,11 +27,22 @@ function dayCount(days: number) {
 export function CardDetailPage() {
   const { cardId } = useParams<{ cardId: string }>()
   const navigate = useNavigate()
-  const [isEditing, setIsEditing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
   const cards = useCardsStore((s) => s.cards)
   const isLoading = useCardsStore((s) => s.isLoading)
   const fetchCards = useCardsStore((s) => s.fetchCards)
-  const updateCard = useCardsStore((s) => s.updateCard)
+  const deleteCard = useCardsStore((s) => s.deleteCard)
+
+  async function handleDeleteCard() {
+    try {
+      await deleteCard(cardId!)
+      toast.success("Cartão removido")
+      navigate("/cards")
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+    }
+  }
 
   // Cards may not be loaded yet on a fresh page load / refresh straight
   // onto this route.
@@ -70,10 +88,37 @@ export function CardDetailPage() {
           <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-10 shrink-0" />
           <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
         </div>
-        <Button variant="outline" size="sm" className="shrink-0" onClick={() => setIsEditing(true)}>
-          <Pencil className="size-4" />
-          Editar
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={() => setIsImporting(true)}
+            aria-label="Importar fatura"
+            title="Importar fatura"
+          >
+            <FileUp className="size-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-9" aria-label="Mais opções" title="Mais opções">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setIsClearing(true)}>
+                <Eraser className="size-4" />
+                Limpar fatura
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDeleteCard} className="text-destructive">
+                <Trash2 className="size-4" />
+                Excluir cartão
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -117,30 +162,11 @@ export function CardDetailPage() {
         )}
       </div>
 
-      <CardSection card={card} onDeleted={() => navigate("/cards")} />
+      <CardSection card={card} />
 
-      <CardFormDialog
-        open={isEditing}
-        onOpenChange={setIsEditing}
-        initial={{
-          name: card.name,
-          color: card.color ?? "",
-          logoUrl: card.logoUrl ?? "",
-          imageUrl: card.imageUrl ?? "",
-          creditLimit: card.creditLimit,
-          dueDay: card.dueDay ?? 0,
-          closingDay: card.closingDay ?? 0,
-        }}
-        onSubmit={async (input) => {
-          try {
-            await updateCard(card.id, input)
-            toast.success("Cartão atualizado")
-          } catch (err) {
-            toast.error(toErrorMessage(err))
-            throw err
-          }
-        }}
-      />
+      <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} />
+      <ClearCardDialog open={isClearing} onOpenChange={setIsClearing} card={card} />
+
     </div>
   )
 }

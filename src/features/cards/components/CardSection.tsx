@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, Eraser, FileUp, Flag, Layers, MoreHorizontal, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
+import { ChevronDown, Flag, Layers, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
 import { BulkActionsMenu, type SortConfig } from "@/components/BulkActionsMenu"
 import { toErrorMessage } from "@/lib/errors"
@@ -32,8 +26,6 @@ import { useCategoriesStore } from "@/features/categories/store"
 import { DragHandle } from "@/components/DragHandle"
 import { useReorder } from "@/lib/useReorder"
 import { BrandLogo } from "./BrandLogo"
-import { ClearCardDialog } from "./ClearCardDialog"
-import { ImportFaturaDialog } from "./ImportFaturaDialog"
 import { InstallmentPurchaseFormDialog } from "./InstallmentPurchaseFormDialog"
 import { SubscriptionFormDialog } from "./SubscriptionFormDialog"
 
@@ -43,9 +35,7 @@ type PurchaseDialogState =
   | null
 type SubscriptionDialogState = { mode: "create" } | { mode: "edit"; subscription: Subscription } | null
 
-export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted?: () => void }) {
-  const [isImporting, setIsImporting] = useState(false)
-  const [isClearing, setIsClearing] = useState(false)
+export function CardSection({ card }: { card: CardOverview }) {
   const [purchaseDialog, setPurchaseDialog] = useState<PurchaseDialogState>(null)
   const [subscriptionDialog, setSubscriptionDialog] = useState<SubscriptionDialogState>(null)
   const [sortKey, setSortKey] = useState<PurchaseSortKey>("default")
@@ -54,7 +44,6 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
   const [collapsed, setCollapsed] = useState({ avulsas: false, parceladas: false, subs: false })
   const toggleCollapsed = (k: "avulsas" | "parceladas" | "subs") => setCollapsed((c) => ({ ...c, [k]: !c[k] }))
 
-  const deleteCard = useCardsStore((s) => s.deleteCard)
   const createInstallmentPurchase = useCardsStore((s) => s.createInstallmentPurchase)
   const updateInstallmentPurchase = useCardsStore((s) => s.updateInstallmentPurchase)
   const toggleInstallmentPurchaseFlag = useCardsStore((s) => s.toggleInstallmentPurchaseFlag)
@@ -103,16 +92,6 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
   )
   const subsDnd = useReorder(sortedSubscriptions, (ids) => reorderSubscriptions(card.id, ids))
 
-  async function handleDeleteCard() {
-    try {
-      await deleteCard(card.id)
-      toast.success("Cartão removido")
-      onDeleted?.()
-    } catch (err) {
-      toast.error(toErrorMessage(err))
-    }
-  }
-
   async function handleDeletePurchase(id: string) {
     try {
       await deleteInstallmentPurchase(id)
@@ -154,39 +133,6 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
 
   return (
     <div className="flex flex-col gap-6">
-      {/* toolbar: primary action + a discreet menu for destructive ones */}
-      <div className="flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={() => setIsImporting(true)}
-          aria-label="Importar fatura"
-          title="Importar fatura"
-        >
-          <FileUp className="size-4" />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="icon" className="size-8" aria-label="Mais opções do cartão" title="Mais opções">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setIsClearing(true)}>
-              <Eraser className="size-4" />
-              Limpar fatura
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDeleteCard} className="text-destructive">
-              <Trash2 className="size-4" />
-              Excluir cartão
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <Card className="flex flex-col gap-4 p-5">
           <GroupHeader
@@ -325,9 +271,6 @@ export function CardSection({ card, onDeleted }: { card: CardOverview; onDeleted
             </ul>
           ))}
       </Card>
-
-      <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} />
-      <ClearCardDialog open={isClearing} onOpenChange={setIsClearing} card={card} />
 
       <InstallmentPurchaseFormDialog
         open={purchaseDialog !== null}
