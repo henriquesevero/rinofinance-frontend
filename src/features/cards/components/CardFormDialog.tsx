@@ -213,14 +213,14 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
 
           <div className="flex flex-col gap-1.5">
             <Label>Cor do cartão</Label>
-            <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap gap-2">
               {COLOR_PRESETS.map((preset) => (
                 <button
                   key={preset.value}
                   type="button"
                   title={preset.label}
                   onClick={() => setColor(preset.value)}
-                  className="size-7 shrink-0 rounded-full ring-1 ring-foreground/10 ring-offset-2 ring-offset-background data-[selected=true]:ring-2 data-[selected=true]:ring-foreground"
+                  className="size-6 rounded-full ring-1 ring-foreground/10 ring-offset-2 ring-offset-background data-[selected=true]:ring-2 data-[selected=true]:ring-foreground"
                   data-selected={color.toLowerCase() === preset.value.toLowerCase()}
                   style={{ backgroundColor: preset.value }}
                 />
@@ -229,7 +229,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="size-7 shrink-0 cursor-pointer rounded-full border-0 bg-transparent p-0"
+                className="size-6 cursor-pointer rounded-full border-0 bg-transparent p-0"
                 aria-label="Escolher cor personalizada"
               />
             </div>
