@@ -152,8 +152,10 @@ export function CardSection({ card }: { card: CardOverview }) {
         <Card className="flex flex-col gap-4 p-5">
           <GroupHeader
             icon={ShoppingBag}
+            iconClassName="text-red-500"
             title="Compras avulsas"
             count={avulsas.length}
+            countClassName="text-red-500"
             collapsed={collapsed.avulsas}
             onToggle={() => toggleCollapsed("avulsas")}
             sort={avulsaSort}
@@ -185,6 +187,7 @@ export function CardSection({ card }: { card: CardOverview }) {
         <Card className="flex flex-col gap-4 p-5">
           <GroupHeader
             icon={Layers}
+            iconClassName="text-red-500"
             title="Compras parceladas"
             count={parceladas.length}
             countClassName="text-red-500"
@@ -342,6 +345,7 @@ function GroupHeader({
   onAdd,
   addLabel,
   countClassName,
+  iconClassName,
 }: {
   icon: typeof ShoppingBag
   title: string
@@ -352,12 +356,13 @@ function GroupHeader({
   onAdd: () => void
   addLabel: string
   countClassName?: string
+  iconClassName?: string
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <button type="button" onClick={onToggle} aria-expanded={!collapsed} className="flex min-w-0 items-center gap-2 text-left">
         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")} />
-        <Icon className="size-4 shrink-0 text-muted-foreground" />
+        <Icon className={cn("size-4 shrink-0 text-muted-foreground", iconClassName)} />
         <span className="truncate text-sm font-semibold">{title}</span>
         {count > 0 && <span className={cn("shrink-0 text-xs text-muted-foreground", countClassName)}>({count})</span>}
       </button>

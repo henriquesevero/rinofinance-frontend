@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Loader2, Pencil, Plus, Trash2 } from "lucide-react"
+import { ArrowDownLeft, ArrowLeft, Loader2, MoreHorizontal, Pencil, Plus, Receipt, ShoppingBag, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
@@ -90,95 +97,135 @@ export function AccountDetailPage() {
         Contas
       </Link>
 
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-3">
-          <AccountAvatar account={account} className="size-16" />
-          <div className="min-w-0">
-            <p className="truncate text-lg font-semibold" title={account.name}>
-              {account.name}
-            </p>
-            <p className="text-xs text-muted-foreground">Conta corrente</p>
-          </div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <AccountAvatar account={account} className="size-10 shrink-0" />
+          <h1 className="truncate text-2xl font-bold tracking-tight">{account.name}</h1>
         </div>
-        <dl className="grid flex-1 grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <dt className="text-xs text-muted-foreground">Saldo atual</dt>
-            <dd
-              className={cn(
-                "text-2xl font-bold tracking-tight",
-                account.balance < 0 && "text-red-600 dark:text-red-400"
-              )}
-            >
-              <MoneyValue value={account.balance} />
-            </dd>
-          </div>
-          <div className="flex flex-col gap-1">
-            <dt className="text-xs text-muted-foreground">Compras no mês</dt>
-            <dd className="text-xl font-semibold">
-              <MoneyValue value={account.monthlyDebitTotal} />
-            </dd>
-          </div>
-        </dl>
-        <div className="flex gap-1 self-start">
+        <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
-          <Button variant="ghost" size="icon" aria-label="Editar conta" onClick={() => setIsEditing(true)}>
-            <Pencil className="size-4" />
-          </Button>
-          <Button variant="ghost" size="icon" aria-label="Remover conta" onClick={() => setIsDeletingAccount(true)}>
-            <Trash2 className="size-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-9" aria-label="Mais opções" title="Mais opções">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                <Pencil className="size-4" />
+                Editar conta
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsDeletingAccount(true)} className="text-destructive">
+                <Trash2 className="size-4" />
+                Excluir conta
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-lg border p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">Compras no débito</h3>
-          <Button variant="outline" size="sm" onClick={() => setPurchaseDialog({ mode: "create" })}>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          icon={Wallet}
+          label="Saldo atual"
+          value={<MoneyValue value={account.balance} />}
+          tone={account.balance < 0 ? "danger" : "positive"}
+          sub="disponível na conta"
+        />
+        <StatCard
+          icon={ArrowDownLeft}
+          label="Compras no mês"
+          value={<MoneyValue value={account.monthlyDebitTotal} />}
+          tone="danger"
+          sub="débitos deste mês"
+        />
+        <StatCard
+          icon={Receipt}
+          label="Lançamentos"
+          value={String(account.purchases.length)}
+          sub="compras registradas"
+        />
+      </div>
+
+      <Card className="flex flex-col gap-4 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <ShoppingBag className="size-4 shrink-0 text-muted-foreground" />
+            <span className="truncate text-sm font-semibold">Compras no débito</span>
+            {account.purchases.length > 0 && (
+              <span className="shrink-0 text-xs text-muted-foreground">({account.purchases.length})</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => setPurchaseDialog({ mode: "create" })}
+            aria-label="Nova compra"
+            title="Nova compra"
+          >
             <Plus className="size-4" />
-            Nova compra
           </Button>
         </div>
+
         {account.purchases.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma compra lançada.</p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="scrollbar-hide -mx-2 flex max-h-[26rem] flex-col gap-1 overflow-y-auto px-2">
             {account.purchases.map((purchase) => (
-              <li key={purchase.id} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-medium" title={purchase.name}>
-                      {purchase.name}
-                    </span>
-                    <CategoryChip categoryId={purchase.categoryId} />
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {dateFormatter.format(new Date(`${purchase.date}T00:00:00`))}
+              <li
+                key={purchase.id}
+                className="group relative flex flex-col gap-1 rounded-md px-2 py-2 hover:bg-muted/50 sm:flex-row sm:items-center sm:gap-3"
+              >
+                <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                    <ShoppingBag className="size-4 text-muted-foreground" />
                   </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <p className="min-w-0 truncate font-medium" title={purchase.name}>
+                        {purchase.name}
+                      </p>
+                      <CategoryChip categoryId={purchase.categoryId} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {dateFormatter.format(new Date(`${purchase.date}T00:00:00`))}
+                    </p>
+                  </div>
                 </div>
-                <MoneyValue value={purchase.amount} className="shrink-0 font-medium tabular-nums" />
-                <div className="flex shrink-0 items-center">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Editar compra"
-                    onClick={() => setPurchaseDialog({ mode: "edit", purchase })}
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Remover compra"
-                    onClick={() => handleDeletePurchase(purchase.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                <div className="flex items-center justify-between gap-2 pl-12 sm:contents sm:pl-0">
+                  <MoneyValue
+                    value={purchase.amount}
+                    className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                  />
+                  <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label="Editar compra"
+                      onClick={() => setPurchaseDialog({ mode: "edit", purchase })}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      aria-label="Remover compra"
+                      onClick={() => handleDeletePurchase(purchase.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </Card>
 
       <AccountFormDialog
         open={isEditing}
@@ -229,5 +276,33 @@ export function AccountDetailPage() {
         onConfirm={handleDeleteAccount}
       />
     </div>
+  )
+}
+
+// A single metric tile in the account's stat grid — same shape as the card
+// detail page's stats: icon + uppercase label + prominent value + sub-line.
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  icon: typeof Wallet
+  label: string
+  value: React.ReactNode
+  sub?: string
+  tone?: "positive" | "danger"
+}) {
+  const toneClass = tone === "positive" ? "text-emerald-500" : tone === "danger" ? "text-red-500" : ""
+  return (
+    <Card className="flex flex-col gap-1 p-3.5">
+      <div className="flex items-center gap-1.5">
+        <Icon className={cn("size-3", toneClass || "text-muted-foreground")} />
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      </div>
+      <div className={cn("text-lg font-bold tracking-tight tabular-nums", toneClass)}>{value}</div>
+      {sub && <p className="text-[11px] leading-tight text-muted-foreground">{sub}</p>}
+    </Card>
   )
 }
