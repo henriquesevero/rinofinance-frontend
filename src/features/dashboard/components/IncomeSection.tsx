@@ -82,20 +82,20 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
 
   return (
     <Card className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(4)]">
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-expanded={!collapsed}
-          className="flex items-center gap-2 text-left"
+          className="flex min-w-0 items-center gap-2 text-left"
         >
           <ChevronDown
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
           <ArrowDownLeft className="size-4 shrink-0 text-emerald-500" />
-          <CardTitle>Entradas do mês</CardTitle>
+          <CardTitle className="truncate">Entradas do mês</CardTitle>
         </button>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {incomes.length > 0 && (
             <BulkActionsMenu
               groups={[

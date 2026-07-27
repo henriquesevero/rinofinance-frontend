@@ -21,12 +21,12 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
   return (
     <Link
       to={`/cards/${card.id}`}
-      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-white/60 hover:shadow-[0_16px_50px_-16px_rgba(255,255,255,0.35)]"
+      className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-card to-background p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-white/60 hover:shadow-[0_16px_50px_-16px_rgba(255,255,255,0.35)]"
     >
       <CardArt card={card} />
 
       <div className="flex items-end justify-between gap-2">
-        <MoneyValue value={card.monthlyTotal} className="min-w-0 text-xl font-bold tracking-tight tabular-nums" />
+        <MoneyValue value={card.monthlyTotal} className="min-w-0 text-lg font-bold tracking-tight tabular-nums" />
         {stats.daysUntilDue !== null && (
           <span className="shrink-0 text-xs text-muted-foreground">
             {stats.daysUntilDue === 0
@@ -50,10 +50,10 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
         </div>
       )}
 
-      <div className="mt-auto border-t border-border/60 pt-3">
-        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
+      <div className="mt-auto border-t border-border/60 pt-2.5">
+        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
           Ver detalhes
-          <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+          <ChevronRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>
       </div>
     </Link>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, CalendarCheck2, CalendarClock, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Trash2, Wallet } from "lucide-react"
+import { ArrowLeft, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -20,10 +20,6 @@ import { ClearCardDialog } from "./components/ClearCardDialog"
 import { ImportFaturaDialog } from "./components/ImportFaturaDialog"
 import { computeCardStats } from "./cardStats"
 import { useCardsStore } from "./store"
-
-function dayCount(days: number) {
-  return `${days} ${days === 1 ? "dia" : "dias"}`
-}
 
 export function CardDetailPage() {
   const { cardId } = useParams<{ cardId: string }>()
@@ -74,6 +70,11 @@ export function CardDetailPage() {
 
   const stats = computeCardStats(card)
 
+  // Small under-the-name line replacing the dedicated due-date / best-day cards.
+  const metaParts: string[] = []
+  if (card.dueDay) metaParts.push(`Vence dia ${card.dueDay}`)
+  if (stats.bestPurchaseDay !== null) metaParts.push(`Melhor compra dia ${stats.bestPurchaseDay}`)
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -87,7 +88,12 @@ export function CardDetailPage() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-10 shrink-0" />
-          <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
+            {metaParts.length > 0 && (
+              <p className="truncate text-xs text-muted-foreground">{metaParts.join(" · ")}</p>
+            )}
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
@@ -123,7 +129,7 @@ export function CardDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
           icon={CreditCard}
           label="Fatura do mês"
@@ -137,33 +143,6 @@ export function CardDetailPage() {
           value={<MoneyValue value={stats.totalOwed} />}
           sub="quitação das parcelas restantes"
         />
-        {stats.daysUntilDue !== null ? (
-          <StatCard
-            icon={CalendarClock}
-            label="Vencimento"
-            value={`Dia ${card.dueDay}`}
-            sub={stats.daysUntilDue === 0 ? "vence hoje" : `vence em ${dayCount(stats.daysUntilDue)}`}
-          />
-        ) : (
-          <StatCard icon={CalendarClock} label="Vencimento" value="—" sub="defina o dia de vencimento" muted />
-        )}
-        {stats.bestPurchaseDay !== null ? (
-          <StatCard
-            icon={CalendarCheck2}
-            positive
-            label="Melhor dia de compra"
-            value={`Dia ${stats.bestPurchaseDay}`}
-            sub={`fatura fecha dia ${card.closingDay}`}
-          />
-        ) : (
-          <StatCard
-            icon={CalendarCheck2}
-            label="Melhor dia de compra"
-            value="—"
-            sub="defina o dia de fechamento"
-            muted
-          />
-        )}
       </div>
 
       <CardSection card={card} />

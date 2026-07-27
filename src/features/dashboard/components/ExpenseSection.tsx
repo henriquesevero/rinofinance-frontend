@@ -112,20 +112,20 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
 
   return (
     <Card className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(4)]">
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-expanded={!collapsed}
-          className="flex items-center gap-2 text-left"
+          className="flex min-w-0 items-center gap-2 text-left"
         >
           <ChevronDown
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
           <ArrowUpRight className="size-4 shrink-0 text-red-500" />
-          <CardTitle>Saídas do mês</CardTitle>
+          <CardTitle className="truncate">Saídas do mês</CardTitle>
         </button>
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           {expenses.length > 0 && (
             <BulkActionsMenu
               sort={
@@ -203,7 +203,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                       className={cn(
                         "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors sm:size-9",
                         expense.paid
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-red-500 text-white"
                           : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
                       )}
                     >
