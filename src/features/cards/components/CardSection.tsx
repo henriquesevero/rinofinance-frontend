@@ -417,7 +417,10 @@ function PurchaseRow({
                 Parcela {currentInstallment(purchase)}/{purchase.totalInstallments}
               </span>
               <span className="whitespace-nowrap">
-                · total <MoneyValue value={purchase.installmentAmount * purchase.totalInstallments} />
+                · falta pagar{" "}
+                <MoneyValue
+                  value={purchase.installmentAmount * (purchase.totalInstallments - currentInstallment(purchase))}
+                />
               </span>
               <span className="whitespace-nowrap">· termina em {installmentEndLabel(purchase)}</span>
             </p>

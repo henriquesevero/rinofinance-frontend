@@ -122,12 +122,7 @@ export function CardDetailPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={CreditCard}
-          accent
-          label="Fatura do mês"
-          value={<MoneyValue value={card.monthlyTotal} />}
-        />
+        <StatCard icon={CreditCard} label="Fatura do mês" value={<MoneyValue value={card.monthlyTotal} />} />
         <StatCard
           icon={Wallet}
           danger
@@ -148,6 +143,7 @@ export function CardDetailPage() {
         {stats.bestPurchaseDay !== null ? (
           <StatCard
             icon={CalendarCheck2}
+            positive
             label="Melhor dia de compra"
             value={`Dia ${stats.bestPurchaseDay}`}
             sub={`fatura fecha dia ${card.closingDay}`}
@@ -181,6 +177,7 @@ function StatCard({
   sub,
   accent,
   danger,
+  positive,
   muted,
 }: {
   icon: typeof CreditCard
@@ -189,13 +186,17 @@ function StatCard({
   sub?: string
   accent?: boolean
   danger?: boolean
+  positive?: boolean
   muted?: boolean
 }) {
   return (
     <Card className="flex flex-col gap-1 p-3.5">
       <div className="flex items-center gap-1.5">
         <Icon
-          className={cn("size-3", accent ? "text-cyan-500" : danger ? "text-red-500" : "text-muted-foreground")}
+          className={cn(
+            "size-3",
+            accent ? "text-cyan-500" : danger ? "text-red-500" : positive ? "text-emerald-500" : "text-muted-foreground"
+          )}
         />
         <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
       </div>
@@ -204,6 +205,7 @@ function StatCard({
           "text-lg font-bold tracking-tight tabular-nums",
           accent && "text-cyan-500",
           danger && "text-red-500",
+          positive && "text-emerald-500",
           muted && "text-muted-foreground"
         )}
       >
