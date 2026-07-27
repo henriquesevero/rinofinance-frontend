@@ -122,7 +122,12 @@ export function CardDetailPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={CreditCard} label="Fatura do mês" value={<MoneyValue value={card.monthlyTotal} />} />
+        <StatCard
+          icon={CreditCard}
+          label="Fatura do mês"
+          value={<MoneyValue value={card.monthlyTotal} />}
+          sub="parcelas, compras avulsas e assinaturas"
+        />
         <StatCard
           icon={Wallet}
           danger

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
-import { cn } from "@/lib/utils"
 import { CardArt } from "./CardArt"
 import { computeCardStats } from "../cardStats"
 import type { CardOverview } from "../types"
@@ -22,7 +21,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
   return (
     <Link
       to={`/cards/${card.id}`}
-      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-cyan-400/50 hover:shadow-[0_16px_50px_-16px_rgba(97,218,251,0.45)]"
+      className="group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-card to-background p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-white/60 hover:shadow-[0_16px_50px_-16px_rgba(255,255,255,0.35)]"
     >
       <CardArt card={card} />
 
@@ -41,10 +40,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
         <div className="flex flex-col gap-1.5">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted">
             <div
-              className={cn(
-                "h-full rounded-full",
-                usedPct >= 90 ? "bg-red-500" : usedPct >= 70 ? "bg-amber-500" : "bg-cyan-500"
-              )}
+              className="h-full rounded-full bg-red-500"
               style={{ width: `${Math.min(usedPct, 100)}%` }}
             />
           </div>
@@ -55,7 +51,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
       )}
 
       <div className="mt-auto border-t border-border/60 pt-3">
-        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-cyan-500">
+        <span className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
           Ver detalhes
           <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>

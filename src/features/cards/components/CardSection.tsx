@@ -187,6 +187,7 @@ export function CardSection({ card }: { card: CardOverview }) {
             icon={Layers}
             title="Compras parceladas"
             count={parceladas.length}
+            countClassName="text-red-500"
             collapsed={collapsed.parceladas}
             onToggle={() => toggleCollapsed("parceladas")}
             sort={parceladaSort}
@@ -340,6 +341,7 @@ function GroupHeader({
   sort,
   onAdd,
   addLabel,
+  countClassName,
 }: {
   icon: typeof ShoppingBag
   title: string
@@ -349,6 +351,7 @@ function GroupHeader({
   sort?: SortConfig
   onAdd: () => void
   addLabel: string
+  countClassName?: string
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -356,7 +359,7 @@ function GroupHeader({
         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")} />
         <Icon className="size-4 shrink-0 text-muted-foreground" />
         <span className="truncate text-sm font-semibold">{title}</span>
-        {count > 0 && <span className="shrink-0 text-xs text-muted-foreground">({count})</span>}
+        {count > 0 && <span className={cn("shrink-0 text-xs text-muted-foreground", countClassName)}>({count})</span>}
       </button>
       <div className="flex shrink-0 items-center gap-1">
         {sort && <BulkActionsMenu groups={[]} sort={sort} />}
@@ -403,7 +406,12 @@ function PurchaseRow({
     >
       <div className="flex min-w-0 items-center gap-3 sm:flex-1">
         {handleProps && <DragHandle {...handleProps} className="hidden shrink-0 opacity-0 group-hover:opacity-100 sm:block" />}
-        <BrandLogo domain={logoDomain(purchase.name, purchase.domain)} fallbackIcon={ShoppingBag} />
+        <BrandLogo
+          domain={logoDomain(purchase.name, purchase.domain)}
+          fallbackIcon={ShoppingBag}
+          size={64}
+          className="size-9 shrink-0 rounded-md"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
             <p className="min-w-0 truncate font-medium" title={purchase.name}>
