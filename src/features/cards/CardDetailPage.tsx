@@ -91,7 +91,7 @@ export function CardDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
             {metaParts.length > 0 && (
-              <p className="truncate text-xs text-muted-foreground">{metaParts.join(" · ")}</p>
+              <p className="text-xs leading-tight text-muted-foreground">{metaParts.join(" · ")}</p>
             )}
           </div>
         </div>
