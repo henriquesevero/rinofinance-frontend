@@ -48,9 +48,15 @@ export function CategoriesPage() {
             Organize compras, assinaturas e saídas por categoria.
           </p>
         </div>
-        <Button onClick={() => setDialog({ mode: "create" })}>
-          <Plus className="size-4" />
-          Nova categoria
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9 shrink-0"
+          onClick={() => setDialog({ mode: "create" })}
+          aria-label="Nova categoria"
+          title="Nova categoria"
+        >
+          <Plus className="size-5" />
         </Button>
       </div>
 

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { CreditCard } from "lucide-react"
+import { ChevronDown, CreditCard } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { BrandLogo } from "./BrandLogo"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatMoney } from "@/lib/money"
+import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import { useCategoriesStore } from "@/features/categories/store"
@@ -413,24 +414,36 @@ function PreviewGroup({
   onToggleAll: (checked: boolean) => void
   children: React.ReactNode
 }) {
+  const [collapsed, setCollapsed] = useState(false)
   const allChecked = checkedCount === total
   const someChecked = checkedCount > 0 && !allChecked
 
   return (
     <div className="border-b last:border-b-0">
-      <label className="sticky top-0 flex cursor-pointer items-center gap-2 bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
+      <div className="sticky top-0 z-10 flex items-center gap-2 bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
         <input
           type="checkbox"
-          className="size-3.5 shrink-0"
+          className="size-3.5 shrink-0 cursor-pointer"
           checked={allChecked}
           ref={(el) => {
             if (el) el.indeterminate = someChecked
           }}
           onChange={() => onToggleAll(!allChecked)}
+          aria-label={`Selecionar todos — ${title}`}
         />
-        {title} ({checkedCount}/{total})
-      </label>
-      {children}
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="flex flex-1 items-center gap-1.5 text-left"
+        >
+          <ChevronDown className={cn("size-3.5 shrink-0 transition-transform", collapsed && "-rotate-90")} />
+          <span>
+            {title} ({checkedCount}/{total})
+          </span>
+        </button>
+      </div>
+      {!collapsed && children}
     </div>
   )
 }
