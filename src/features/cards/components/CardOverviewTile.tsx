@@ -25,7 +25,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
     >
       <CardArt card={card} />
 
-      <div className="flex items-end justify-between gap-2">
+      <div className="flex flex-col gap-0.5 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
         <MoneyValue value={card.monthlyTotal} className="min-w-0 text-lg font-bold tracking-tight tabular-nums" />
         {stats.daysUntilDue !== null && (
           <span className="shrink-0 text-xs text-muted-foreground">
