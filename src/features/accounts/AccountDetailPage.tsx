@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowDownLeft, ArrowLeft, Loader2, MoreHorizontal, Pencil, Plus, Receipt, ShoppingBag, Trash2, Wallet } from "lucide-react"
+import { ArrowDownLeft, ArrowLeft, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -126,7 +126,7 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
           icon={Wallet}
           label="Saldo atual"
@@ -140,12 +140,6 @@ export function AccountDetailPage() {
           value={<MoneyValue value={account.monthlyDebitTotal} />}
           tone="danger"
           sub="débitos deste mês"
-        />
-        <StatCard
-          icon={Receipt}
-          label="Lançamentos"
-          value={String(account.purchases.length)}
-          sub="compras registradas"
         />
       </div>
 
