@@ -152,7 +152,7 @@ export function AccountDetailPage() {
       <Card className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <ShoppingBag className="size-4 shrink-0 text-muted-foreground" />
+            <ShoppingBag className="size-4 shrink-0 text-red-500" />
             <span className="truncate text-sm font-semibold">Compras no débito</span>
             {account.purchases.length > 0 && (
               <span className="shrink-0 text-xs text-muted-foreground">({account.purchases.length})</span>

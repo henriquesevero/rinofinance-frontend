@@ -17,29 +17,17 @@ export function AccountTile({ account }: { account: Account }) {
     >
       <div className="flex items-center gap-2.5">
         <AccountAvatar account={account} className="size-9 shrink-0 rounded-lg ring-0" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold tracking-tight" title={account.name}>
-            {account.name}
-          </p>
-          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_1px] shadow-emerald-500/50" />
-            Conta ativa
-          </p>
-        </div>
+        <p className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight" title={account.name}>
+          {account.name}
+        </p>
       </div>
 
-      <div className="flex items-end justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Saldo atual</p>
-          <MoneyValue
-            value={account.balance}
-            className={cn("text-lg font-bold tracking-tight tabular-nums", account.balance < 0 && "text-red-500")}
-          />
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">No mês</p>
-          <MoneyValue value={account.monthlyDebitTotal} className="text-xs font-medium tabular-nums" />
-        </div>
+      <div>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Saldo atual</p>
+        <MoneyValue
+          value={account.balance}
+          className={cn("text-lg font-bold tracking-tight tabular-nums", account.balance < 0 && "text-red-500")}
+        />
       </div>
 
       <div className="mt-auto border-t border-border/60 pt-2.5">
