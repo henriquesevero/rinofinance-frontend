@@ -87,7 +87,7 @@ export function CardPurchaseDialog({
             <div className="flex flex-col gap-2">
               <Label htmlFor="cardpurchase-card">Cartão</Label>
               <Select value={cardId} onValueChange={(v) => setCardId(v ?? "")}>
-                <SelectTrigger id="cardpurchase-card">
+                <SelectTrigger id="cardpurchase-card" className="w-full">
                   <SelectValue placeholder="Selecione um cartão">
                     {(value: string | null) => cards.find((c) => c.id === value)?.name ?? "Selecione um cartão"}
                   </SelectValue>

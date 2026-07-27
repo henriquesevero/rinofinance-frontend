@@ -102,7 +102,7 @@ export function ExpenseFormDialog({
             <div className="flex flex-col gap-2">
               <Label htmlFor="expense-linktype">Tipo</Label>
               <Select value={linkType} onValueChange={(v) => setLinkType((v as LinkType) ?? "manual")}>
-                <SelectTrigger id="expense-linktype">
+                <SelectTrigger id="expense-linktype" className="w-full">
                   <SelectValue>
                     {(value: string | null) =>
                       value === "card"
@@ -126,7 +126,7 @@ export function ExpenseFormDialog({
             <div className="flex flex-col gap-2">
               <Label htmlFor="expense-card">Cartão</Label>
               <Select value={cardId} onValueChange={(value) => setCardId(value ?? "")}>
-                <SelectTrigger id="expense-card">
+                <SelectTrigger id="expense-card" className="w-full">
                   <SelectValue placeholder="Selecione um cartão">
                     {(value: string | null) => cards.find((c) => c.id === value)?.name ?? "Selecione um cartão"}
                   </SelectValue>

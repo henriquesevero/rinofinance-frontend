@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react"
+import { Loader2, Pencil, Plus, Trash2, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
@@ -62,77 +62,95 @@ export function InvestmentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <Card className="min-w-0 flex-1">
-          <CardHeader>
-            <CardDescription>Patrimônio total</CardDescription>
-            <CardTitle className="text-2xl">
-              <MoneyValue value={totalPatrimony} />
-            </CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Investimentos</h1>
+          <p className="text-muted-foreground">Acompanhe seu patrimônio e reservas.</p>
+        </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
-          <Button onClick={() => setDialogState({ mode: "create" })}>
-            <Plus className="size-4" />
-            Novo ativo
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={() => setDialogState({ mode: "create" })}
+            aria-label="Novo ativo"
+            title="Novo ativo"
+          >
+            <Plus className="size-5" />
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Investimentos e patrimônio</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assets.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum ativo cadastrado ainda.</p>
-          ) : (
-            <ul className="divide-y">
-              {assets.map((asset) => (
-                <li
-                  key={asset.id}
-                  className={cn("flex items-center gap-3 py-3", !asset.active && "opacity-55")}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium" title={asset.name}>
-                      {asset.name}
-                    </p>
-                    <MoneyValue
-                      value={asset.currentBalance}
-                      className="text-sm tabular-nums text-muted-foreground"
-                    />
-                  </div>
-                  <Switch
-                    checked={asset.active}
-                    onCheckedChange={() => handleToggle(asset.id)}
-                    aria-label={asset.active ? "Desativar ativo" : "Ativar ativo"}
+      {/* patrimônio total — compacto e discreto */}
+      <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[13rem]">
+        <div className="flex items-center gap-1.5">
+          <TrendingUp className="size-3.5 text-emerald-500" />
+          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Patrimônio total</h2>
+        </div>
+        <MoneyValue value={totalPatrimony} className="text-xl font-bold tracking-tight tabular-nums text-emerald-500" />
+      </Card>
+
+      <Card className="flex flex-col gap-4 p-5">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-4 shrink-0 text-emerald-500" />
+          <span className="text-sm font-semibold">Ativos</span>
+          {assets.length > 0 && <span className="text-xs text-muted-foreground">({assets.length})</span>}
+        </div>
+
+        {assets.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum ativo cadastrado ainda.</p>
+        ) : (
+          <ul className="-mx-2 flex flex-col gap-1">
+            {assets.map((asset) => (
+              <li
+                key={asset.id}
+                className={cn(
+                  "group flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50",
+                  !asset.active && "opacity-55"
+                )}
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                  <TrendingUp className="size-4 text-muted-foreground" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium" title={asset.name}>
+                    {asset.name}
+                  </p>
+                  <MoneyValue
+                    value={asset.currentBalance}
+                    className="text-sm font-medium tabular-nums text-emerald-500"
                   />
-                  <div className="flex shrink-0 items-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label="Editar ativo"
-                      onClick={() => setDialogState({ mode: "edit", asset })}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      aria-label="Remover ativo"
-                      onClick={() => handleDelete(asset.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
+                </div>
+                <Switch
+                  checked={asset.active}
+                  onCheckedChange={() => handleToggle(asset.id)}
+                  aria-label={asset.active ? "Desativar ativo" : "Ativar ativo"}
+                />
+                <div className="flex shrink-0 items-center sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label="Editar ativo"
+                    onClick={() => setDialogState({ mode: "edit", asset })}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    aria-label="Remover ativo"
+                    onClick={() => handleDelete(asset.id)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <AssetFormDialog
