@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, Flag, Layers, Pencil, Plus, Repeat, ShoppingBag, Trash2 } from "lucide-react"
+import { ChevronDown, Flag, Layers, MoreHorizontal, Pencil, Plus, Repeat, ShoppingBag, Sigma, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
 import { BulkActionsMenu, type SortConfig } from "@/components/BulkActionsMenu"
 import { toErrorMessage } from "@/lib/errors"
@@ -47,6 +53,7 @@ export function CardSection({ card }: { card: CardOverview }) {
   const createInstallmentPurchase = useCardsStore((s) => s.createInstallmentPurchase)
   const updateInstallmentPurchase = useCardsStore((s) => s.updateInstallmentPurchase)
   const toggleInstallmentPurchaseFlag = useCardsStore((s) => s.toggleInstallmentPurchaseFlag)
+  const toggleInstallmentPurchaseOwed = useCardsStore((s) => s.toggleInstallmentPurchaseOwed)
   const deleteInstallmentPurchase = useCardsStore((s) => s.deleteInstallmentPurchase)
   const createSubscription = useCardsStore((s) => s.createSubscription)
   const updateSubscription = useCardsStore((s) => s.updateSubscription)
@@ -109,6 +116,14 @@ export function CardSection({ card }: { card: CardOverview }) {
     }
   }
 
+  async function handleToggleOwed(id: string) {
+    try {
+      await toggleInstallmentPurchaseOwed(id)
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+    }
+  }
+
   async function handleDeleteSubscription(id: string) {
     try {
       await deleteSubscription(id)
@@ -158,6 +173,7 @@ export function CardSection({ card }: { card: CardOverview }) {
                     itemProps={avulsasDnd.getItemProps(purchase.id)}
                     handleProps={canReorderAvulsas ? avulsasDnd.getHandleProps(purchase.id) : undefined}
                     onToggleFlag={() => handleToggleFlag(purchase.id)}
+                    onToggleOwed={() => handleToggleOwed(purchase.id)}
                     onEdit={() => setPurchaseDialog({ mode: "edit", purchase })}
                     onDelete={() => handleDeletePurchase(purchase.id)}
                   />
@@ -190,6 +206,7 @@ export function CardSection({ card }: { card: CardOverview }) {
                     itemProps={parceladasDnd.getItemProps(purchase.id)}
                     handleProps={canReorderParceladas ? parceladasDnd.getHandleProps(purchase.id) : undefined}
                     onToggleFlag={() => handleToggleFlag(purchase.id)}
+                    onToggleOwed={() => handleToggleOwed(purchase.id)}
                     onEdit={() => setPurchaseDialog({ mode: "edit", purchase })}
                     onDelete={() => handleDeletePurchase(purchase.id)}
                   />
@@ -357,6 +374,7 @@ function GroupHeader({
 function PurchaseRow({
   purchase,
   onToggleFlag,
+  onToggleOwed,
   onEdit,
   onDelete,
   dragging,
@@ -365,6 +383,7 @@ function PurchaseRow({
 }: {
   purchase: InstallmentPurchase
   onToggleFlag: () => void
+  onToggleOwed: () => void
   onEdit: () => void
   onDelete: () => void
   dragging?: boolean
@@ -372,6 +391,7 @@ function PurchaseRow({
   handleProps?: React.HTMLAttributes<HTMLSpanElement> & { draggable?: boolean }
 }) {
   const isInstallment = purchase.totalInstallments > 1
+  const excluded = purchase.excludedFromOwed ?? false
   return (
     <li
       {...itemProps}
@@ -407,24 +427,39 @@ function PurchaseRow({
       <div className="flex items-center justify-between gap-2 pl-11 sm:contents sm:pl-0">
         <MoneyValue
           value={purchase.installmentAmount}
-          className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+          className={cn(
+            "shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0",
+            excluded && "text-muted-foreground"
+          )}
         />
         <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            aria-label={purchase.flagged ? "Remover atenção" : "Marcar em atenção"}
-            onClick={onToggleFlag}
-          >
-            <Flag className={cn("size-4", purchase.flagged && "fill-red-500 text-red-500")} />
-          </Button>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="Editar compra" onClick={onEdit}>
-            <Pencil className="size-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="size-8" aria-label="Remover compra" onClick={onDelete}>
-            <Trash2 className="size-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8" aria-label="Ações da compra" title="Ações">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={onToggleOwed}>
+                <Sigma className="size-4" />
+                {excluded ? "Incluir no total que devo" : "Excluir do total que devo"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onToggleFlag}>
+                <Flag className={cn("size-4", purchase.flagged && "fill-red-500 text-red-500")} />
+                {purchase.flagged ? "Remover atenção" : "Marcar em atenção"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="size-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                <Trash2 className="size-4" />
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </li>

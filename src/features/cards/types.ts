@@ -8,6 +8,7 @@ export interface InstallmentPurchase {
   remainingTotal: number
   domain?: string
   flagged: boolean
+  excludedFromOwed?: boolean
   categoryId?: string
 }
 

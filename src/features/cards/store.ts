@@ -25,6 +25,7 @@ interface CardsState {
   createInstallmentPurchase: (cardId: string, input: InstallmentPurchaseInput) => Promise<void>
   updateInstallmentPurchase: (id: string, input: InstallmentPurchaseInput) => Promise<void>
   toggleInstallmentPurchaseFlag: (id: string) => Promise<void>
+  toggleInstallmentPurchaseOwed: (id: string) => Promise<void>
   deleteInstallmentPurchase: (id: string) => Promise<void>
   createSubscription: (cardId: string, input: SubscriptionInput) => Promise<void>
   updateSubscription: (id: string, input: SubscriptionInput) => Promise<void>
@@ -77,6 +78,7 @@ export const useCardsStore = create<CardsState>((set, get) => {
     createInstallmentPurchase: (cardId, input) => mutate(() => cardsApi.createInstallmentPurchase(cardId, input)),
     updateInstallmentPurchase: (id, input) => mutate(() => cardsApi.updateInstallmentPurchase(id, input)),
     toggleInstallmentPurchaseFlag: (id) => mutate(() => cardsApi.toggleInstallmentPurchaseFlag(id)),
+    toggleInstallmentPurchaseOwed: (id) => mutate(() => cardsApi.toggleInstallmentPurchaseOwed(id)),
     deleteInstallmentPurchase: (id) => mutate(() => cardsApi.removeInstallmentPurchase(id)),
 
     createSubscription: (cardId, input) => mutate(() => cardsApi.createSubscription(cardId, input)),

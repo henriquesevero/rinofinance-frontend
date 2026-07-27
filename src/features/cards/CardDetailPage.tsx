@@ -130,9 +130,10 @@ export function CardDetailPage() {
         />
         <StatCard
           icon={Wallet}
+          danger
           label="Total que devo"
           value={<MoneyValue value={stats.totalOwed} />}
-          sub="parcelas restantes de todas as compras"
+          sub="quitação das parcelas restantes"
         />
         {stats.daysUntilDue !== null ? (
           <StatCard
@@ -179,6 +180,7 @@ function StatCard({
   value,
   sub,
   accent,
+  danger,
   muted,
 }: {
   icon: typeof CreditCard
@@ -186,18 +188,22 @@ function StatCard({
   value: React.ReactNode
   sub?: string
   accent?: boolean
+  danger?: boolean
   muted?: boolean
 }) {
   return (
     <Card className="flex flex-col gap-1 p-3.5">
       <div className="flex items-center gap-1.5">
-        <Icon className={cn("size-3", accent ? "text-cyan-500" : "text-muted-foreground")} />
+        <Icon
+          className={cn("size-3", accent ? "text-cyan-500" : danger ? "text-red-500" : "text-muted-foreground")}
+        />
         <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
       </div>
       <div
         className={cn(
           "text-lg font-bold tracking-tight tabular-nums",
           accent && "text-cyan-500",
+          danger && "text-red-500",
           muted && "text-muted-foreground"
         )}
       >

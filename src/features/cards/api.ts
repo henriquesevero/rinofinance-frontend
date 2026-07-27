@@ -34,6 +34,8 @@ export const cardsApi = {
     apiClient.put<InstallmentPurchase>(`/api/installment-purchases/${id}`, input),
   toggleInstallmentPurchaseFlag: (id: string) =>
     apiClient.patch<InstallmentPurchase>(`/api/installment-purchases/${id}/flag`),
+  toggleInstallmentPurchaseOwed: (id: string) =>
+    apiClient.patch<InstallmentPurchase>(`/api/installment-purchases/${id}/owed-exclusion`),
   removeInstallmentPurchase: (id: string) => apiClient.delete(`/api/installment-purchases/${id}`),
 
   createSubscription: (cardId: string, input: SubscriptionInput) =>

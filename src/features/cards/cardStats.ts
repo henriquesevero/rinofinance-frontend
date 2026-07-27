@@ -67,7 +67,8 @@ export function computeCardStats(card: CardOverview): CardStats {
 
   for (const p of card.installmentPurchases) {
     if (p.flagged) flaggedCount++
-    totalOwed += installmentsLeftToPay(p) * p.installmentAmount
+    // The user can exclude specific purchases from the "total que devo" sum.
+    if (!p.excludedFromOwed) totalOwed += installmentsLeftToPay(p) * p.installmentAmount
     if (!isActiveThisMonth(p)) continue
     if (p.totalInstallments > 1) {
       installmentMonthly += p.installmentAmount
