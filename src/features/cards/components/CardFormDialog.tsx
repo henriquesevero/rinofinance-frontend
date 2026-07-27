@@ -140,52 +140,33 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
           <DialogDescription>Aparência, limite e datas da fatura.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* appearance: compact preview + upload controls */}
-          <div className="flex items-center gap-4">
-            <div className="w-32 shrink-0">
+          {/* appearance: centered preview + compact upload controls */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-full max-w-[220px]">
               <CardArt card={{ name: name || "Cartão", color, imageUrl }} />
             </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <ImagePlus className="size-4" />
-                  {imageUrl ? "Trocar imagem" : "Imagem"}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                <ImagePlus className="size-4" />
+                {imageUrl ? "Trocar imagem" : "Imagem"}
+              </Button>
+              {imageUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setImageUrl("")}>
+                  Remover
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => logoInputRef.current?.click()}
-                >
-                  <ImagePlus className="size-4" />
-                  {logoUrl ? "Trocar logo" : "Logo"}
-                </Button>
-              </div>
-              {(imageUrl || logoUrl) && (
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                  {imageUrl && (
-                    <button type="button" className="hover:text-foreground" onClick={() => setImageUrl("")}>
-                      Remover imagem
-                    </button>
-                  )}
-                  {logoUrl && (
-                    <button type="button" className="hover:text-foreground" onClick={() => setLogoUrl("")}>
-                      Remover logo
-                    </button>
-                  )}
-                </div>
               )}
-              <p className="text-xs text-muted-foreground">A logo aparece no lugar do chip e nas listas.</p>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-              <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+              <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
+                <ImagePlus className="size-4" />
+                {logoUrl ? "Trocar logo" : "Logo"}
+              </Button>
+              {logoUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setLogoUrl("")}>
+                  Remover
+                </Button>
+              )}
             </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
           </div>
 
           <div className="flex flex-col gap-1.5">
