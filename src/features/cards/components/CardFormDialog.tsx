@@ -67,6 +67,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
   const [logoUrl, setLogoUrl] = useState(initial?.logoUrl ?? "")
   const [creditLimit, setCreditLimit] = useState(initial?.creditLimit ? String(initial.creditLimit) : "")
   const [dueDay, setDueDay] = useState(initial?.dueDay ? String(initial.dueDay) : "")
+  const [closingDay, setClosingDay] = useState(initial?.closingDay ? String(initial.closingDay) : "")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -77,6 +78,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
       setLogoUrl(initial?.logoUrl ?? "")
       setCreditLimit(initial?.creditLimit ? String(initial.creditLimit) : "")
       setDueDay(initial?.dueDay ? String(initial.dueDay) : "")
+      setClosingDay(initial?.closingDay ? String(initial.closingDay) : "")
     }
   }, [open, initial])
 
@@ -115,6 +117,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
         imageUrl,
         creditLimit: creditLimit ? Number(creditLimit) : 0,
         dueDay: dueDay ? Number(dueDay) : 0,
+        closingDay: closingDay ? Number(closingDay) : 0,
       })
       onOpenChange(false)
     } finally {
@@ -192,7 +195,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
+            <div className="col-span-2 flex flex-col gap-2 sm:col-span-1">
               <Label htmlFor="card-limit">Limite (R$)</Label>
               <Input
                 id="card-limit"
@@ -214,6 +217,18 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
                 placeholder="15"
                 value={dueDay}
                 onChange={(e) => setDueDay(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="card-closing">Dia de fechamento</Label>
+              <Input
+                id="card-closing"
+                type="number"
+                min={1}
+                max={31}
+                placeholder="8"
+                value={closingDay}
+                onChange={(e) => setClosingDay(e.target.value)}
               />
             </div>
           </div>

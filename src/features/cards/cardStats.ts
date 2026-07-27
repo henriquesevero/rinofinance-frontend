@@ -20,11 +20,23 @@ export interface CardStats {
   // Purchases whose last installment falls in the current month.
   endingThisMonthCount: number
   subscriptionCount: number
+  // Total still owed on the card: the sum of every purchase's remaining
+  // installments × installment amount (subscriptions have no fixed end, so
+  // they don't count toward a "total debt").
+  totalOwed: number
   // Fraction of the credit limit used by this month's bill (0–1+), or
   // null when no limit is configured.
   limitUsedFraction: number | null
+  // Fraction of the credit limit committed by everything still owed
+  // (totalOwed / limit), or null when no limit is configured.
+  limitOwedFraction: number | null
   // Days until the next invoice due date, or null when no due day is set.
   daysUntilDue: number | null
+  // Best day to make a new purchase (the day after the bill closes, giving
+  // the longest interest-free window), or null when no closing day is set.
+  bestPurchaseDay: number | null
+  // Days until the current bill closes, or null when no closing day is set.
+  daysUntilClose: number | null
 }
 
 export function computeCardStats(card: CardOverview): CardStats {
@@ -32,9 +44,11 @@ export function computeCardStats(card: CardOverview): CardStats {
   let oneOffMonthly = 0
   let flaggedCount = 0
   let endingThisMonthCount = 0
+  let totalOwed = 0
 
   for (const p of card.installmentPurchases) {
     if (p.flagged) flaggedCount++
+    totalOwed += p.remainingTotal
     if (!isActiveThisMonth(p)) continue
     if (p.totalInstallments > 1) {
       installmentMonthly += p.installmentAmount
@@ -55,9 +69,21 @@ export function computeCardStats(card: CardOverview): CardStats {
     flaggedCount,
     endingThisMonthCount,
     subscriptionCount: card.subscriptions.length,
+    totalOwed,
     limitUsedFraction: card.creditLimit > 0 ? card.monthlyTotal / card.creditLimit : null,
+    limitOwedFraction: card.creditLimit > 0 ? totalOwed / card.creditLimit : null,
     daysUntilDue: daysUntilDue(card.dueDay),
+    bestPurchaseDay: bestPurchaseDay(card.closingDay),
+    daysUntilClose: daysUntilDue(card.closingDay),
   }
+}
+
+// The best day to make a new purchase is the day right after the invoice
+// closes: the charge lands on the next bill, maximizing the interest-free
+// period. Returns a day of month (1–31), wrapping past month-end to day 1.
+export function bestPurchaseDay(closingDay?: number): number | null {
+  if (!closingDay || closingDay < 1 || closingDay > 31) return null
+  return closingDay >= 31 ? 1 : closingDay + 1
 }
 
 // Days from today until the next occurrence of the invoice due day,

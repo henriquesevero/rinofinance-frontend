@@ -27,6 +27,7 @@ export interface CardOverview {
   imageUrl?: string
   creditLimit: number
   dueDay?: number
+  closingDay?: number
   installmentPurchases: InstallmentPurchase[]
   subscriptions: Subscription[]
   monthlyTotal: number
@@ -44,6 +45,7 @@ export interface CardInput {
   imageUrl: string
   creditLimit: number
   dueDay: number
+  closingDay: number
 }
 
 export interface InstallmentPurchaseInput {
