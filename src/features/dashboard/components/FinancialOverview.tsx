@@ -68,7 +68,7 @@ function AccountsCard() {
   return (
     <Card className="flex flex-col gap-4 p-5">
       <SectionHeader icon={Landmark} label="Contas bancárias" accent="text-emerald-500" />
-      <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-emerald-500" />
+      <MoneyValue value={total} className="text-2xl font-bold tracking-tight tabular-nums sm:text-3xl text-emerald-500" />
       <ul className="-mx-2 flex flex-col border-t pt-1">
         {accounts.length === 0 && <EmptyState icon={Landmark} label="Nenhuma conta ainda" to="/accounts" cta="Adicionar conta" />}
         {accounts.map((a) => (
@@ -104,7 +104,7 @@ function CardsCard() {
   return (
     <Card className="flex flex-col gap-4 p-5">
       <SectionHeader icon={CreditCard} label="Cartões de crédito" accent="text-red-500" />
-      <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-red-500" />
+      <MoneyValue value={total} className="text-2xl font-bold tracking-tight tabular-nums sm:text-3xl text-red-500" />
 
       {limit > 0 && (
         <div className="flex flex-col gap-1.5">
@@ -154,7 +154,7 @@ function InvestmentsCard() {
     <Card className="flex flex-col gap-4 p-5">
       <SectionHeader icon={TrendingUp} label="Investimentos" accent="text-emerald-500" />
       <div>
-        <MoneyValue value={total} className="text-3xl font-bold tracking-tight tabular-nums text-emerald-500" />
+        <MoneyValue value={total} className="text-2xl font-bold tracking-tight tabular-nums sm:text-3xl text-emerald-500" />
         <p className="mt-1 text-xs text-muted-foreground">
           {assets.length} {assets.length === 1 ? "ativo" : "ativos"} ({activeCount} {activeCount === 1 ? "ativo" : "ativos"} · {inactiveCount} {inactiveCount === 1 ? "inativo" : "inativos"})
         </p>

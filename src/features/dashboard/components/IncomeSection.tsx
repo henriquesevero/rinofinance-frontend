@@ -81,7 +81,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
   }
 
   return (
-    <Card>
+    <Card className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(4)]">
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
@@ -92,6 +92,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
           <ChevronDown
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
+          <ArrowDownLeft className="size-4 shrink-0 text-emerald-500" />
           <CardTitle>Entradas do mês</CardTitle>
         </button>
         <div className="flex items-center gap-1">
@@ -132,7 +133,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
         {incomes.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma entrada cadastrada ainda.</p>
         ) : (
-          <ul className="scrollbar-hide max-h-[26rem] divide-y overflow-y-auto">
+          <ul className="scrollbar-hide max-h-[20rem] divide-y overflow-y-auto sm:max-h-[26rem]">
             {order.map((income) => {
               const hasMeta = Boolean(income.categoryId || income.accountId)
               return (
@@ -140,7 +141,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                   key={income.id}
                   {...getItemProps(income.id)}
                   className={cn(
-                    "group relative flex flex-col gap-1 py-2 text-sm sm:flex-row sm:items-center sm:gap-3 sm:pr-1",
+                    "group relative flex flex-col gap-1 py-1.5 text-sm sm:flex-row sm:items-center sm:gap-3 sm:py-2 sm:pr-1",
                     !income.active && "opacity-55",
                     draggingId === income.id && "opacity-40"
                   )}
@@ -156,7 +157,7 @@ export function IncomeSection({ incomes }: { incomes: Income[] }) {
                       aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
                       title={income.received ? "Recebida (desmarcar)" : "Marcar recebida"}
                       className={cn(
-                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors sm:size-9",
                         income.received
                           ? "bg-emerald-500 text-white"
                           : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"

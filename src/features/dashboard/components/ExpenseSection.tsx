@@ -111,7 +111,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
   }
 
   return (
-    <Card>
+    <Card className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(4)]">
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
@@ -122,6 +122,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
           <ChevronDown
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
+          <ArrowUpRight className="size-4 shrink-0 text-red-500" />
           <CardTitle>Saídas do mês</CardTitle>
         </button>
         <div className="flex items-center gap-1">
@@ -171,7 +172,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
         {expenses.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
         ) : (
-          <ul className="scrollbar-hide max-h-[26rem] divide-y overflow-y-auto">
+          <ul className="scrollbar-hide max-h-[20rem] divide-y overflow-y-auto sm:max-h-[26rem]">
             {visible.map((expense) => {
               const accent = linkColor(expense)
               const cardColor = expense.cardId ? cards.find((c) => c.id === expense.cardId)?.color : undefined
@@ -182,7 +183,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                   {...getItemProps(expense.id)}
                   style={accent ? { borderLeftColor: accent } : undefined}
                   className={cn(
-                    "group relative flex flex-col gap-1 border-l-2 border-l-transparent py-2 pl-2 text-sm sm:flex-row sm:items-center sm:gap-3 sm:pr-1",
+                    "group relative flex flex-col gap-1 border-l-2 border-l-transparent py-1.5 pl-2 text-sm sm:flex-row sm:items-center sm:gap-3 sm:py-2 sm:pr-1",
                     !expense.active && "opacity-55",
                     draggingId === expense.id && "opacity-40"
                   )}
@@ -200,7 +201,7 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                       aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
                       title={expense.paid ? "Paga (desmarcar)" : "Marcar paga"}
                       className={cn(
-                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors sm:size-9",
                         expense.paid
                           ? "bg-emerald-500 text-white"
                           : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
