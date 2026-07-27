@@ -11,6 +11,25 @@ function isActiveThisMonth(p: Pick<InstallmentPurchase, "firstInstallmentDate" |
   return elapsed >= 0 && elapsed < p.totalInstallments
 }
 
+// Installments left to pay as of TODAY, for the "quitação" total — i.e. the
+// future installments only, NOT counting the one already on this month's
+// bill. A purchase at 7/12 has 5 left to pay (8→12). Computed from today so
+// it stays fixed regardless of which month the user is browsing (the API's
+// remainingTotal is relative to the requested month and would balloon on a
+// past month).
+function installmentsLeftToPay(
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">
+): number {
+  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
+  if (!year || !month) return 0
+  const now = new Date()
+  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
+  // How many installments have been billed so far, including the current
+  // month's (clamped to the plan's bounds).
+  const billed = Math.max(0, Math.min(elapsed + 1, p.totalInstallments))
+  return p.totalInstallments - billed
+}
+
 export interface CardStats {
   // Monthly spending split into the three groups, summing to ~monthlyTotal.
   installmentMonthly: number
@@ -48,7 +67,7 @@ export function computeCardStats(card: CardOverview): CardStats {
 
   for (const p of card.installmentPurchases) {
     if (p.flagged) flaggedCount++
-    totalOwed += p.remainingTotal
+    totalOwed += installmentsLeftToPay(p) * p.installmentAmount
     if (!isActiveThisMonth(p)) continue
     if (p.totalInstallments > 1) {
       installmentMonthly += p.installmentAmount
