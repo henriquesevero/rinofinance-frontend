@@ -28,14 +28,14 @@ export function CardArt({ card, className }: CardArtProps) {
         <img src={card.imageUrl} alt={card.name} className="size-full object-cover" />
       ) : (
         <div
-          className="size-full p-4 text-white"
+          className="flex size-full flex-col justify-between gap-2 p-3 text-white @container"
           style={{
             background: `linear-gradient(135deg, ${color} 0%, rgba(0,0,0,0.45) 140%)`,
           }}
         >
           {/* brand logo (uploaded or auto-detected), else a plain chip */}
           {logoSrc ? (
-            <span className="inline-block size-9 overflow-hidden rounded-md drop-shadow-md">
+            <span className="inline-block size-8 shrink-0 overflow-hidden rounded-md drop-shadow-md">
               <img
                 src={logoSrc}
                 alt={card.name}
@@ -44,13 +44,13 @@ export function CardArt({ card, className }: CardArtProps) {
               />
             </span>
           ) : (
-            <div className="h-6 w-8 rounded-md bg-white/70 shadow-inner" />
+            <div className="h-5 w-7 shrink-0 rounded-md bg-white/70 shadow-inner" />
           )}
-          <div className="absolute bottom-4 left-4 right-4">
-            <p className="truncate text-lg font-semibold tracking-wide drop-shadow" title={card.name}>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold tracking-wide drop-shadow @[13rem]:text-base" title={card.name}>
               {card.name}
             </p>
-            <p className="mt-1 font-mono text-xs tracking-[0.25em] text-white/80">•••• •••• •••• ••••</p>
+            <p className="truncate font-mono text-[10px] tracking-[0.18em] text-white/80">•••• •••• •••• ••••</p>
           </div>
         </div>
       )}
