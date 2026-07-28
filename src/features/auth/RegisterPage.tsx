@@ -16,6 +16,7 @@ export function RegisterPage() {
   const isLoading = useAuthStore((s) => s.isLoading)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [registrationCode, setRegistrationCode] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
@@ -30,7 +31,7 @@ export function RegisterPage() {
       return
     }
     try {
-      await register(name, email, password)
+      await register(name, email, password, registrationCode)
       navigate("/dashboard", { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao cadastrar")
@@ -63,6 +64,18 @@ export function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="registration-code">Código de convite</Label>
+              <Input
+                id="registration-code"
+                type="text"
+                autoComplete="one-time-code"
+                required
+                value={registrationCode}
+                onChange={(e) => setRegistrationCode(e.target.value)}
+                placeholder="Digite o código"
               />
             </div>
             <div className="flex flex-col gap-2">
