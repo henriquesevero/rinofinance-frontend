@@ -26,6 +26,9 @@ export function CardDetailPage() {
   const navigate = useNavigate()
   const [isImporting, setIsImporting] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
+  // "Total que devo" mode: quitação (without this month's installment) vs
+  // including the current month's parcela.
+  const [owedMode, setOwedMode] = useState<"future" | "withCurrent">("future")
   const cards = useCardsStore((s) => s.cards)
   const isLoading = useCardsStore((s) => s.isLoading)
   const fetchCards = useCardsStore((s) => s.fetchCards)
@@ -136,13 +139,42 @@ export function CardDetailPage() {
           value={<MoneyValue value={card.monthlyTotal} />}
           sub="parcelas, compras avulsas e assinaturas"
         />
-        <StatCard
-          icon={Wallet}
-          danger
-          label="Total que devo"
-          value={<MoneyValue value={stats.totalOwed} />}
-          sub="quitação das parcelas restantes"
-        />
+        <Card className="flex flex-col gap-1 p-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <Wallet className="size-3 shrink-0 text-red-500" />
+              <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Total que devo
+              </span>
+            </div>
+            <div className="flex shrink-0 rounded-md bg-muted p-0.5 text-[10px] font-medium">
+              {(["future", "withCurrent"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setOwedMode(m)}
+                  className={cn(
+                    "rounded px-1.5 py-0.5 transition-colors",
+                    owedMode === m
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {m === "future" ? "Sem atual" : "Com atual"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <MoneyValue
+            value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
+            className="text-lg font-bold tracking-tight tabular-nums text-red-500"
+          />
+          <p className="text-[11px] leading-tight text-muted-foreground">
+            {owedMode === "future"
+              ? "quitação — sem a parcela deste mês"
+              : "incluindo a parcela deste mês"}
+          </p>
+        </Card>
       </div>
 
       <CardSection card={card} />

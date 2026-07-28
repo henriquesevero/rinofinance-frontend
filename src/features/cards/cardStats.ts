@@ -30,6 +30,22 @@ function installmentsLeftToPay(
   return p.totalInstallments - billed
 }
 
+// Installments still owed as of TODAY *including* the current month's — i.e.
+// the parcela being billed now still counts. A purchase at 2/3 has 2 left
+// (the current 2nd + the future 3rd). Used for the alternative "total que
+// devo" that includes the month's installment.
+function installmentsRemainingWithCurrent(
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">
+): number {
+  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
+  if (!year || !month) return 0
+  const now = new Date()
+  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
+  // Installments fully paid *before* the current month.
+  const paid = Math.max(0, Math.min(elapsed, p.totalInstallments))
+  return p.totalInstallments - paid
+}
+
 export interface CardStats {
   // Monthly spending split into the three groups, summing to ~monthlyTotal.
   installmentMonthly: number
@@ -41,8 +57,12 @@ export interface CardStats {
   subscriptionCount: number
   // Total still owed on the card: the sum of every purchase's remaining
   // installments × installment amount (subscriptions have no fixed end, so
-  // they don't count toward a "total debt").
+  // they don't count toward a "total debt"). Excludes the current month's
+  // installment (the "quitação" of what's left after this bill).
   totalOwed: number
+  // Same, but *including* the current month's installment — what you'd still
+  // pay counting the parcela being billed now.
+  totalOwedWithCurrent: number
   // Fraction of the credit limit used by this month's bill (0–1+), or
   // null when no limit is configured.
   limitUsedFraction: number | null
@@ -64,11 +84,15 @@ export function computeCardStats(card: CardOverview): CardStats {
   let flaggedCount = 0
   let endingThisMonthCount = 0
   let totalOwed = 0
+  let totalOwedWithCurrent = 0
 
   for (const p of card.installmentPurchases) {
     if (p.flagged) flaggedCount++
     // The user can exclude specific purchases from the "total que devo" sum.
-    if (!p.excludedFromOwed) totalOwed += installmentsLeftToPay(p) * p.installmentAmount
+    if (!p.excludedFromOwed) {
+      totalOwed += installmentsLeftToPay(p) * p.installmentAmount
+      totalOwedWithCurrent += installmentsRemainingWithCurrent(p) * p.installmentAmount
+    }
     if (!isActiveThisMonth(p)) continue
     if (p.totalInstallments > 1) {
       installmentMonthly += p.installmentAmount
@@ -90,6 +114,7 @@ export function computeCardStats(card: CardOverview): CardStats {
     endingThisMonthCount,
     subscriptionCount: card.subscriptions.length,
     totalOwed,
+    totalOwedWithCurrent,
     limitUsedFraction: card.creditLimit > 0 ? card.monthlyTotal / card.creditLimit : null,
     limitOwedFraction: card.creditLimit > 0 ? totalOwed / card.creditLimit : null,
     daysUntilDue: daysUntilDue(card.dueDay),
