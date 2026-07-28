@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
-import { ArrowRightLeft, CreditCard, LayoutDashboard, LogOut, Menu, PiggyBank, Tags, Wallet, X } from "lucide-react"
+import { ArrowRightLeft, CreditCard, LayoutDashboard, LogOut, Menu, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
 import { MonthSelector } from "@/components/MonthSelector"
@@ -16,6 +16,7 @@ const tabs = [
   { to: "/cards", label: "Cartões", icon: CreditCard },
   { to: "/accounts", label: "Contas", icon: Wallet },
   { to: "/investments", label: "Investimentos", icon: PiggyBank },
+  { to: "/itens-para-comprar", label: "Itens para comprar", icon: ShoppingCart },
   { to: "/categories", label: "Categorias", icon: Tags },
 ]
 
