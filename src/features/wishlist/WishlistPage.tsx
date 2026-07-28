@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
+import { ChevronDown, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import {
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
+import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { ItemCard } from "./components/ItemCard"
 import { ItemFormDialog } from "./components/ItemFormDialog"
@@ -130,8 +131,8 @@ export function WishlistPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Itens para comprar</h1>
-          <p className="text-muted-foreground">Sua listinha de desejos, organizada como uma loja.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Lista de desejos</h1>
+          <p className="text-muted-foreground">Os produtos que você quer comprar, organizados como uma loja.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
@@ -292,12 +293,23 @@ function Section({
   onDelete?: () => void
   children: React.ReactNode
 }) {
+  const [collapsed, setCollapsed] = useState(false)
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <h2 className="truncate text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
-        <span className="text-xs text-muted-foreground">({count})</span>
-        <div className="ml-auto flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="flex min-w-0 items-center gap-1.5 text-left"
+        >
+          <ChevronDown
+            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
+          />
+          <h2 className="truncate text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+          <span className="shrink-0 text-xs text-muted-foreground">({count})</span>
+        </button>
+        <div className="ml-auto flex shrink-0 items-center gap-0.5">
           {onEdit && (
             <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={onEdit}>
               <Pencil className="size-3.5" />
@@ -313,11 +325,12 @@ function Section({
           </Button>
         </div>
       </div>
-      {count === 0 ? (
-        <p className="text-sm text-muted-foreground">Nenhum item nesta seção.</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{children}</div>
-      )}
+      {!collapsed &&
+        (count === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum item nesta seção.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{children}</div>
+        ))}
     </section>
   )
 }

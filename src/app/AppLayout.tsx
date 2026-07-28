@@ -16,7 +16,7 @@ const tabs = [
   { to: "/cards", label: "Cartões", icon: CreditCard },
   { to: "/accounts", label: "Contas", icon: Wallet },
   { to: "/investments", label: "Investimentos", icon: PiggyBank },
-  { to: "/itens-para-comprar", label: "Itens para comprar", icon: ShoppingCart },
+  { to: "/itens-para-comprar", label: "Lista de desejos", icon: ShoppingCart },
   { to: "/categories", label: "Categorias", icon: Tags },
 ]
 
