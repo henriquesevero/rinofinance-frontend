@@ -7,16 +7,14 @@ interface LogoProps {
   markClassName?: string
 }
 
-// Brand mark: a grooved blue ring with a large ornate serif "$" struck
-// through it and a soft highlight in the upper right — echoing a minted
-// medallion. Solid black badge behind so the ring's dark interior reads
-// as a hole, not a filled disc. The black-and-blue identity stays fixed
-// across themes (a logo shouldn't change per theme), while the wordmark
-// next to it uses the current theme's foreground color. The standalone
-// favicon (public/favicon.svg) mirrors this same artwork.
+// Brand mark: an upward growth trend line with an arrowhead — a clear
+// finance/"crescimento" symbol — on a dark rounded-square badge, in React
+// blue with a soft glow. The identity stays fixed across themes; the
+// wordmark uses the theme foreground. public/favicon.svg mirrors this.
 export function Logo({ className, showWordmark = true, markClassName }: LogoProps) {
   const id = useId()
-  const gradientId = `${id}-blue`
+  const bgId = `${id}-bg`
+  const lineId = `${id}-line`
   const glowId = `${id}-glow`
   const blurId = `${id}-blur`
 
@@ -24,41 +22,42 @@ export function Logo({ className, showWordmark = true, markClassName }: LogoProp
     <div className={cn("flex items-center gap-2", className)}>
       <svg viewBox="0 0 40 40" className={cn("size-8 shrink-0", markClassName)} aria-hidden="true">
         <defs>
-          <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1="10" y1="6" x2="30" y2="34">
-            <stop offset="0%" stopColor="#BEEFFF" />
-            <stop offset="45%" stopColor="#61DAFB" />
-            <stop offset="100%" stopColor="#0E7490" />
+          <linearGradient id={bgId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2A2B36" />
+            <stop offset="100%" stopColor="#15151C" />
           </linearGradient>
-          <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#A5E9FF" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#A5E9FF" stopOpacity="0" />
+          <linearGradient id={lineId} gradientUnits="userSpaceOnUse" x1="8" y1="27" x2="31" y2="12">
+            <stop offset="0%" stopColor="#2AA6C9" />
+            <stop offset="55%" stopColor="#61DAFB" />
+            <stop offset="100%" stopColor="#9EEBFF" />
+          </linearGradient>
+          <radialGradient id={glowId} cx="66%" cy="34%" r="60%">
+            <stop offset="0%" stopColor="#61DAFB" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#61DAFB" stopOpacity="0" />
           </radialGradient>
           <filter id={blurId} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="1.3" />
+            <feGaussianBlur stdDeviation="2.2" />
           </filter>
         </defs>
 
-        <rect width="40" height="40" rx="10" fill="#0A0A0A" />
+        {/* Dark rounded-square badge */}
+        <rect width="40" height="40" rx="11" fill={`url(#${bgId})`} />
+        <rect x="0.6" y="0.6" width="38.8" height="38.8" rx="10.6" fill="none" stroke="#ffffff" strokeOpacity="0.06" />
 
-        {/* Highlight, upper right */}
-        <circle cx="29" cy="10" r="3.6" fill={`url(#${glowId})`} filter={`url(#${blurId})`} />
+        {/* Blue glow near the rising tip */}
+        <ellipse cx="27" cy="15" rx="12" ry="11" fill={`url(#${glowId})`} filter={`url(#${blurId})`} />
 
-        {/* Grooved ring */}
-        <circle cx="20" cy="20" r="13.4" fill="none" stroke={`url(#${gradientId})`} strokeWidth="2.8" />
-        <circle cx="20" cy="20" r="12" fill="none" stroke="#0B5566" strokeWidth="0.5" opacity="0.7" />
-
-        {/* Ornate serif dollar sign */}
-        <text
-          x="20"
-          y="29"
-          textAnchor="middle"
-          fontFamily="Georgia, 'Times New Roman', serif"
-          fontSize="27"
-          fontWeight="700"
-          fill={`url(#${gradientId})`}
+        {/* Upward trend line + arrowhead */}
+        <g
+          fill="none"
+          stroke={`url(#${lineId})`}
+          strokeWidth="3.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          $
-        </text>
+          <path d="M8 27 L 16.5 20 L 22 24 L 31 13" />
+          <path d="M24 12.5 L 31 12.5 L 31 19.5" />
+        </g>
       </svg>
       {showWordmark && <span className="text-lg font-semibold tracking-tight">RinoFinance</span>}
     </div>

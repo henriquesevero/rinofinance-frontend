@@ -42,7 +42,7 @@ export function BelongingsPage() {
     <ListPage
       useStore={useBelongingsStore}
       title="Itens que possuo"
-      description="Tudo que você tem — TVs, games, relógios — pra ter noção do seu patrimônio."
+      description="Tudo que você tem em seu patrimônio."
     />
   )
 }
