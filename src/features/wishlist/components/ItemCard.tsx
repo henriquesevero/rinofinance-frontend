@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ExternalLink, Pencil, ShoppingBag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MoneyValue } from "@/components/MoneyValue"
@@ -13,11 +14,21 @@ interface ItemCardProps {
 // link the whole tile opens the store in a new tab; edit/delete appear on
 // hover without triggering the link.
 export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
+  // Remote store images can hotlink-block (403) — fall back to the placeholder.
+  const [imgFailed, setImgFailed] = useState(false)
+  const showImage = Boolean(item.imageUrl) && !imgFailed
+
   const inner = (
     <>
       <div className="aspect-square w-full overflow-hidden bg-muted">
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} className="size-full object-cover" loading="lazy" />
+        {showImage ? (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            className="size-full object-cover"
+            loading="lazy"
+            onError={() => setImgFailed(true)}
+          />
         ) : (
           <div className="flex size-full items-center justify-center">
             <ShoppingBag className="size-8 text-muted-foreground/50" />

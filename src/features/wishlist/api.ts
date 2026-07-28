@@ -1,8 +1,9 @@
 import { apiClient } from "@/lib/api-client"
-import type { ItemInput, SectionInput, WishlistItem, WishlistOverview, WishlistSection } from "./types"
+import type { ItemInput, SectionInput, UnfurlResult, WishlistItem, WishlistOverview, WishlistSection } from "./types"
 
 export const wishlistApi = {
   overview: () => apiClient.get<WishlistOverview>("/api/wishlist"),
+  unfurl: (url: string) => apiClient.get<UnfurlResult>(`/api/wishlist/unfurl?url=${encodeURIComponent(url)}`),
   createSection: (input: SectionInput) => apiClient.post<WishlistSection>("/api/wishlist/sections", input),
   updateSection: (id: string, input: SectionInput) =>
     apiClient.put<WishlistSection>(`/api/wishlist/sections/${id}`, input),

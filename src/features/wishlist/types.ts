@@ -29,3 +29,9 @@ export interface ItemInput {
   imageUrl: string
   sectionId: string
 }
+
+export interface UnfurlResult {
+  imageUrl: string
+  title: string
+  price: string
+}
