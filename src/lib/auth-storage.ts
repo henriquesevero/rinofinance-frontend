@@ -9,6 +9,8 @@ export interface StoredAuthUser {
   name: string
   email: string
   avatarUrl?: string
+  // True when this account is viewing another's data (shared household).
+  shared?: boolean
 }
 
 export interface StoredAuth {

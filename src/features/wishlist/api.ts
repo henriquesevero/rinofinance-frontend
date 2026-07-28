@@ -1,14 +1,17 @@
 import { apiClient } from "@/lib/api-client"
 import type { ItemInput, SectionInput, UnfurlResult, WishlistItem, WishlistOverview, WishlistSection } from "./types"
 
+// kind: "wishlist" (itens a comprar) or "owned" (itens possuídos).
 export const wishlistApi = {
-  overview: () => apiClient.get<WishlistOverview>("/api/wishlist"),
+  overview: (kind: string) => apiClient.get<WishlistOverview>(`/api/wishlist?kind=${kind}`),
   unfurl: (url: string) => apiClient.get<UnfurlResult>(`/api/wishlist/unfurl?url=${encodeURIComponent(url)}`),
-  createSection: (input: SectionInput) => apiClient.post<WishlistSection>("/api/wishlist/sections", input),
+  createSection: (kind: string, input: SectionInput) =>
+    apiClient.post<WishlistSection>(`/api/wishlist/sections?kind=${kind}`, input),
   updateSection: (id: string, input: SectionInput) =>
     apiClient.put<WishlistSection>(`/api/wishlist/sections/${id}`, input),
   removeSection: (id: string) => apiClient.delete(`/api/wishlist/sections/${id}`),
-  createItem: (input: ItemInput) => apiClient.post<WishlistItem>("/api/wishlist/items", input),
+  createItem: (kind: string, input: ItemInput) =>
+    apiClient.post<WishlistItem>(`/api/wishlist/items?kind=${kind}`, input),
   updateItem: (id: string, input: ItemInput) => apiClient.put<WishlistItem>(`/api/wishlist/items/${id}`, input),
   removeItem: (id: string) => apiClient.delete(`/api/wishlist/items/${id}`),
 }

@@ -23,6 +23,7 @@ import { UserAvatar } from "@/components/UserAvatar"
 import { toErrorMessage } from "@/lib/errors"
 import { resizeImageToDataUrl } from "@/lib/image"
 import { gravatarUrl, imageExists } from "@/lib/gravatar"
+import { accountApi } from "./api"
 import { useAuthStore } from "./store"
 
 export function SettingsPage() {
@@ -43,6 +44,35 @@ export function SettingsPage() {
   const [newEmail, setNewEmail] = useState(user?.email ?? "")
   const [emailPassword, setEmailPassword] = useState("")
   const [isSavingEmail, setIsSavingEmail] = useState(false)
+
+  const [shareEmail, setShareEmail] = useState("")
+  const [sharePassword, setSharePassword] = useState("")
+  const [isSharing, setIsSharing] = useState(false)
+
+  async function handleShare(event: FormEvent) {
+    event.preventDefault()
+    setIsSharing(true)
+    try {
+      await accountApi.share(shareEmail, sharePassword)
+      toast.success("Conta compartilhada — recarregando...")
+      window.location.reload()
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+      setIsSharing(false)
+    }
+  }
+
+  async function handleUnshare() {
+    setIsSharing(true)
+    try {
+      await accountApi.unshare()
+      toast.success("Compartilhamento desfeito — recarregando...")
+      window.location.reload()
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+      setIsSharing(false)
+    }
+  }
 
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -290,6 +320,56 @@ export function SettingsPage() {
             </Button>
           </CardFooter>
         </form>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Compartilhar conta</CardTitle>
+          <CardDescription>
+            Veja e edite os dados de outra conta (ex: com seu cônjuge). Informe o e-mail e a senha da conta que
+            você quer acompanhar.
+          </CardDescription>
+        </CardHeader>
+        {user?.shared ? (
+          <CardContent className="flex flex-col items-start gap-3">
+            <p className="text-sm text-muted-foreground">
+              Esta conta está vendo os dados de <strong>outra conta</strong>.
+            </p>
+            <Button variant="outline" onClick={handleUnshare} disabled={isSharing}>
+              {isSharing ? "..." : "Parar de compartilhar"}
+            </Button>
+          </CardContent>
+        ) : (
+          <form onSubmit={handleShare}>
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="share-email">E-mail da conta</Label>
+                <Input
+                  id="share-email"
+                  type="email"
+                  required
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="share-password">Senha dessa conta</Label>
+                <Input
+                  id="share-password"
+                  type="password"
+                  required
+                  value={sharePassword}
+                  onChange={(e) => setSharePassword(e.target.value)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="justify-end">
+              <Button type="submit" disabled={isSharing}>
+                {isSharing ? "Compartilhando..." : "Compartilhar"}
+              </Button>
+            </CardFooter>
+          </form>
+        )}
       </Card>
 
       <Card className="border-destructive/40">

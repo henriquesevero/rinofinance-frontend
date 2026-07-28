@@ -17,7 +17,7 @@ import { toErrorMessage } from "@/lib/errors"
 import { ItemCard } from "./components/ItemCard"
 import { ItemFormDialog } from "./components/ItemFormDialog"
 import { SectionFormDialog } from "./components/SectionFormDialog"
-import { useWishlistStore } from "./store"
+import { useBelongingsStore, useWishlistStore } from "./store"
 import type { ItemInput, SectionInput, WishlistItem, WishlistSection } from "./types"
 
 type ItemDialogState = { mode: "create"; sectionId?: string } | { mode: "edit"; item: WishlistItem } | null
@@ -25,19 +25,41 @@ type SectionDialogState = { mode: "create" } | { mode: "edit"; section: Wishlist
 
 const NONE = "__none__"
 
+type StoreHook = typeof useWishlistStore
+
 export function WishlistPage() {
-  const sections = useWishlistStore((s) => s.sections)
-  const items = useWishlistStore((s) => s.items)
-  const total = useWishlistStore((s) => s.total)
-  const isLoading = useWishlistStore((s) => s.isLoading)
-  const error = useWishlistStore((s) => s.error)
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist)
-  const createSection = useWishlistStore((s) => s.createSection)
-  const updateSection = useWishlistStore((s) => s.updateSection)
-  const deleteSection = useWishlistStore((s) => s.deleteSection)
-  const createItem = useWishlistStore((s) => s.createItem)
-  const updateItem = useWishlistStore((s) => s.updateItem)
-  const deleteItem = useWishlistStore((s) => s.deleteItem)
+  return (
+    <ListPage
+      useStore={useWishlistStore}
+      title="Lista de desejos"
+      description="Os produtos que você quer comprar, organizados como uma loja."
+    />
+  )
+}
+
+export function BelongingsPage() {
+  return (
+    <ListPage
+      useStore={useBelongingsStore}
+      title="Itens que possuo"
+      description="Tudo que você tem — TVs, games, relógios — pra ter noção do seu patrimônio."
+    />
+  )
+}
+
+function ListPage({ useStore, title, description }: { useStore: StoreHook; title: string; description: string }) {
+  const sections = useStore((s) => s.sections)
+  const items = useStore((s) => s.items)
+  const total = useStore((s) => s.total)
+  const isLoading = useStore((s) => s.isLoading)
+  const error = useStore((s) => s.error)
+  const fetchWishlist = useStore((s) => s.fetchWishlist)
+  const createSection = useStore((s) => s.createSection)
+  const updateSection = useStore((s) => s.updateSection)
+  const deleteSection = useStore((s) => s.deleteSection)
+  const createItem = useStore((s) => s.createItem)
+  const updateItem = useStore((s) => s.updateItem)
+  const deleteItem = useStore((s) => s.deleteItem)
 
   const [itemDialog, setItemDialog] = useState<ItemDialogState>(null)
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
@@ -131,8 +153,8 @@ export function WishlistPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Lista de desejos</h1>
-          <p className="text-muted-foreground">Os produtos que você quer comprar, organizados como uma loja.</p>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <p className="text-muted-foreground">{description}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />

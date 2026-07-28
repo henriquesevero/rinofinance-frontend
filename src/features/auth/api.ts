@@ -16,4 +16,6 @@ export const accountApi = {
   changePassword: (currentPassword: string, newPassword: string) =>
     apiClient.put<void>("/api/account/password", { currentPassword, newPassword }),
   deleteAccount: (currentPassword: string) => apiClient.delete("/api/account", { currentPassword }),
+  share: (email: string, password: string) => apiClient.post<AuthUser>("/api/account/share", { email, password }),
+  unshare: () => apiClient.post<void>("/api/account/unshare", {}),
 }

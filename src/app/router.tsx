@@ -7,7 +7,7 @@ import { EntriesPage } from "@/features/dashboard/EntriesPage"
 import { CardsPage } from "@/features/cards/CardsPage"
 import { CardDetailPage } from "@/features/cards/CardDetailPage"
 import { InvestmentsPage } from "@/features/investments/InvestmentsPage"
-import { WishlistPage } from "@/features/wishlist/WishlistPage"
+import { BelongingsPage, WishlistPage } from "@/features/wishlist/WishlistPage"
 import { CategoriesPage } from "@/features/categories/CategoriesPage"
 import { AccountsPage } from "@/features/accounts/AccountsPage"
 import { AccountDetailPage } from "@/features/accounts/AccountDetailPage"
@@ -32,6 +32,7 @@ export const router = createBrowserRouter([
       { path: "cards/:cardId", element: <CardDetailPage /> },
       { path: "investments", element: <InvestmentsPage /> },
       { path: "itens-para-comprar", element: <WishlistPage /> },
+      { path: "itens-possuidos", element: <BelongingsPage /> },
       { path: "categories", element: <CategoriesPage /> },
       { path: "accounts", element: <AccountsPage /> },
       { path: "accounts/:accountId", element: <AccountDetailPage /> },

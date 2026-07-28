@@ -89,7 +89,7 @@ export function AccountsPage() {
             >
               <DragHandle
                 {...getHandleProps(account.id)}
-                className="absolute left-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
+                className="absolute right-10 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
               />
               <button
                 type="button"
@@ -100,7 +100,7 @@ export function AccountsPage() {
                 }}
                 title="Editar conta"
                 aria-label="Editar conta"
-                className="absolute right-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover:opacity-100"
+                className="absolute right-2 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover:opacity-100"
               >
                 <Pencil className="size-4" />
               </button>

@@ -19,41 +19,46 @@ interface WishlistState {
   reset: () => void
 }
 
-export const useWishlistStore = create<WishlistState>((set, get) => {
-  async function mutate(action: () => Promise<unknown>) {
-    try {
-      await action()
-      await get().fetchWishlist()
-    } catch (err) {
-      set({ error: toErrorMessage(err) })
-      throw err
-    }
-  }
-
-  return {
-    sections: [],
-    items: [],
-    total: 0,
-    isLoading: false,
-    error: null,
-
-    fetchWishlist: async () => {
-      set({ isLoading: true, error: null })
+function createListStore(kind: string) {
+  return create<WishlistState>((set, get) => {
+    async function mutate(action: () => Promise<unknown>) {
       try {
-        const overview = await wishlistApi.overview()
-        set({ sections: overview.sections, items: overview.items, total: overview.total, isLoading: false })
+        await action()
+        await get().fetchWishlist()
       } catch (err) {
-        set({ isLoading: false, error: toErrorMessage(err) })
+        set({ error: toErrorMessage(err) })
+        throw err
       }
-    },
+    }
 
-    createSection: (input) => mutate(() => wishlistApi.createSection(input)),
-    updateSection: (id, input) => mutate(() => wishlistApi.updateSection(id, input)),
-    deleteSection: (id) => mutate(() => wishlistApi.removeSection(id)),
-    createItem: (input) => mutate(() => wishlistApi.createItem(input)),
-    updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
-    deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
+    return {
+      sections: [],
+      items: [],
+      total: 0,
+      isLoading: false,
+      error: null,
 
-    reset: () => set({ sections: [], items: [], total: 0, isLoading: false, error: null }),
-  }
-})
+      fetchWishlist: async () => {
+        set({ isLoading: true, error: null })
+        try {
+          const overview = await wishlistApi.overview(kind)
+          set({ sections: overview.sections, items: overview.items, total: overview.total, isLoading: false })
+        } catch (err) {
+          set({ isLoading: false, error: toErrorMessage(err) })
+        }
+      },
+
+      createSection: (input) => mutate(() => wishlistApi.createSection(kind, input)),
+      updateSection: (id, input) => mutate(() => wishlistApi.updateSection(id, input)),
+      deleteSection: (id) => mutate(() => wishlistApi.removeSection(id)),
+      createItem: (input) => mutate(() => wishlistApi.createItem(kind, input)),
+      updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
+      deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
+
+      reset: () => set({ sections: [], items: [], total: 0, isLoading: false, error: null }),
+    }
+  })
+}
+
+export const useWishlistStore = createListStore("wishlist")
+export const useBelongingsStore = createListStore("owned")
