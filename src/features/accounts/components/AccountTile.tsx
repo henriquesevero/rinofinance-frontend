@@ -11,7 +11,7 @@ export function AccountTile({ account }: { account: Account }) {
   return (
     <Link
       to={`/accounts/${account.id}`}
-      className="group relative flex flex-col gap-2.5 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-card to-background p-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.32)]"
+      className="group relative flex flex-col gap-2.5 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-card to-background p-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]"
     >
       <AccountAvatar account={account} className="size-8 shrink-0 rounded-lg ring-0" />
       <div className="min-w-0">

@@ -51,7 +51,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
   )
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-white/60 hover:shadow-[0_12px_36px_-14px_rgba(255,255,255,0.32)]">
+    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]">
       {item.url ? (
         <a
           href={item.url}
