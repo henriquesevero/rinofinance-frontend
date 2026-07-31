@@ -1,7 +1,14 @@
-// Resizes an image file client-side (via canvas) and returns it as a
-// JPEG data URL, so avatars stay small enough to store inline on the
-// user document (no separate object storage needed for this version).
-export function resizeImageToDataUrl(file: File, maxSize = 256, quality = 0.85): Promise<string> {
+// Resizes an image file client-side (via canvas) and returns it as a data
+// URL so it stays small enough to store inline (no object storage needed for
+// this version). Photos default to JPEG; logos should pass "image/png" (or
+// "image/webp") to keep sharp edges/text and transparency instead of the
+// blocky, opaque result JPEG gives them.
+export function resizeImageToDataUrl(
+  file: File,
+  maxSize = 256,
+  quality = 0.85,
+  mime: "image/jpeg" | "image/png" | "image/webp" = "image/jpeg"
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
@@ -11,8 +18,8 @@ export function resizeImageToDataUrl(file: File, maxSize = 256, quality = 0.85):
       img.onerror = () => reject(new Error("Não foi possível ler a imagem"))
       img.onload = () => {
         const scale = Math.min(1, maxSize / Math.max(img.width, img.height))
-        const width = Math.round(img.width * scale)
-        const height = Math.round(img.height * scale)
+        const width = Math.max(1, Math.round(img.width * scale))
+        const height = Math.max(1, Math.round(img.height * scale))
 
         const canvas = document.createElement("canvas")
         canvas.width = width
@@ -23,8 +30,12 @@ export function resizeImageToDataUrl(file: File, maxSize = 256, quality = 0.85):
           reject(new Error("Não foi possível processar a imagem"))
           return
         }
+        // Higher-quality downscaling — noticeably crisper than the default.
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = "high"
         ctx.drawImage(img, 0, 0, width, height)
-        resolve(canvas.toDataURL("image/jpeg", quality))
+        // PNG is lossless (ignores quality); JPEG/WebP use it.
+        resolve(canvas.toDataURL(mime, mime === "image/png" ? undefined : quality))
       }
       img.src = reader.result as string
     }

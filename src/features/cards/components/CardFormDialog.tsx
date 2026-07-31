@@ -107,7 +107,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
     event.target.value = ""
     if (!file) return
     try {
-      setLogoUrl(await resizeImageToDataUrl(file, 256, 0.85))
+      setLogoUrl(await resizeImageToDataUrl(file, 512, 1, "image/png"))
     } catch (err) {
       toast.error(toErrorMessage(err))
     }

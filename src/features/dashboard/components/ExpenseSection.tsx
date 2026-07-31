@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react"
-import { ArrowUpRight, Check, ChevronDown, CreditCard, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowUpRight, Check, ChevronDown, CreditCard, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MoneyValue } from "@/components/MoneyValue"
 import { BulkActionsMenu } from "@/components/BulkActionsMenu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { DragHandle } from "@/components/DragHandle"
 import { useCardsStore } from "@/features/cards/store"
 import { AccountChip } from "@/features/accounts/components/AccountChip"
@@ -230,36 +236,34 @@ export function ExpenseSection({ expenses }: { expenses: Expense[] }) {
                   <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
                     <MoneyValue
                       value={expense.amount}
-                      className="shrink-0 font-semibold tabular-nums text-red-500 sm:transition-opacity sm:group-hover:opacity-0"
+                      className="shrink-0 font-semibold tabular-nums text-red-500"
                     />
-                    <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:bg-card sm:pl-6 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-                      <button
-                        type="button"
-                        onClick={() => handleToggle(expense.id)}
-                        aria-label={expense.active ? "Desativar saída" : "Ativar saída"}
-                        title={expense.active ? "Ativa (desativar)" : "Inativa (ativar)"}
-                        className="flex size-8 items-center justify-center text-muted-foreground hover:text-foreground"
-                      >
-                        <Power className={cn("size-4", expense.active ? "text-emerald-500" : "text-muted-foreground/50")} />
-                      </button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        aria-label="Editar saída"
-                        onClick={() => setDialogState({ mode: "edit", expense })}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        aria-label="Remover saída"
-                        onClick={() => handleDelete(expense.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                    <div className="flex shrink-0 items-center sm:hidden sm:group-hover:flex sm:focus-within:flex">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="size-8" aria-label="Ações da saída" title="Ações">
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleToggle(expense.id)}>
+                            <Power
+                              className={cn("size-4", expense.active ? "text-emerald-500" : "text-muted-foreground/50")}
+                            />
+                            {expense.active ? "Desativar" : "Ativar"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDialogState({ mode: "edit", expense })}>
+                            <Pencil className="size-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDelete(expense.id)} className="text-destructive">
+                            <Trash2 className="size-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </li>

@@ -41,7 +41,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
     event.target.value = ""
     if (!file) return
     try {
-      setImageUrl(await resizeImageToDataUrl(file, 700, 0.82))
+      setImageUrl(await resizeImageToDataUrl(file, 512, 1, "image/png"))
     } catch (err) {
       toast.error(toErrorMessage(err))
     }

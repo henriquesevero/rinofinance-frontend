@@ -443,12 +443,9 @@ function PurchaseRow({
       <div className="flex items-center justify-between gap-2 pl-11 sm:contents sm:pl-0">
         <MoneyValue
           value={purchase.installmentAmount}
-          className={cn(
-            "shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0",
-            excluded && "text-muted-foreground"
-          )}
+          className={cn("shrink-0 font-medium tabular-nums", excluded && "text-muted-foreground")}
         />
-        <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+        <div className="flex shrink-0 items-center sm:hidden sm:group-hover:flex sm:focus-within:flex">
           <DropdownMenu>
             <DropdownMenuTrigger
               render={

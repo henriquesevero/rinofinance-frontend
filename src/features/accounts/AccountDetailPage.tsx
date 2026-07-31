@@ -192,9 +192,9 @@ export function AccountDetailPage() {
                 <div className="flex items-center justify-between gap-2 pl-12 sm:contents sm:pl-0">
                   <MoneyValue
                     value={purchase.amount}
-                    className="shrink-0 font-medium tabular-nums sm:transition-opacity sm:group-hover:opacity-0"
+                    className="shrink-0 font-medium tabular-nums"
                   />
-                  <div className="flex shrink-0 items-center sm:absolute sm:inset-y-0 sm:right-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                  <div className="flex shrink-0 items-center sm:hidden sm:group-hover:flex sm:focus-within:flex">
                     <Button
                       variant="ghost"
                       size="icon"
