@@ -30,6 +30,7 @@ export function SettingsPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const setUser = useAuthStore((s) => s.setUser)
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const changeEmail = useAuthStore((s) => s.changeEmail)
   const changePassword = useAuthStore((s) => s.changePassword)
@@ -53,11 +54,14 @@ export function SettingsPage() {
     event.preventDefault()
     setIsSharing(true)
     try {
-      await accountApi.share(shareEmail, sharePassword)
-      toast.success("Conta compartilhada — recarregando...")
-      window.location.reload()
+      const updatedUser = await accountApi.share(shareEmail, sharePassword)
+      setUser(updatedUser)
+      setShareEmail("")
+      setSharePassword("")
+      toast.success("Conta compartilhada")
     } catch (err) {
       toast.error(toErrorMessage(err))
+    } finally {
       setIsSharing(false)
     }
   }
@@ -66,10 +70,11 @@ export function SettingsPage() {
     setIsSharing(true)
     try {
       await accountApi.unshare()
-      toast.success("Compartilhamento desfeito — recarregando...")
-      window.location.reload()
+      setUser(user ? { ...user, shared: false } : null)
+      toast.success("Compartilhamento desfeito")
     } catch (err) {
       toast.error(toErrorMessage(err))
+    } finally {
       setIsSharing(false)
     }
   }
