@@ -7,6 +7,7 @@ import { EntriesPage } from "@/features/dashboard/EntriesPage"
 import { CardsPage } from "@/features/cards/CardsPage"
 import { CardDetailPage } from "@/features/cards/CardDetailPage"
 import { InvestmentsPage } from "@/features/investments/InvestmentsPage"
+import { AnnualPage } from "@/features/annual/AnnualPage"
 import { BelongingsPage, WishlistPage } from "@/features/wishlist/WishlistPage"
 import { CategoriesPage } from "@/features/categories/CategoriesPage"
 import { AccountsPage } from "@/features/accounts/AccountsPage"
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: "cards", element: <CardsPage /> },
       { path: "cards/:cardId", element: <CardDetailPage /> },
       { path: "investments", element: <InvestmentsPage /> },
+      { path: "annual", element: <AnnualPage /> },
       { path: "itens-para-comprar", element: <WishlistPage /> },
       { path: "itens-possuidos", element: <BelongingsPage /> },
       { path: "categories", element: <CategoriesPage /> },
