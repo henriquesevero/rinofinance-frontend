@@ -14,7 +14,6 @@ import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
 import { MoneyInput } from "@/components/MoneyInput"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
-import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CategoryChip } from "@/features/categories/components/CategoryChip"
 import { AccountAvatar } from "./components/AccountAvatar"
@@ -154,15 +153,20 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      {/* hero: identity + debits on the left, editable balance on the right */}
-      <Card className="flex flex-row items-center justify-between gap-3 p-4">
+      {/* hero: filled with the account's chosen color — identity + debits on
+          the left, editable balance on the right, all in white for contrast */}
+      <Card
+        className="relative flex flex-row items-center justify-between gap-3 overflow-hidden border-transparent p-4 text-white ring-1 ring-black/10"
+        style={{ background: `linear-gradient(150deg, ${account.color || "#6B7280"} 0%, rgba(0,0,0,0.5) 160%)` }}
+      >
         <div className="flex min-w-0 items-center gap-2.5">
-          <AccountAvatar account={account} className="size-9 shrink-0" />
+          <AccountAvatar account={account} className="size-9 shrink-0 ring-1 ring-white/30" />
           <div className="min-w-0">
-            <h1 className="truncate text-base font-bold leading-tight tracking-tight sm:text-lg">{account.name}</h1>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              Débitos do mês{" "}
-              <MoneyValue value={account.monthlyDebitTotal} className="font-medium text-red-500" />
+            <h1 className="truncate text-base font-bold leading-tight tracking-tight drop-shadow sm:text-lg">
+              {account.name}
+            </h1>
+            <p className="mt-0.5 truncate text-xs text-white/80 drop-shadow">
+              Débitos do mês <MoneyValue value={account.monthlyDebitTotal} className="font-semibold text-white" />
               {account.purchases.length > 0 &&
                 ` · ${account.purchases.length} ${account.purchases.length === 1 ? "compra" : "compras"}`}
             </p>
@@ -174,15 +178,21 @@ export function AccountDetailPage() {
             <MoneyInput
               value={balanceDraft}
               onValueChange={setBalanceDraft}
-              className="h-9 w-28 text-right text-base font-bold sm:w-32"
+              className="h-9 w-28 text-right text-base font-bold text-foreground sm:w-32"
             />
-            <Button size="icon" className="size-8 shrink-0" onClick={saveBalance} disabled={savingBalance} aria-label="Salvar saldo">
+            <Button
+              size="icon"
+              className="size-8 shrink-0 bg-white text-black hover:bg-white/90"
+              onClick={saveBalance}
+              disabled={savingBalance}
+              aria-label="Salvar saldo"
+            >
               <Check className="size-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 shrink-0"
+              className="size-8 shrink-0 text-white hover:bg-white/15 hover:text-white"
               onClick={() => setEditingBalance(false)}
               disabled={savingBalance}
               aria-label="Cancelar"
@@ -198,18 +208,13 @@ export function AccountDetailPage() {
             className="group/bal flex shrink-0 items-center gap-1.5 text-right"
           >
             <span>
-              <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Saldo atual
-              </span>
+              <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/70">Saldo atual</span>
               <MoneyValue
                 value={account.balance}
-                className={cn(
-                  "text-2xl font-bold tracking-tight tabular-nums",
-                  account.balance < 0 ? "text-red-500" : "text-emerald-500"
-                )}
+                className="text-2xl font-bold tracking-tight tabular-nums drop-shadow"
               />
             </span>
-            <Pencil className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/bal:opacity-100 [@media(hover:none)]:opacity-100" />
+            <Pencil className="size-3.5 shrink-0 text-white/70 opacity-0 transition-opacity group-hover/bal:opacity-100 [@media(hover:none)]:opacity-100" />
           </button>
         )}
       </Card>
