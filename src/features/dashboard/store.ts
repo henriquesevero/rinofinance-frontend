@@ -69,7 +69,30 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => incomeApi.createAccountLinked(name, accountId, categoryId)),
     updateIncome: (id, name, amount, categoryId) => mutate(() => incomeApi.update(id, name, amount, categoryId)),
     toggleIncome: (id) => mutate(() => incomeApi.toggle(id)),
-    toggleIncomeReceived: (id) => mutate(() => incomeApi.toggleReceived(id, useMonthStore.getState().month)),
+    // Optimistic + no success refetch: flip `received` locally at once so the
+    // checkmark responds to the tap instantly. We deliberately DON'T refetch on
+    // success — a concurrent refetch would return a snapshot taken before other
+    // in-flight taps landed and clobber their checkmarks (the "unmarks itself"
+    // bug). `received` doesn't affect any server-computed total, and the
+    // received/paid/balance figures recompute from local state, so the local
+    // flip is authoritative. Only refetch to roll back on failure.
+    toggleIncomeReceived: async (id) => {
+      const summary = get().summary
+      if (!summary) return
+      set({
+        summary: {
+          ...summary,
+          incomes: summary.incomes.map((i) => (i.id === id ? { ...i, received: !i.received } : i)),
+        },
+      })
+      try {
+        await incomeApi.toggleReceived(id, useMonthStore.getState().month)
+      } catch (err) {
+        set({ error: toErrorMessage(err) })
+        await get().fetchSummary()
+        throw err
+      }
+    },
     deleteIncome: (id) => mutate(() => incomeApi.remove(id)),
 
     createExpense: (name, amount, categoryId) => mutate(() => expenseApi.create(name, amount, categoryId)),
@@ -79,7 +102,24 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => expenseApi.createAccountLinked(name, accountId, categoryId)),
     updateExpense: (id, name, amount, categoryId) => mutate(() => expenseApi.update(id, name, amount, categoryId)),
     toggleExpense: (id) => mutate(() => expenseApi.toggle(id)),
-    toggleExpensePaid: (id) => mutate(() => expenseApi.togglePaid(id, useMonthStore.getState().month)),
+    // Optimistic + no success refetch (see toggleIncomeReceived).
+    toggleExpensePaid: async (id) => {
+      const summary = get().summary
+      if (!summary) return
+      set({
+        summary: {
+          ...summary,
+          expenses: summary.expenses.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e)),
+        },
+      })
+      try {
+        await expenseApi.togglePaid(id, useMonthStore.getState().month)
+      } catch (err) {
+        set({ error: toErrorMessage(err) })
+        await get().fetchSummary()
+        throw err
+      }
+    },
     deleteExpense: (id) => mutate(() => expenseApi.remove(id)),
 
     reorderIncomes: (ids) => mutate(() => incomeApi.reorder(ids)),
