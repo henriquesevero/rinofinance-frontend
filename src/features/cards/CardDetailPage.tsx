@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
+import { ArrowLeft, CreditCard, Eraser, FileUp, Gauge, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -183,6 +183,31 @@ export function CardDetailPage() {
           </p>
         </Card>
       </div>
+
+      {card.creditLimit > 0 && stats.limitUsedFraction !== null && (
+        <Card className="flex flex-col gap-2 p-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <Gauge className="size-3 shrink-0 text-red-500" />
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Limite usado
+              </span>
+            </div>
+            <span className="text-xs font-medium text-muted-foreground tabular-nums">
+              {Math.round(stats.limitUsedFraction * 100)}%
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-red-500 transition-[width] duration-500"
+              style={{ width: `${Math.min(100, stats.limitUsedFraction * 100)}%` }}
+            />
+          </div>
+          <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
+            <MoneyValue value={card.monthlyTotal} /> de <MoneyValue value={card.creditLimit} />
+          </p>
+        </Card>
+      )}
 
       <CardSection card={card} />
 
