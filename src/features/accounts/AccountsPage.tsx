@@ -98,7 +98,7 @@ export function AccountsPage() {
       {order.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {order.map((account) => (
             <li
               key={account.id}
