@@ -115,24 +115,24 @@ export function CardsPage() {
       {/* summary strip: the whole picture across every card */}
       {order.length > 0 && (
         <Card className="gap-0 overflow-hidden p-0">
-          <div className="grid gap-px bg-border sm:grid-cols-3">
-            <div className="flex flex-col justify-center gap-1 bg-card p-4 sm:p-5">
+          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
+            <div className="col-span-2 flex flex-col justify-center gap-0.5 bg-card p-3.5 sm:col-span-1 sm:gap-1 sm:p-5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Fatura do mês
               </span>
-              <MoneyValue value={grandTotal} className="text-2xl font-bold tracking-tight tabular-nums text-red-500" />
+              <MoneyValue value={grandTotal} className="text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl" />
               <span className="text-xs text-muted-foreground">soma das faturas de todos os cartões</span>
             </div>
 
-            <div className="flex flex-col justify-center gap-1 bg-card p-4 sm:p-5">
+            <div className="flex flex-col justify-center gap-0.5 bg-card p-3.5 sm:gap-1 sm:p-5">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Total que devo
               </span>
-              <MoneyValue value={totalOwed} className="text-2xl font-bold tracking-tight tabular-nums text-red-500" />
+              <MoneyValue value={totalOwed} className="text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl" />
               <span className="text-xs text-muted-foreground">quitação — parcelas ainda a pagar</span>
             </div>
 
-            <div className="flex flex-col justify-center gap-2 bg-card p-4 sm:p-5">
+            <div className="flex flex-col justify-center gap-1.5 bg-card p-3.5 sm:gap-2 sm:p-5">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Limite disponível
@@ -146,7 +146,7 @@ export function CardsPage() {
                   <MoneyValue
                     value={freeLimit}
                     className={cn(
-                      "text-2xl font-bold tracking-tight tabular-nums",
+                      "text-xl font-bold tracking-tight tabular-nums sm:text-2xl",
                       freeLimit >= 0 ? "text-emerald-500" : "text-red-500"
                     )}
                   />

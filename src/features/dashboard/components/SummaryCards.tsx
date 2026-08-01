@@ -47,14 +47,19 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
 
   return (
     <Card className="gap-0 overflow-hidden p-0">
-      <div className="grid gap-px bg-border sm:grid-cols-[1.2fr_1fr_1fr]">
+      <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-[1.2fr_1fr_1fr]">
         {/* Hero: balance */}
-        <div className={cn("flex flex-col justify-center gap-1 bg-card p-5", celebrate && "rf-celebrate")}>
+        <div
+          className={cn(
+            "col-span-2 flex flex-col justify-center gap-0.5 bg-card p-4 sm:col-span-1 sm:gap-1 sm:p-5",
+            celebrate && "rf-celebrate"
+          )}
+        >
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Balanço do mês</span>
           <MoneyValue
             value={netBalance}
             className={cn(
-              "text-3xl font-bold tracking-tight tabular-nums",
+              "text-2xl font-bold tracking-tight tabular-nums sm:text-3xl",
               projectedPositive ? "text-emerald-500" : "text-red-500"
             )}
           />
@@ -68,7 +73,7 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
         </div>
 
         {/* Entradas */}
-        <div className="flex flex-col justify-center gap-2 bg-card p-5">
+        <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               <span className="size-2 rounded-full bg-emerald-500" />
@@ -84,7 +89,7 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
         </div>
 
         {/* Saídas */}
-        <div className="flex flex-col justify-center gap-2 bg-card p-5">
+        <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               <span className="size-2 rounded-full bg-red-500" />

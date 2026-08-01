@@ -34,7 +34,7 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
         <img src={card.imageUrl} alt={card.name} className="size-full object-cover" />
       ) : (
         <div
-          className="flex size-full flex-col gap-1.5 p-3 text-white @container"
+          className="flex size-full flex-col gap-1.5 p-3 text-white @[16rem]:p-4 @container"
           style={{
             background: `linear-gradient(135deg, ${color} 0%, rgba(0,0,0,0.45) 140%)`,
           }}
@@ -59,7 +59,7 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
       )}
 
       {overlay && (
-        <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-10 text-white">
+        <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-10 text-white @[16rem]:p-4 @[16rem]:pt-12">
           {overlay}
         </div>
       )}

@@ -26,17 +26,15 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
           <div className="w-full">
             <MoneyValue
               value={card.monthlyTotal}
-              className="block whitespace-nowrap text-base font-bold leading-tight tabular-nums drop-shadow @[12rem]:text-lg"
+              className="block whitespace-nowrap text-lg font-bold leading-none tabular-nums drop-shadow @[12rem]:text-xl"
             />
-            <p className="truncate text-[10px] font-medium text-white/70">
-              Fatura do mês
-              {stats.daysUntilDue !== null &&
-                ` · ${
-                  stats.daysUntilDue === 0
-                    ? "vence hoje"
-                    : `vence em ${stats.daysUntilDue} ${stats.daysUntilDue === 1 ? "dia" : "dias"}`
-                }`}
-            </p>
+            {stats.daysUntilDue !== null && (
+              <p className="mt-1 truncate text-[11px] font-medium text-white/75">
+                {stats.daysUntilDue === 0
+                  ? "Vence hoje"
+                  : `Vence em ${stats.daysUntilDue} ${stats.daysUntilDue === 1 ? "dia" : "dias"}`}
+              </p>
+            )}
           </div>
         }
       />
