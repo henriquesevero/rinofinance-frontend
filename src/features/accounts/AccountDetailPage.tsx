@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowDownLeft, ArrowLeft, Check, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, X } from "lucide-react"
+import { ArrowLeft, Check, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -153,80 +153,64 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      {/* hero: identity, editable balance, folded month debits */}
-      <Card className="flex flex-col gap-3.5 p-4 sm:p-5">
-        <div className="flex items-center gap-2.5">
+      {/* hero: identity + debits on the left, editable balance on the right */}
+      <Card className="flex flex-row items-center justify-between gap-3 p-4">
+        <div className="flex min-w-0 items-center gap-2.5">
           <AccountAvatar account={account} className="size-9 shrink-0" />
-          <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{account.name}</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold leading-tight tracking-tight sm:text-lg">{account.name}</h1>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              Débitos do mês{" "}
+              <MoneyValue value={account.monthlyDebitTotal} className="font-medium text-red-500" />
+              {account.purchases.length > 0 &&
+                ` · ${account.purchases.length} ${account.purchases.length === 1 ? "compra" : "compras"}`}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Saldo atual</p>
-            {!editingBalance && (
-              <button
-                type="button"
-                onClick={startEditBalance}
-                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:underline"
-              >
-                <Pencil className="size-3" />
-                Ajustar
-              </button>
-            )}
-          </div>
-          {editingBalance ? (
-            <div className="mt-1.5 flex items-center gap-2">
-              <MoneyInput
-                value={balanceDraft}
-                onValueChange={setBalanceDraft}
-                className="h-11 max-w-[13rem] text-lg font-bold"
-              />
-              <Button size="icon" className="size-9 shrink-0" onClick={saveBalance} disabled={savingBalance} aria-label="Salvar saldo">
-                <Check className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 shrink-0"
-                onClick={() => setEditingBalance(false)}
-                disabled={savingBalance}
-                aria-label="Cancelar"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={startEditBalance}
-              title="Toque para ajustar o saldo"
-              className="mt-0.5 block rounded-md text-left transition-colors hover:opacity-80"
+        {editingBalance ? (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <MoneyInput
+              value={balanceDraft}
+              onValueChange={setBalanceDraft}
+              className="h-9 w-28 text-right text-base font-bold sm:w-32"
+            />
+            <Button size="icon" className="size-8 shrink-0" onClick={saveBalance} disabled={savingBalance} aria-label="Salvar saldo">
+              <Check className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={() => setEditingBalance(false)}
+              disabled={savingBalance}
+              aria-label="Cancelar"
             >
+              <X className="size-4" />
+            </Button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={startEditBalance}
+            title="Toque para ajustar o saldo"
+            className="group/bal flex shrink-0 items-center gap-1.5 text-right"
+          >
+            <span>
+              <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Saldo atual
+              </span>
               <MoneyValue
                 value={account.balance}
                 className={cn(
-                  "text-3xl font-bold tracking-tight tabular-nums",
+                  "text-2xl font-bold tracking-tight tabular-nums",
                   account.balance < 0 ? "text-red-500" : "text-emerald-500"
                 )}
               />
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between gap-2 border-t pt-3">
-          <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <ArrowDownLeft className="size-3.5 text-red-500" />
-            Débitos do mês
-          </span>
-          <span className="flex items-center gap-2">
-            {account.purchases.length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {account.purchases.length} {account.purchases.length === 1 ? "compra" : "compras"}
-              </span>
-            )}
-            <MoneyValue value={account.monthlyDebitTotal} className="font-bold tabular-nums text-red-500" />
-          </span>
-        </div>
+            </span>
+            <Pencil className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/bal:opacity-100 [@media(hover:none)]:opacity-100" />
+          </button>
+        )}
       </Card>
 
       <Card className="flex flex-col gap-4 p-5">
