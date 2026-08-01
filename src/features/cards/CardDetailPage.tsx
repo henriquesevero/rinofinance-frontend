@@ -142,133 +142,131 @@ export function CardDetailPage() {
       {/* hero: a colored header (the card's own color, white text) — the
           equivalent of the account hero — over a neutral body that keeps the
           debt/limit figures readable in their semantic colors. */}
+      {/* hero: the whole block filled with the card's color, all figures in
+          white/translucent for contrast. */}
       <Card className="gap-0 overflow-hidden p-0">
         <div
-          className="flex items-start justify-between gap-4 p-4 text-white sm:p-5"
+          className="flex flex-col gap-3.5 p-4 text-white sm:p-5"
           style={{ background: `linear-gradient(150deg, ${card.color || "#6B7280"} 0%, rgba(0,0,0,0.5) 160%)` }}
         >
-          <div className="flex min-w-0 items-center gap-2.5">
-            <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0 ring-1 ring-white/30" />
-            <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold leading-tight tracking-tight drop-shadow">{card.name}</h1>
-              <div className="mt-0.5 flex flex-col gap-y-0.5 text-xs drop-shadow sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1.5 sm:[&>*+*]:before:mr-1.5 sm:[&>*+*]:before:text-white/40 sm:[&>*+*]:before:content-['·']">
-                {stats.daysUntilClose !== null && (
-                  <span className="text-white/80">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
-                )}
-                {stats.daysUntilDue !== null && (
-                  <span className="text-white/80">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
-                )}
-                {stats.bestPurchaseDay !== null && (
-                  <span className="text-emerald-200">Melhor dia {stats.bestPurchaseDay}</span>
-                )}
-                {stats.flaggedCount > 0 && (
-                  <span className="text-amber-200">{stats.flaggedCount} em atenção</span>
-                )}
-                {stats.endingThisMonthCount > 0 && (
-                  <span className="text-amber-200">
-                    {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
+          {/* identity + bill */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0 ring-1 ring-white/30" />
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-bold leading-tight tracking-tight drop-shadow">{card.name}</h1>
+                <div className="mt-0.5 flex flex-col gap-y-0.5 text-xs drop-shadow sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1.5 sm:[&>*+*]:before:mr-1.5 sm:[&>*+*]:before:text-white/40 sm:[&>*+*]:before:content-['·']">
+                  {stats.daysUntilClose !== null && (
+                    <span className="text-white/80">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
+                  )}
+                  {stats.daysUntilDue !== null && (
+                    <span className="text-white/80">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
+                  )}
+                  {stats.bestPurchaseDay !== null && (
+                    <span className="text-emerald-200">Melhor dia {stats.bestPurchaseDay}</span>
+                  )}
+                  {stats.flaggedCount > 0 && (
+                    <span className="text-amber-200">{stats.flaggedCount} em atenção</span>
+                  )}
+                  {stats.endingThisMonthCount > 0 && (
+                    <span className="text-amber-200">
+                      {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70">Fatura do mês</p>
+              <MoneyValue
+                value={card.monthlyTotal}
+                className="block text-2xl font-bold tracking-tight tabular-nums drop-shadow"
+              />
+            </div>
+          </div>
+
+          {/* what the bill is made of — legend only (no bar) */}
+          {breakdownTotal > 0 && (
+            <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+              {breakdown.map((b) => (
+                <span key={b.label} className="flex items-center gap-1.5 text-xs text-white/80">
+                  <span className="size-2 rounded-full bg-white/70" />
+                  {b.label}
+                  <MoneyValue value={b.value} className="font-semibold tabular-nums text-white" />
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* owed + limit, folded into the same panel */}
+          <div className="grid grid-cols-1 border-t border-white/15 pt-3.5 sm:grid-cols-2">
+            {/* Total que devo */}
+            <div className="flex flex-col gap-1 pb-3.5 sm:pb-0 sm:pr-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <Wallet className="size-3.5 shrink-0 text-white/70" />
+                  <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-white/70">
+                    Total que devo
                   </span>
+                </div>
+                <div className="flex shrink-0 rounded-md bg-white/15 p-0.5 text-[10px] font-medium">
+                  {(["future", "withCurrent"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setOwedMode(m)}
+                      className={cn(
+                        "rounded px-1.5 py-0.5 transition-colors",
+                        owedMode === m ? "bg-white text-black shadow-sm" : "text-white/70 hover:text-white"
+                      )}
+                    >
+                      {m === "future" ? "Sem atual" : "Com atual"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <MoneyValue
+                value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
+                className="text-xl font-bold tracking-tight tabular-nums drop-shadow"
+              />
+              <p className="text-[11px] leading-tight text-white/60">
+                {owedMode === "future" ? "quitação — sem a parcela deste mês" : "incluindo a parcela deste mês"}
+              </p>
+            </div>
+
+            {/* Limite usado */}
+            <div className="flex flex-col gap-1 border-t border-white/15 pt-3.5 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Gauge className="size-3.5 shrink-0 text-white/70" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Limite usado</span>
+                </div>
+                {usedPct !== null && (
+                  <span className="text-xs font-medium text-white/70 tabular-nums">{Math.round(usedPct)}%</span>
                 )}
               </div>
-            </div>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70">Fatura do mês</p>
-            <MoneyValue
-              value={card.monthlyTotal}
-              className="block text-2xl font-bold tracking-tight tabular-nums drop-shadow"
-            />
-          </div>
-        </div>
-
-      <div className="flex flex-col gap-3.5 p-4 sm:p-5">
-        {/* what the bill is made of — legend only (no bar) */}
-        {breakdownTotal > 0 && (
-          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-            {breakdown.map((b) => (
-              <span key={b.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className={cn("size-2 rounded-full", b.color)} />
-                {b.label}
-                <MoneyValue value={b.value} className="font-semibold tabular-nums text-foreground" />
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* owed + limit, folded into the same panel — divider stacks on mobile,
-            splits into two columns on desktop so nothing breaks either way */}
-        <div className="grid grid-cols-1 border-t pt-3.5 sm:grid-cols-2">
-          {/* Total que devo */}
-          <div className="flex flex-col gap-1 pb-3.5 sm:pb-0 sm:pr-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-1.5">
-                <Wallet className="size-3.5 shrink-0 text-red-500" />
-                <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Total que devo
-                </span>
-              </div>
-              <div className="flex shrink-0 rounded-md bg-muted p-0.5 text-[10px] font-medium">
-                {(["future", "withCurrent"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setOwedMode(m)}
-                    className={cn(
-                      "rounded px-1.5 py-0.5 transition-colors",
-                      owedMode === m
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {m === "future" ? "Sem atual" : "Com atual"}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <MoneyValue
-              value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
-              className="text-xl font-bold tracking-tight tabular-nums text-red-500"
-            />
-            <p className="text-[11px] leading-tight text-muted-foreground">
-              {owedMode === "future" ? "quitação — sem a parcela deste mês" : "incluindo a parcela deste mês"}
-            </p>
-          </div>
-
-          {/* Limite usado */}
-          <div className="flex flex-col gap-1 border-t pt-3.5 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <Gauge className="size-3.5 shrink-0 text-red-500" />
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Limite usado
-                </span>
-              </div>
-              {usedPct !== null && (
-                <span className="text-xs font-medium text-muted-foreground tabular-nums">{Math.round(usedPct)}%</span>
+              {usedPct !== null ? (
+                <>
+                  <MoneyValue
+                    value={Math.max(0, card.creditLimit - card.monthlyTotal)}
+                    className="text-xl font-bold tracking-tight tabular-nums drop-shadow"
+                  />
+                  <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-white/20">
+                    <div
+                      className="h-full rounded-full bg-white/80 transition-[width] duration-500"
+                      style={{ width: `${usedPct}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] leading-tight text-white/60 tabular-nums">
+                    disponível de <MoneyValue value={card.creditLimit} /> de limite
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-white/70">Defina o limite ao editar o cartão.</p>
               )}
             </div>
-            {usedPct !== null ? (
-              <>
-                <MoneyValue
-                  value={Math.max(0, card.creditLimit - card.monthlyTotal)}
-                  className="text-xl font-bold tracking-tight tabular-nums text-emerald-500"
-                />
-                <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-red-500 transition-[width] duration-500"
-                    style={{ width: `${usedPct}%` }}
-                  />
-                </div>
-                <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
-                  disponível de <MoneyValue value={card.creditLimit} /> de limite
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">Defina o limite ao editar o cartão.</p>
-            )}
           </div>
         </div>
-      </div>
       </Card>
 
       <CardSection card={card} />
