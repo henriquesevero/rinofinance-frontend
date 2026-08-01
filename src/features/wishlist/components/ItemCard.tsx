@@ -2,6 +2,7 @@ import { useState } from "react"
 import { ExternalLink, Pencil, ShoppingBag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MoneyValue } from "@/components/MoneyValue"
+import { normalizeDomain } from "@/lib/brandLogo"
 import type { WishlistItem } from "../types"
 
 interface ItemCardProps {

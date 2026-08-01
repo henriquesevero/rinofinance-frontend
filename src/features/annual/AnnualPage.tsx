@@ -18,7 +18,7 @@ import { CategoryIcon } from "@/features/categories/categoryIcons"
 import { useCategoriesStore } from "@/features/categories/store"
 import { useInvestmentsStore } from "@/features/investments/store"
 import { AnnualBarChart } from "./AnnualBarChart"
-import { useAnnualData } from "./useAnnualData"
+import { type AnnualMode, useAnnualData } from "./useAnnualData"
 
 const FULL_MONTHS = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -32,7 +32,8 @@ const UNCATEGORIZED = { name: "Sem categoria", color: "#9CA3AF", icon: "tag" }
 export function AnnualPage() {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
-  const { data, isLoading, error } = useAnnualData(year)
+  const [mode, setMode] = useState<AnnualMode>("realized")
+  const { data, isLoading, error } = useAnnualData(year, mode)
   const byId = useCategoriesStore((s) => s.byId)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const categoriesCount = useCategoriesStore((s) => s.categories.length)
@@ -94,6 +95,30 @@ export function AnnualPage() {
         </div>
       </div>
 
+      {/* realized vs planned lens */}
+      <div className="rf-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: "30ms" }}>
+        <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
+          {(["realized", "planned"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={cn(
+                "rounded-md px-3 py-1.5 transition-colors",
+                mode === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {m === "realized" ? "Realizado" : "Previsto"}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {mode === "realized"
+            ? "o que você marcou como recebido / pago"
+            : "tudo que está ativo, mesmo sem marcar"}
+        </span>
+      </div>
+
       {isLoading && !data ? (
         <AnnualSkeleton />
       ) : error && !data ? (
@@ -105,7 +130,8 @@ export function AnnualPage() {
           </span>
           <p className="text-sm text-muted-foreground">Nenhuma movimentação registrada em {year}.</p>
           <p className="max-w-xs text-xs text-muted-foreground">
-            Marque entradas como recebidas e saídas como pagas no Fluxo do mês para ver o ano tomar forma aqui.
+            Troque para <strong className="text-foreground">Previsto</strong> para ver tudo que está ativo, ou marque
+            entradas/saídas como recebidas/pagas no Fluxo do mês.
           </p>
         </Card>
       ) : (

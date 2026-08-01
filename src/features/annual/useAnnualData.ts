@@ -30,11 +30,15 @@ export interface AnnualData {
   incomeCategoryTotals: { id: string; total: number }[]
 }
 
-// Fetches the 12 monthly summaries of a year in parallel and aggregates the
-// *realized* cash flow — income actually received and expenses actually paid
-// each month — since the planned (recurring) totals are identical every month
-// and would flatline. Recomputes whenever the year changes.
-export function useAnnualData(year: number) {
+// The two lenses on the year: "realized" counts only what was actually
+// received/paid each month (varies month to month); "planned" counts every
+// active item regardless of its paid/received flag (so categorized entries
+// always show, even when not yet marked off).
+export type AnnualMode = "realized" | "planned"
+
+// Fetches the 12 monthly summaries of a year in parallel and aggregates them
+// according to `mode`. Recomputes whenever the year or mode changes.
+export function useAnnualData(year: number, mode: AnnualMode) {
   const [data, setData] = useState<AnnualData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +48,8 @@ export function useAnnualData(year: number) {
     setIsLoading(true)
     setError(null)
 
+    const planned = mode === "planned"
+
     Promise.all(
       Array.from({ length: 12 }, (_, i) => dashboardApi.getSummary(`${year}-${String(i + 1).padStart(2, "0")}`))
     )
@@ -51,8 +57,8 @@ export function useAnnualData(year: number) {
         if (cancelled) return
 
         const months: AnnualMonth[] = summaries.map((s, i) => {
-          const income = s.incomes.reduce((sum, inc) => (inc.active && inc.received ? sum + inc.amount : sum), 0)
-          const expense = s.expenses.reduce((sum, e) => (e.active && e.paid ? sum + e.amount : sum), 0)
+          const income = s.incomes.reduce((sum, inc) => (inc.active && (planned || inc.received) ? sum + inc.amount : sum), 0)
+          const expense = s.expenses.reduce((sum, e) => (e.active && (planned || e.paid) ? sum + e.amount : sum), 0)
           return { index: i, label: MONTH_LABELS[i], income, expense, net: income - expense }
         })
 
@@ -65,12 +71,12 @@ export function useAnnualData(year: number) {
         const incomeCatMap = new Map<string, number>()
         for (const s of summaries) {
           for (const e of s.expenses) {
-            if (!e.active || !e.paid) continue
+            if (!e.active || (!planned && !e.paid)) continue
             const key = e.categoryId || "__none__"
             expenseCatMap.set(key, (expenseCatMap.get(key) ?? 0) + e.amount)
           }
           for (const inc of s.incomes) {
-            if (!inc.active || !inc.received) continue
+            if (!inc.active || (!planned && !inc.received)) continue
             const key = inc.categoryId || "__none__"
             incomeCatMap.set(key, (incomeCatMap.get(key) ?? 0) + inc.amount)
           }
@@ -104,7 +110,7 @@ export function useAnnualData(year: number) {
     return () => {
       cancelled = true
     }
-  }, [year])
+  }, [year, mode])
 
   return { data, isLoading, error }
 }
