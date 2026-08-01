@@ -182,15 +182,58 @@
   }
 }
 
-/* Success toasts ("categoria criada", "saída criada", ...) use the platform
-   blue instead of the default green — the check icon and the toast border. */
-[data-sonner-toast][data-type="success"] [data-icon],
-[data-sonner-toast][data-type="success"] [data-icon] svg {
-  color: var(--primary);
+/* Elegant, non-invasive toasts: a neutral card (matching the app's popovers)
+   with a soft, diffuse shadow and a hairline border — the type is signalled
+   only by a small tinted icon, never a loud colored fill. */
+.cn-toast {
+  gap: 0.625rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  box-shadow:
+    0 14px 34px -14px rgb(0 0 0 / 0.34),
+    0 4px 12px -8px rgb(0 0 0 / 0.22);
 }
 
-[data-sonner-toast][data-type="success"] {
-  --normal-border: color-mix(in oklch, var(--primary) 45%, var(--border));
+.cn-toast [data-title] {
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+
+.cn-toast [data-description] {
+  color: var(--muted-foreground);
+}
+
+/* Icon sits in a soft tinted disc, tinted per type — calm, premium. */
+.cn-toast [data-icon] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  margin-inline-end: 0.15rem;
+}
+.cn-toast [data-icon] svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
+}
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 16%, transparent);
+}
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: #f59e0b;
+  background: color-mix(in oklab, #f59e0b 16%, transparent);
+}
+[data-sonner-toast][data-type="info"] [data-icon],
+[data-sonner-toast][data-type="loading"] [data-icon] {
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
 }
 
 /* Hide the scrollbar while keeping the element scrollable (wheel/touch). */
