@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Check, ChevronDown, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowDownLeft, Check, ChevronDown, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -147,13 +147,19 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
             aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
             title={income.received ? "Recebida (desmarcar)" : "Marcar recebida"}
             className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 active:scale-90",
               income.received
                 ? "border-emerald-500 bg-emerald-500 text-white"
-                : "border-muted-foreground/30 text-transparent hover:border-emerald-500"
+                : "border-muted-foreground/30 text-white hover:border-emerald-500"
             )}
           >
-            <Check className="size-3" strokeWidth={3} />
+            <Check
+              className={cn(
+                "size-3 transition-all duration-200",
+                income.received ? "scale-100 opacity-100" : "scale-0 opacity-0"
+              )}
+              strokeWidth={3}
+            />
           </button>
           <div className="min-w-0 flex-1">
             <p className="truncate leading-tight" title={income.name}>
@@ -250,7 +256,16 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
       {!collapsed && (
         <CardContent>
           {incomes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma entrada cadastrada ainda.</p>
+            <div className="flex flex-col items-center gap-2 py-8 text-center">
+              <span className="flex size-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                <ArrowDownLeft className="size-5" />
+              </span>
+              <p className="text-sm text-muted-foreground">Nenhuma entrada ainda.</p>
+              <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
+                <Plus className="size-4" />
+                Adicionar entrada
+              </Button>
+            </div>
           ) : visible.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma entrada encontrada.</p>
           ) : groups ? (

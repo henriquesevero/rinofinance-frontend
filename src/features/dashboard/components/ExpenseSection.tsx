@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Check, ChevronDown, CreditCard, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowUpRight, Check, ChevronDown, CreditCard, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -174,13 +174,19 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
             aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
             title={expense.paid ? "Paga (desmarcar)" : "Marcar paga"}
             className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 active:scale-90",
               expense.paid
                 ? "border-red-500 bg-red-500 text-white"
-                : "border-muted-foreground/30 text-transparent hover:border-red-500"
+                : "border-muted-foreground/30 text-white hover:border-red-500"
             )}
           >
-            <Check className="size-3" strokeWidth={3} />
+            <Check
+              className={cn(
+                "size-3 transition-all duration-200",
+                expense.paid ? "scale-100 opacity-100" : "scale-0 opacity-0"
+              )}
+              strokeWidth={3}
+            />
           </button>
           <div className="min-w-0 flex-1">
             <p className="truncate leading-tight" title={expense.name}>
@@ -292,7 +298,16 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
       {!collapsed && (
         <CardContent>
           {expenses.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma saída cadastrada ainda.</p>
+            <div className="flex flex-col items-center gap-2 py-8 text-center">
+              <span className="flex size-11 items-center justify-center rounded-full bg-red-500/10 text-red-500">
+                <ArrowUpRight className="size-5" />
+              </span>
+              <p className="text-sm text-muted-foreground">Nenhuma saída ainda.</p>
+              <Button variant="outline" size="sm" onClick={() => setDialogState({ mode: "create" })}>
+                <Plus className="size-4" />
+                Adicionar saída
+              </Button>
+            </div>
           ) : visible.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma saída encontrada.</p>
           ) : groups ? (

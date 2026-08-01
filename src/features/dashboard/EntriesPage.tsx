@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
-import { FolderTree, Loader2, Search } from "lucide-react"
+import { FolderTree, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
@@ -60,12 +62,7 @@ export function EntriesPage() {
   }, [summary])
 
   if (isLoading && !summary) {
-    return (
-      <div className="flex items-center justify-center py-20 text-muted-foreground">
-        <Loader2 className="mr-2 size-5 animate-spin" />
-        Carregando...
-      </div>
-    )
+    return <EntriesSkeleton />
   }
 
   if (error && !summary) {
@@ -76,10 +73,10 @@ export function EntriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="rf-fade-up flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Entradas & Saídas</h1>
-          <p className="text-muted-foreground">Gerencie suas receitas e despesas do mês.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Fluxo do mês</h1>
+          <p className="text-muted-foreground">Entradas e saídas — o que entra, o que sai e o que sobra.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
@@ -87,16 +84,18 @@ export function EntriesPage() {
         </div>
       </div>
 
-      <SummaryCards
-        totalIncome={summary.totalIncome}
-        totalExpense={summary.totalExpense}
-        netBalance={summary.netBalance}
-        receivedIncome={receivedIncome}
-        paidExpense={paidExpense}
-      />
+      <div className="rf-fade-up" style={{ animationDelay: "60ms" }}>
+        <SummaryCards
+          totalIncome={summary.totalIncome}
+          totalExpense={summary.totalExpense}
+          netBalance={summary.netBalance}
+          receivedIncome={receivedIncome}
+          paidExpense={paidExpense}
+        />
+      </div>
 
       {/* toolbar: search + quick filters */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="rf-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: "120ms" }}>
         <div className="relative min-w-[9rem] flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -144,9 +143,54 @@ export function EntriesPage() {
         </Button>
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="rf-fade-up grid items-start gap-6 lg:grid-cols-2" style={{ animationDelay: "180ms" }}>
         <IncomeSection incomes={summary.incomes} filters={filters} />
         <ExpenseSection expenses={summary.expenses} filters={filters} />
+      </div>
+    </div>
+  )
+}
+
+// Layout-matching placeholders while the month loads — calmer than a spinner.
+function EntriesSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-52" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="size-9 rounded-md" />
+      </div>
+      <Card className="gap-0 overflow-hidden p-0">
+        <div className="grid gap-px bg-border sm:grid-cols-[1.2fr_1fr_1fr]">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-2 bg-card p-5">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-7 w-28" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          ))}
+        </div>
+      </Card>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-40" />
+      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        {[0, 1].map((i) => (
+          <Card key={i} className="flex flex-col gap-4 p-4">
+            <Skeleton className="h-5 w-40" />
+            {[0, 1, 2, 3].map((j) => (
+              <div key={j} className="flex items-center gap-3">
+                <Skeleton className="size-5 rounded-full" />
+                <Skeleton className="h-4 flex-1" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </Card>
+        ))}
       </div>
     </div>
   )

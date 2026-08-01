@@ -12,7 +12,7 @@ import { useCategoriesStore } from "@/features/categories/store"
 
 const tabs = [
   { to: "/dashboard", label: "Painel", icon: LayoutDashboard },
-  { to: "/entradas-saidas", label: "Entradas & Saídas", icon: ArrowRightLeft },
+  { to: "/entradas-saidas", label: "Fluxo do mês", icon: ArrowRightLeft },
   { to: "/cards", label: "Cartões", icon: CreditCard },
   { to: "/accounts", label: "Contas", icon: Wallet },
   { to: "/investments", label: "Investimentos", icon: PiggyBank },
