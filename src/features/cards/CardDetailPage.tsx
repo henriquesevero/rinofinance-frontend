@@ -154,7 +154,7 @@ export function CardDetailPage() {
                   <span className="text-muted-foreground">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
                 )}
                 {stats.bestPurchaseDay !== null && (
-                  <span className="text-emerald-600 dark:text-emerald-400">Melhor dia dia {stats.bestPurchaseDay}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Melhor dia {stats.bestPurchaseDay}</span>
                 )}
                 {stats.flaggedCount > 0 && (
                   <span className="text-amber-600 dark:text-amber-400">{stats.flaggedCount} em atenção</span>
