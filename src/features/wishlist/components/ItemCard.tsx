@@ -18,6 +18,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
   // Remote store images can hotlink-block (403) — fall back to the placeholder.
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
+  const store = item.url ? normalizeDomain(item.url) : ""
 
   const inner = (
     <>
@@ -26,7 +27,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
           <img
             src={item.imageUrl}
             alt={item.name}
-            className="size-full object-cover"
+            className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
             loading="lazy"
             onError={() => setImgFailed(true)}
           />
@@ -36,15 +37,15 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-0.5 p-3">
-        <p className="truncate text-sm font-medium" title={item.name}>
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <p className="truncate text-sm font-medium leading-tight" title={item.name}>
           {item.name}
         </p>
-        <MoneyValue value={item.price} className="text-sm font-bold tracking-tight tabular-nums" />
-        {item.url && (
-          <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-            Ver na loja
-            <ExternalLink className="size-3" />
+        <MoneyValue value={item.price} className="text-base font-bold tracking-tight tabular-nums" />
+        {store && (
+          <span className="mt-auto flex items-center gap-1 truncate pt-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+            <span className="truncate">{store}</span>
+            <ExternalLink className="size-3 shrink-0" />
           </span>
         )}
       </div>

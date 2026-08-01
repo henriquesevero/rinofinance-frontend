@@ -33,6 +33,8 @@ export function WishlistPage() {
       useStore={useWishlistStore}
       title="Lista de desejos"
       description="Os produtos que você quer comprar, organizados como uma loja."
+      totalLabel="Total desejado"
+      maxLabel="Mais caro"
     />
   )
 }
@@ -43,11 +45,25 @@ export function BelongingsPage() {
       useStore={useBelongingsStore}
       title="Itens que possuo"
       description="Tudo que você tem em seu patrimônio."
+      totalLabel="Valor total"
+      maxLabel="Mais valioso"
     />
   )
 }
 
-function ListPage({ useStore, title, description }: { useStore: StoreHook; title: string; description: string }) {
+function ListPage({
+  useStore,
+  title,
+  description,
+  totalLabel,
+  maxLabel,
+}: {
+  useStore: StoreHook
+  title: string
+  description: string
+  totalLabel: string
+  maxLabel: string
+}) {
   const sections = useStore((s) => s.sections)
   const items = useStore((s) => s.items)
   const total = useStore((s) => s.total)
@@ -83,6 +99,11 @@ function ListPage({ useStore, title, description }: { useStore: StoreHook; title
   }, [items])
 
   const ungrouped = itemsBySection.get(NONE) ?? []
+  const mostExpensive = useMemo(
+    () => items.reduce<WishlistItem | null>((max, i) => (i.price > (max?.price ?? -1) ? i : max), null),
+    [items]
+  )
+  const sectionTotal = (list: WishlistItem[]) => list.reduce((sum, i) => sum + i.price, 0)
 
   async function handleDeleteItem() {
     if (!deletingItem) return
@@ -180,16 +201,26 @@ function ListPage({ useStore, title, description }: { useStore: StoreHook; title
         </div>
       </div>
 
-      {/* total dos itens — compacto e discreto */}
-      <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[14rem]">
-        <div className="flex items-center gap-1.5">
-          <ShoppingCart className="size-3.5 text-muted-foreground" />
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Total dos itens
-          </h2>
-        </div>
-        <MoneyValue value={total} className="text-xl font-bold tracking-tight tabular-nums" />
-      </Card>
+      {/* summary strip: the whole list at a glance */}
+      {!isEmpty && (
+        <Card className="gap-0 overflow-hidden p-0">
+          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
+            <Cell label={totalLabel} className="col-span-2 sm:col-span-1">
+              <MoneyValue value={total} className="text-xl font-bold tracking-tight tabular-nums sm:text-2xl" />
+            </Cell>
+            <Cell label="Itens">
+              <span className="text-xl font-bold tracking-tight tabular-nums sm:text-2xl">{items.length}</span>
+            </Cell>
+            <Cell label={maxLabel}>
+              {mostExpensive ? (
+                <MoneyValue value={mostExpensive.price} className="text-xl font-bold tracking-tight tabular-nums sm:text-2xl" />
+              ) : (
+                <span className="text-xl font-bold text-muted-foreground sm:text-2xl">—</span>
+              )}
+            </Cell>
+          </div>
+        </Card>
+      )}
 
       {isEmpty ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
@@ -211,6 +242,7 @@ function ListPage({ useStore, title, description }: { useStore: StoreHook; title
                 key={section.id}
                 title={section.name}
                 count={sectionItems.length}
+                total={sectionTotal(sectionItems)}
                 onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
@@ -231,6 +263,7 @@ function ListPage({ useStore, title, description }: { useStore: StoreHook; title
             <Section
               title="Sem seção"
               count={ungrouped.length}
+              total={sectionTotal(ungrouped)}
               onAdd={() => setItemDialog({ mode: "create" })}
             >
               {ungrouped.map((item) => (
@@ -303,6 +336,7 @@ function ListPage({ useStore, title, description }: { useStore: StoreHook; title
 function Section({
   title,
   count,
+  total,
   onAdd,
   onEdit,
   onDelete,
@@ -310,6 +344,7 @@ function Section({
 }: {
   title: string
   count: number
+  total: number
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -329,7 +364,15 @@ function Section({
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
           <h2 className="truncate text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
-          <span className="shrink-0 text-xs text-muted-foreground">({count})</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            ({count})
+            {count > 0 && (
+              <>
+                {" · "}
+                <MoneyValue value={total} className="font-medium tabular-nums text-foreground/70" />
+              </>
+            )}
+          </span>
         </button>
         <div className="ml-auto flex shrink-0 items-center gap-0.5">
           {onEdit && (
@@ -354,5 +397,15 @@ function Section({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{children}</div>
         ))}
     </section>
+  )
+}
+
+// One metric in the summary strip: uppercase label above a prominent value.
+function Cell({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5", className)}>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      {children}
+    </div>
   )
 }
