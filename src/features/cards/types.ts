@@ -10,6 +10,9 @@ export interface InstallmentPurchase {
   flagged: boolean
   excludedFromOwed?: boolean
   categoryId?: string
+  // When set (YYYY-MM-DD, first of month), the item stops billing from this
+  // month onward; earlier months still show it. Empty = natural schedule.
+  canceledFrom?: string
 }
 
 export interface Subscription {
@@ -18,6 +21,7 @@ export interface Subscription {
   monthlyAmount: number
   domain?: string
   categoryId?: string
+  canceledFrom?: string
 }
 
 export interface CardOverview {
@@ -78,6 +82,9 @@ export interface ImportFaturaResult {
 export interface ClearCardPayload {
   installmentPurchaseIds: string[]
   subscriptionIds: string[]
+  // "end" stops items from the reference month onward (keeps past months);
+  // "delete" permanently removes them from every month.
+  mode: "end" | "delete"
 }
 
 export interface ClearCardResult {

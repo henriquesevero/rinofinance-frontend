@@ -20,8 +20,8 @@ export const cardsApi = {
   remove: (id: string) => apiClient.delete(`/api/cards/${id}`),
   importFatura: (cardId: string, payload: ImportFaturaPayload) =>
     apiClient.post<ImportFaturaResult>(`/api/cards/${cardId}/import`, payload),
-  clearCard: (cardId: string, payload: ClearCardPayload) =>
-    apiClient.post<ClearCardResult>(`/api/cards/${cardId}/clear`, payload),
+  clearCard: (cardId: string, payload: ClearCardPayload, month?: string) =>
+    apiClient.post<ClearCardResult>(`/api/cards/${cardId}/clear${month ? `?month=${month}` : ""}`, payload),
   reorder: (cardIds: string[]) => apiClient.put<void>("/api/cards/order", { cardIds }),
   reorderInstallmentPurchases: (cardId: string, ids: string[]) =>
     apiClient.put<void>(`/api/cards/${cardId}/installment-purchases/order`, { ids }),

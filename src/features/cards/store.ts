@@ -98,7 +98,8 @@ export const useCardsStore = create<CardsState>((set, get) => {
 
     clearCard: async (cardId, payload) => {
       try {
-        const result = await cardsApi.clearCard(cardId, payload)
+        // Pass the viewed month so "end" mode ends items from that month on.
+        const result = await cardsApi.clearCard(cardId, payload, useMonthStore.getState().month)
         await get().fetchCards()
         return result
       } catch (err) {

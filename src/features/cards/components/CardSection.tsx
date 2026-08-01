@@ -25,6 +25,8 @@ import {
   type SubscriptionSortKey,
 } from "../installments"
 import { logoDomain } from "../fatura/brands"
+import { isPurchaseActiveInMonth, isSubscriptionActiveInMonth } from "../cardStats"
+import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "../store"
 import type { CardOverview, InstallmentPurchase, Subscription } from "../types"
 import { CategoryChip } from "@/features/categories/components/CategoryChip"
@@ -54,12 +56,12 @@ export function CardSection({ card }: { card: CardOverview }) {
   const updateInstallmentPurchase = useCardsStore((s) => s.updateInstallmentPurchase)
   const toggleInstallmentPurchaseFlag = useCardsStore((s) => s.toggleInstallmentPurchaseFlag)
   const toggleInstallmentPurchaseOwed = useCardsStore((s) => s.toggleInstallmentPurchaseOwed)
-  const deleteInstallmentPurchase = useCardsStore((s) => s.deleteInstallmentPurchase)
   const createSubscription = useCardsStore((s) => s.createSubscription)
   const updateSubscription = useCardsStore((s) => s.updateSubscription)
-  const deleteSubscription = useCardsStore((s) => s.deleteSubscription)
+  const clearCard = useCardsStore((s) => s.clearCard)
   const reorderInstallmentPurchases = useCardsStore((s) => s.reorderInstallmentPurchases)
   const reorderSubscriptions = useCardsStore((s) => s.reorderSubscriptions)
+  const month = useMonthStore((s) => s.month)
 
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
@@ -72,17 +74,35 @@ export function CardSection({ card }: { card: CardOverview }) {
     return (id?: string) => (id ? map.get(id) ?? "" : "")
   }, [categories])
 
+  // Lists are scoped to the month being viewed: an item ended ("encerrado")
+  // from this month on disappears here, but is still visible when browsing an
+  // earlier month — so clearing the current fatura never rewrites the past.
   const avulsas = useMemo(
-    () => sortPurchases(card.installmentPurchases.filter((p) => p.totalInstallments === 1), avulsaSortKey, categoryName),
-    [card.installmentPurchases, avulsaSortKey, categoryName]
+    () =>
+      sortPurchases(
+        card.installmentPurchases.filter((p) => p.totalInstallments === 1 && isPurchaseActiveInMonth(p, month)),
+        avulsaSortKey,
+        categoryName
+      ),
+    [card.installmentPurchases, avulsaSortKey, categoryName, month]
   )
   const parceladas = useMemo(
-    () => sortPurchases(card.installmentPurchases.filter((p) => p.totalInstallments > 1), sortKey, categoryName),
-    [card.installmentPurchases, sortKey, categoryName]
+    () =>
+      sortPurchases(
+        card.installmentPurchases.filter((p) => p.totalInstallments > 1 && isPurchaseActiveInMonth(p, month)),
+        sortKey,
+        categoryName
+      ),
+    [card.installmentPurchases, sortKey, categoryName, month]
   )
   const sortedSubscriptions = useMemo(
-    () => sortSubscriptions(card.subscriptions, subSortKey, categoryName),
-    [card.subscriptions, subSortKey, categoryName]
+    () =>
+      sortSubscriptions(
+        card.subscriptions.filter((s) => isSubscriptionActiveInMonth(s, month)),
+        subSortKey,
+        categoryName
+      ),
+    [card.subscriptions, subSortKey, categoryName, month]
   )
 
   // Manual reordering only applies to the "Ordem padrão" (position) sort.
@@ -99,10 +119,12 @@ export function CardSection({ card }: { card: CardOverview }) {
   )
   const subsDnd = useReorder(sortedSubscriptions, (ids) => reorderSubscriptions(card.id, ids))
 
+  // Removing an item preserves history: it's "ended" from the viewed month
+  // onward (earlier months keep it) rather than deleted from every month.
   async function handleDeletePurchase(id: string) {
     try {
-      await deleteInstallmentPurchase(id)
-      toast.success("Compra removida")
+      await clearCard(card.id, { installmentPurchaseIds: [id], subscriptionIds: [], mode: "end" })
+      toast.success("Compra removida deste mês em diante")
     } catch (err) {
       toast.error(toErrorMessage(err))
     }
@@ -126,8 +148,8 @@ export function CardSection({ card }: { card: CardOverview }) {
 
   async function handleDeleteSubscription(id: string) {
     try {
-      await deleteSubscription(id)
-      toast.success("Assinatura removida")
+      await clearCard(card.id, { installmentPurchaseIds: [], subscriptionIds: [id], mode: "end" })
+      toast.success("Assinatura removida deste mês em diante")
     } catch (err) {
       toast.error(toErrorMessage(err))
     }
@@ -142,7 +164,7 @@ export function CardSection({ card }: { card: CardOverview }) {
       ? { value: sortKey, onChange: (v) => setSortKey((v as PurchaseSortKey) ?? "default"), options: PURCHASE_SORT_OPTIONS }
       : undefined
   const subSort: SortConfig | undefined =
-    card.subscriptions.length > 1
+    sortedSubscriptions.length > 1
       ? { value: subSortKey, onChange: (v) => setSubSortKey((v as SubscriptionSortKey) ?? "default"), options: SUBSCRIPTION_SORT_OPTIONS }
       : undefined
 
@@ -224,7 +246,7 @@ export function CardSection({ card }: { card: CardOverview }) {
         <GroupHeader
           icon={Repeat}
           title="Assinaturas"
-          count={card.subscriptions.length}
+          count={sortedSubscriptions.length}
           collapsed={collapsed.subs}
           onToggle={() => toggleCollapsed("subs")}
           sort={subSort}
@@ -232,7 +254,7 @@ export function CardSection({ card }: { card: CardOverview }) {
           addLabel="Nova assinatura"
         />
         {!collapsed.subs &&
-          (card.subscriptions.length === 0 ? (
+          (sortedSubscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
             <ul className="scrollbar-hide grid max-h-[22rem] grid-cols-1 gap-2.5 overflow-y-auto sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

@@ -1,14 +1,56 @@
-import type { CardOverview, InstallmentPurchase } from "./types"
+import type { CardOverview, InstallmentPurchase, Subscription } from "./types"
+
+// Collapse a Date to a comparable 0-based month ordinal (year*12 + month).
+function monthIndexFromDate(d: Date): number {
+  return d.getFullYear() * 12 + d.getMonth()
+}
+// Same, from a "YYYY-MM" or "YYYY-MM-DD" string.
+function monthIndexFromKey(key: string): number {
+  const [y, m] = key.split("-").map(Number)
+  return (y || 0) * 12 + ((m || 1) - 1)
+}
+// Whether an item ended via `canceledFrom` no longer bills in the reference
+// month ordinal (i.e. the reference is at or after its cancellation month).
+function canceledBy(canceledFrom: string | undefined, refIndex: number): boolean {
+  return !!canceledFrom && monthIndexFromKey(canceledFrom) <= refIndex
+}
 
 // Whether an installment purchase bills a charge in the current month —
-// mirrors the backend's IsActiveOn (started and not yet paid off). Parsed
-// from the YYYY-MM-DD string directly to avoid timezone drift.
-function isActiveThisMonth(p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">): boolean {
+// mirrors the backend's IsActiveOn (started, not paid off, not canceled).
+// Parsed from the YYYY-MM-DD string directly to avoid timezone drift.
+function isActiveThisMonth(
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
+): boolean {
   const [year, month] = p.firstInstallmentDate.split("-").map(Number)
   if (!year || !month) return false
   const now = new Date()
+  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return false
   const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
   return elapsed >= 0 && elapsed < p.totalInstallments
+}
+
+// Whether an installment purchase is active (billing) in a specific month,
+// given as "YYYY-MM" — used to scope the card's lists to the viewed month so
+// canceled/ended items vanish from the current fatura but stay in the past.
+export function isPurchaseActiveInMonth(
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">,
+  monthKey: string
+): boolean {
+  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
+  if (!year || !month) return false
+  const refIndex = monthIndexFromKey(monthKey)
+  if (canceledBy(p.canceledFrom, refIndex)) return false
+  const elapsed = refIndex - (year * 12 + (month - 1))
+  return elapsed >= 0 && elapsed < p.totalInstallments
+}
+
+// Whether a subscription bills in a given month "YYYY-MM": always, unless it
+// was ended before it (no start bound — mirrors the backend).
+export function isSubscriptionActiveInMonth(
+  s: Pick<Subscription, "canceledFrom">,
+  monthKey: string
+): boolean {
+  return !canceledBy(s.canceledFrom, monthIndexFromKey(monthKey))
 }
 
 // Installments left to pay as of TODAY, for the "quitação" total — i.e. the
@@ -18,11 +60,12 @@ function isActiveThisMonth(p: Pick<InstallmentPurchase, "firstInstallmentDate" |
 // remainingTotal is relative to the requested month and would balloon on a
 // past month).
 function installmentsLeftToPay(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
 ): number {
   const [year, month] = p.firstInstallmentDate.split("-").map(Number)
   if (!year || !month) return 0
   const now = new Date()
+  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return 0
   const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
   // How many installments have been billed so far, including the current
   // month's (clamped to the plan's bounds).
@@ -35,11 +78,12 @@ function installmentsLeftToPay(
 // (the current 2nd + the future 3rd). Used for the alternative "total que
 // devo" that includes the month's installment.
 function installmentsRemainingWithCurrent(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
 ): number {
   const [year, month] = p.firstInstallmentDate.split("-").map(Number)
   if (!year || !month) return 0
   const now = new Date()
+  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return 0
   const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
   // Installments fully paid *before* the current month.
   const paid = Math.max(0, Math.min(elapsed, p.totalInstallments))
@@ -104,7 +148,11 @@ export function computeCardStats(card: CardOverview): CardStats {
     }
   }
 
-  const subscriptionMonthly = card.subscriptions.reduce((sum, s) => sum + s.monthlyAmount, 0)
+  const nowIndex = monthIndexFromDate(new Date())
+  const subscriptionMonthly = card.subscriptions.reduce(
+    (sum, s) => (canceledBy(s.canceledFrom, nowIndex) ? sum : sum + s.monthlyAmount),
+    0
+  )
 
   return {
     installmentMonthly,
