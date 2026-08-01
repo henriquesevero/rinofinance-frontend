@@ -179,7 +179,7 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
         </div>
         <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
           <MoneyValue value={income.amount} className="shrink-0 font-semibold tabular-nums text-emerald-500" />
-          <div className="flex shrink-0 items-center sm:hidden sm:group-hover:flex sm:focus-within:flex">
+          <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={

@@ -169,40 +169,45 @@ export function CardsPage() {
           {order.map((card) => (
             <div
               key={card.id}
+              data-card-tile
               className={cn("group/drag relative transition-opacity", draggingId === card.id && "opacity-40")}
               onDragOver={(e) => e.preventDefault()}
               onDragEnter={() => handleDragEnter(card.id)}
               onDrop={(e) => e.preventDefault()}
             >
-              <div
-                draggable
-                onDragStart={(e) => {
-                  orderBeforeDrag.current = order.map((c) => c.id)
-                  setDraggingId(card.id)
-                  const tile = e.currentTarget.parentElement
-                  if (tile) e.dataTransfer.setDragImage(tile, 20, 20)
-                  e.dataTransfer.effectAllowed = "move"
-                }}
-                onDragEnd={handleDragEnd}
-                title="Arraste para reordenar"
-                aria-label="Arraste para reordenar"
-                className="absolute left-3 top-3 z-10 hidden cursor-grab rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100 active:cursor-grabbing sm:block"
-              >
-                <GripVertical className="size-4" />
+              {/* discreet action cluster in the top-right corner, clear of the
+                  card's logo (top-left) and the bill (bottom) */}
+              <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
+                <span
+                  draggable
+                  onDragStart={(e) => {
+                    orderBeforeDrag.current = order.map((c) => c.id)
+                    setDraggingId(card.id)
+                    const tile = e.currentTarget.closest("[data-card-tile]")
+                    if (tile) e.dataTransfer.setDragImage(tile, 20, 20)
+                    e.dataTransfer.effectAllowed = "move"
+                  }}
+                  onDragEnd={handleDragEnd}
+                  title="Arraste para reordenar"
+                  aria-label="Arraste para reordenar"
+                  className="hidden size-6 cursor-grab items-center justify-center rounded-md bg-black/30 text-white/90 opacity-0 backdrop-blur-sm transition hover:bg-black/50 group-hover/drag:opacity-100 active:cursor-grabbing sm:flex"
+                >
+                  <GripVertical className="size-3.5" />
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setEditingCard(card)
+                  }}
+                  title="Editar cartão"
+                  aria-label="Editar cartão"
+                  className="flex size-6 items-center justify-center rounded-md bg-black/30 text-white/90 opacity-0 backdrop-blur-sm transition hover:bg-black/50 group-hover/drag:opacity-100 [@media(hover:none)]:opacity-100"
+                >
+                  <Pencil className="size-3.5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setEditingCard(card)
-                }}
-                title="Editar cartão"
-                aria-label="Editar cartão"
-                className="absolute right-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100 [@media(hover:none)]:opacity-100"
-              >
-                <Pencil className="size-4" />
-              </button>
               <CardOverviewTile card={card} />
             </div>
           ))}

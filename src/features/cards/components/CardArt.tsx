@@ -18,6 +18,9 @@ interface CardArtProps {
 export function CardArt({ card, overlay, className }: CardArtProps) {
   const color = card.color || "#6B7280"
   const [logoFailed, setLogoFailed] = useState(false)
+  // A user-uploaded logo is shown as-is (object-contain, never cropped); only
+  // the auto-detected brand favicon gets the zoom-crop that trims its padding.
+  const uploaded = Boolean(card.logoUrl)
   const logoSrc = card.logoUrl || (!logoFailed ? brandLogoSrc(bankDomain(card.name)) : "")
 
   return (
@@ -38,12 +41,12 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
         >
           {/* brand logo (uploaded or auto-detected), else a plain chip */}
           {logoSrc ? (
-            <span className="inline-block size-8 shrink-0 overflow-hidden rounded-md drop-shadow-md">
+            <span className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md drop-shadow-md">
               <img
                 src={logoSrc}
                 alt={card.name}
                 onError={() => setLogoFailed(true)}
-                className="size-full scale-[1.45] object-cover"
+                className={cn("size-full", uploaded ? "object-contain" : "scale-[1.45] object-cover")}
               />
             </span>
           ) : (

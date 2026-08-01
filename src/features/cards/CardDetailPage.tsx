@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, CreditCard, Eraser, FileUp, Gauge, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
+import {
+  ArrowLeft,
+  CalendarClock,
+  CalendarDays,
+  Eraser,
+  FileUp,
+  Flag,
+  Gauge,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Sparkles,
+  Trash2,
+  Wallet,
+} from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -21,6 +35,9 @@ import { ClearCardDialog } from "./components/ClearCardDialog"
 import { ImportFaturaDialog } from "./components/ImportFaturaDialog"
 import { computeCardStats } from "./cardStats"
 import { useCardsStore } from "./store"
+
+const dayCountdown = (days: number, verb: string) =>
+  days === 0 ? `${verb} hoje` : `${verb} em ${days} ${days === 1 ? "dia" : "dias"}`
 
 export function CardDetailPage() {
   const { cardId } = useParams<{ cardId: string }>()
@@ -76,31 +93,27 @@ export function CardDetailPage() {
 
   const stats = computeCardStats(card)
 
-  // Small under-the-name line replacing the dedicated due-date / best-day cards.
-  const metaParts: string[] = []
-  if (card.dueDay) metaParts.push(`Vence dia ${card.dueDay}`)
-  if (stats.bestPurchaseDay !== null) metaParts.push(`Melhor compra dia ${stats.bestPurchaseDay}`)
+  // The month's bill broken into its parts — shows what the fatura is made of.
+  const breakdown = [
+    { label: "Parcelas", value: stats.installmentMonthly, color: "bg-red-500" },
+    { label: "Avulsas", value: stats.oneOffMonthly, color: "bg-orange-400" },
+    { label: "Assinaturas", value: stats.subscriptionMonthly, color: "bg-violet-400" },
+  ].filter((b) => b.value > 0)
+  const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0)
+
+  const usedPct = stats.limitUsedFraction === null ? null : Math.min(100, stats.limitUsedFraction * 100)
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        to="/cards"
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Cartões
-      </Link>
-
+      {/* top bar: back + actions */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-10 shrink-0" />
-          <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold tracking-tight">{card.name}</h1>
-            {metaParts.length > 0 && (
-              <p className="text-xs leading-tight text-muted-foreground">{metaParts.join(" · ")}</p>
-            )}
-          </div>
-        </div>
+        <Link
+          to="/cards"
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Cartões
+        </Link>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
           <Button
@@ -139,18 +152,86 @@ export function CardDetailPage() {
         </div>
       </div>
 
+      {/* hero: identity, countdowns, the bill, and what it's made of */}
+      <Card className="flex flex-col gap-3 p-4 sm:p-5">
+        <div className="flex items-center gap-2.5">
+          <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-8 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-bold tracking-tight">{card.name}</h1>
+          </div>
+        </div>
+
+        {/* countdown / status chips */}
+        {(stats.daysUntilClose !== null ||
+          stats.daysUntilDue !== null ||
+          stats.bestPurchaseDay !== null ||
+          stats.flaggedCount > 0 ||
+          stats.endingThisMonthCount > 0) && (
+          <div className="flex flex-wrap gap-1.5">
+            {stats.daysUntilClose !== null && (
+              <Chip icon={CalendarClock}>{dayCountdown(stats.daysUntilClose, "Fecha")}</Chip>
+            )}
+            {stats.daysUntilDue !== null && (
+              <Chip icon={CalendarDays}>{dayCountdown(stats.daysUntilDue, "Vence")}</Chip>
+            )}
+            {stats.bestPurchaseDay !== null && (
+              <Chip icon={Sparkles} tone="green">
+                Melhor compra dia {stats.bestPurchaseDay}
+              </Chip>
+            )}
+            {stats.flaggedCount > 0 && (
+              <Chip icon={Flag} tone="amber">
+                {stats.flaggedCount} em atenção
+              </Chip>
+            )}
+            {stats.endingThisMonthCount > 0 && (
+              <Chip icon={Sparkles} tone="amber">
+                {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
+              </Chip>
+            )}
+          </div>
+        )}
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Fatura do mês</p>
+          <MoneyValue
+            value={card.monthlyTotal}
+            className="mt-0.5 block text-2xl font-bold tracking-tight tabular-nums sm:text-3xl"
+          />
+        </div>
+
+        {/* what the bill is made of */}
+        {breakdownTotal > 0 && (
+          <div className="flex flex-col gap-2.5">
+            <div className="flex h-2 overflow-hidden rounded-full bg-muted">
+              {breakdown.map((b) => (
+                <div
+                  key={b.label}
+                  className={cn("h-full transition-[width] duration-500", b.color)}
+                  style={{ width: `${(b.value / breakdownTotal) * 100}%` }}
+                />
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+              {breakdown.map((b) => (
+                <span key={b.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className={cn("size-2 rounded-full", b.color)} />
+                  {b.label}
+                  <MoneyValue value={b.value} className="font-semibold tabular-nums text-foreground" />
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* supporting metrics: what I still owe + limit headroom */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <StatCard
-          icon={CreditCard}
-          label="Fatura do mês"
-          value={<MoneyValue value={card.monthlyTotal} />}
-          sub="parcelas, compras avulsas e assinaturas"
-        />
-        <Card className="flex flex-col gap-1 p-3.5">
+        <Card className="flex flex-col gap-1.5 p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-1.5">
-              <Wallet className="size-3 shrink-0 text-red-500" />
-              <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Wallet className="size-3.5 shrink-0 text-red-500" />
+              <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Total que devo
               </span>
             </div>
@@ -174,40 +255,46 @@ export function CardDetailPage() {
           </div>
           <MoneyValue
             value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
-            className="text-lg font-bold tracking-tight tabular-nums text-red-500"
+            className="text-xl font-bold tracking-tight tabular-nums text-red-500"
           />
           <p className="text-[11px] leading-tight text-muted-foreground">
-            {owedMode === "future"
-              ? "quitação — sem a parcela deste mês"
-              : "incluindo a parcela deste mês"}
+            {owedMode === "future" ? "quitação — sem a parcela deste mês" : "incluindo a parcela deste mês"}
           </p>
         </Card>
-      </div>
 
-      {card.creditLimit > 0 && stats.limitUsedFraction !== null && (
-        <Card className="flex flex-col gap-2 p-3.5">
+        <Card className="flex flex-col gap-1.5 p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <Gauge className="size-3 shrink-0 text-red-500" />
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <Gauge className="size-3.5 shrink-0 text-red-500" />
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Limite usado
               </span>
             </div>
-            <span className="text-xs font-medium text-muted-foreground tabular-nums">
-              {Math.round(stats.limitUsedFraction * 100)}%
-            </span>
+            {usedPct !== null && (
+              <span className="text-xs font-medium text-muted-foreground tabular-nums">{Math.round(usedPct)}%</span>
+            )}
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-red-500 transition-[width] duration-500"
-              style={{ width: `${Math.min(100, stats.limitUsedFraction * 100)}%` }}
-            />
-          </div>
-          <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
-            <MoneyValue value={card.monthlyTotal} /> de <MoneyValue value={card.creditLimit} />
-          </p>
+          {usedPct !== null ? (
+            <>
+              <MoneyValue
+                value={Math.max(0, card.creditLimit - card.monthlyTotal)}
+                className="text-xl font-bold tracking-tight tabular-nums text-emerald-500"
+              />
+              <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-red-500 transition-[width] duration-500"
+                  style={{ width: `${usedPct}%` }}
+                />
+              </div>
+              <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
+                disponível de <MoneyValue value={card.creditLimit} /> de limite
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">Defina o limite ao editar o cartão.</p>
+          )}
         </Card>
-      )}
+      </div>
 
       <CardSection card={card} />
 
@@ -239,50 +326,27 @@ export function CardDetailPage() {
   )
 }
 
-// A single metric tile in the card's stat grid: icon + uppercase label +
-// prominent value, with an optional sub-line for context.
-function StatCard({
+// A small rounded status pill used for the card's countdowns and alerts.
+function Chip({
   icon: Icon,
-  label,
-  value,
-  sub,
-  accent,
-  danger,
-  positive,
-  muted,
+  children,
+  tone = "muted",
 }: {
-  icon: typeof CreditCard
-  label: string
-  value: React.ReactNode
-  sub?: string
-  accent?: boolean
-  danger?: boolean
-  positive?: boolean
-  muted?: boolean
+  icon: typeof CalendarDays
+  children: React.ReactNode
+  tone?: "muted" | "green" | "amber"
 }) {
   return (
-    <Card className="flex flex-col gap-1 p-3.5">
-      <div className="flex items-center gap-1.5">
-        <Icon
-          className={cn(
-            "size-3",
-            accent ? "text-cyan-500" : danger ? "text-red-500" : positive ? "text-emerald-500" : "text-muted-foreground"
-          )}
-        />
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      </div>
-      <div
-        className={cn(
-          "text-lg font-bold tracking-tight tabular-nums",
-          accent && "text-cyan-500",
-          danger && "text-red-500",
-          positive && "text-emerald-500",
-          muted && "text-muted-foreground"
-        )}
-      >
-        {value}
-      </div>
-      {sub && <p className="text-[11px] leading-tight text-muted-foreground">{sub}</p>}
-    </Card>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+        tone === "green" && "border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
+        tone === "amber" && "border-amber-500/30 text-amber-600 dark:text-amber-400",
+        tone === "muted" && "border-border text-muted-foreground"
+      )}
+    >
+      <Icon className="size-3" />
+      {children}
+    </span>
   )
 }

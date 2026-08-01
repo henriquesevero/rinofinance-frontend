@@ -445,7 +445,7 @@ function PurchaseRow({
           value={purchase.installmentAmount}
           className={cn("shrink-0 font-medium tabular-nums", excluded && "text-muted-foreground")}
         />
-        <div className="flex shrink-0 items-center sm:hidden sm:group-hover:flex sm:focus-within:flex">
+        <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger
               render={

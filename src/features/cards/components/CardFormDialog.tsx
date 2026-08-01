@@ -140,29 +140,47 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
           <DialogDescription>Aparência, limite e datas da fatura.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* appearance: centered preview + compact upload controls */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-full max-w-[220px]">
-              <CardArt card={{ name: name || "Cartão", color, imageUrl }} />
+          {/* appearance: the preview itself is the upload target */}
+          <div className="flex flex-col items-center gap-2.5">
+            <div className="relative w-full max-w-[220px]">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                aria-label={imageUrl ? "Trocar imagem do cartão" : "Adicionar imagem ao cartão"}
+                className="block w-full rounded-xl transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <CardArt card={{ name: name || "Cartão", color, imageUrl, logoUrl }} />
+              </button>
+              {/* camera badge — makes the tap affordance discoverable on touch */}
+              <span className="pointer-events-none absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white shadow-sm backdrop-blur-sm">
+                <ImagePlus className="size-3.5" />
+              </span>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <ImagePlus className="size-4" />
-                {imageUrl ? "Trocar imagem" : "Imagem"}
-              </Button>
-              {imageUrl && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setImageUrl("")}>
-                  Remover
-                </Button>
-              )}
-              <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
-                <ImagePlus className="size-4" />
-                {logoUrl ? "Trocar logo" : "Logo"}
-              </Button>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                className="font-medium text-primary hover:underline"
+              >
+                {logoUrl ? "Trocar logo" : "Adicionar logo"}
+              </button>
               {logoUrl && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setLogoUrl("")}>
-                  Remover
-                </Button>
+                <button
+                  type="button"
+                  onClick={() => setLogoUrl("")}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Remover logo
+                </button>
+              )}
+              {imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setImageUrl("")}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Remover imagem
+                </button>
               )}
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
