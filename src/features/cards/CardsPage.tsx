@@ -24,6 +24,7 @@ export function CardsPage() {
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const createCard = useCardsStore((s) => s.createCard)
   const updateCard = useCardsStore((s) => s.updateCard)
+  const deleteCard = useCardsStore((s) => s.deleteCard)
   const reorderCards = useCardsStore((s) => s.reorderCards)
   const month = useMonthStore((s) => s.month)
 
@@ -254,6 +255,20 @@ export function CardsPage() {
             throw err
           }
         }}
+        onDelete={
+          editingCard
+            ? async () => {
+                try {
+                  await deleteCard(editingCard.id)
+                  toast.success("Cartão removido")
+                  setEditingCard(null)
+                } catch (err) {
+                  toast.error(toErrorMessage(err))
+                  throw err
+                }
+              }
+            : undefined
+        }
       />
     </div>
   )

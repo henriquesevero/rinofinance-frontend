@@ -289,6 +289,7 @@ export function CardDetailPage() {
             throw err
           }
         }}
+        onDelete={handleDeleteCard}
       />
     </div>
   )

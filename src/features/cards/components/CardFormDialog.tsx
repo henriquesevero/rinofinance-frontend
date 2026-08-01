@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
-import { ImagePlus } from "lucide-react"
+import { ImagePlus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ConfirmDialog"
 import {
   Dialog,
   DialogContent,
@@ -63,11 +64,15 @@ interface CardFormDialogProps {
   onOpenChange: (open: boolean) => void
   initial?: CardInput
   onSubmit: (input: CardInput) => Promise<void>
+  // When provided (edit mode), a discreet "Excluir cartão" action appears,
+  // guarded by a confirmation. The caller handles removal + any navigation.
+  onDelete?: () => Promise<void> | void
 }
 
-export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFormDialogProps) {
+export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete }: CardFormDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [name, setName] = useState(initial?.name ?? "")
   const [color, setColor] = useState(initial?.color || "#6B7280")
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "")
@@ -254,6 +259,18 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
           </div>
 
           <DialogFooter>
+            {initial && onDelete && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive sm:mr-auto"
+                onClick={() => setConfirmDelete(true)}
+                disabled={isSubmitting}
+              >
+                <Trash2 className="size-4" />
+                Excluir
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancelar
             </Button>
@@ -263,6 +280,26 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit }: CardFo
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {onDelete && (
+        <ConfirmDialog
+          open={confirmDelete}
+          onOpenChange={setConfirmDelete}
+          title="Excluir cartão?"
+          description={
+            <>
+              <strong className="text-foreground">{name || "Este cartão"}</strong> e todas as suas compras e
+              assinaturas serão removidos. Esta ação não pode ser desfeita.
+            </>
+          }
+          confirmLabel="Excluir"
+          destructive
+          onConfirm={async () => {
+            await onDelete()
+            onOpenChange(false)
+          }}
+        />
+      )}
     </Dialog>
   )
 }
