@@ -146,7 +146,10 @@ export function AppLayout() {
         </header>
 
         <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 md:px-8">
-          <Outlet />
+          {/* keyed by route so each screen eases in instead of hard-cutting */}
+          <div key={location.pathname} className="rf-page">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
