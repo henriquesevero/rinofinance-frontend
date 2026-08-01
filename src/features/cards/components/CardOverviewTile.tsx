@@ -29,7 +29,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
               className="block whitespace-nowrap text-lg font-bold leading-none tabular-nums drop-shadow @[12rem]:text-xl"
             />
             {stats.daysUntilDue !== null && (
-              <p className="mt-1 truncate text-[11px] font-medium text-white/75">
+              <p className="mt-1 hidden truncate text-[11px] font-medium text-white/75 @[12rem]:block">
                 {stats.daysUntilDue === 0
                   ? "Vence hoje"
                   : `Vence em ${stats.daysUntilDue} ${stats.daysUntilDue === 1 ? "dia" : "dias"}`}

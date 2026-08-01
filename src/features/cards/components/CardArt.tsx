@@ -59,7 +59,7 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
       )}
 
       {overlay && (
-        <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-10 text-white @[16rem]:p-4 @[16rem]:pt-12">
+        <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-8 text-white @[16rem]:p-4 @[16rem]:pt-12">
           {overlay}
         </div>
       )}
