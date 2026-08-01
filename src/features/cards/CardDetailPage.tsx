@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Trash2, Wallet } from "lucide-react"
+import { ArrowLeft, CreditCard, Eraser, FileUp, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -14,6 +14,7 @@ import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
+import { CardFormDialog } from "./components/CardFormDialog"
 import { CardLogo } from "./components/CardLogo"
 import { CardSection } from "./components/CardSection"
 import { ClearCardDialog } from "./components/ClearCardDialog"
@@ -26,6 +27,7 @@ export function CardDetailPage() {
   const navigate = useNavigate()
   const [isImporting, setIsImporting] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   // "Total que devo" mode: quitação (without this month's installment) vs
   // including the current month's parcela.
   const [owedMode, setOwedMode] = useState<"future" | "withCurrent">("future")
@@ -33,6 +35,7 @@ export function CardDetailPage() {
   const isLoading = useCardsStore((s) => s.isLoading)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const deleteCard = useCardsStore((s) => s.deleteCard)
+  const updateCard = useCardsStore((s) => s.updateCard)
 
   async function handleDeleteCard() {
     try {
@@ -119,6 +122,10 @@ export function CardDetailPage() {
               }
             />
             <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                <Pencil className="size-4" />
+                Editar cartão
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsClearing(true)}>
                 <Eraser className="size-4" />
                 Limpar fatura
@@ -181,7 +188,28 @@ export function CardDetailPage() {
 
       <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} />
       <ClearCardDialog open={isClearing} onOpenChange={setIsClearing} card={card} />
-
+      <CardFormDialog
+        open={isEditing}
+        onOpenChange={setIsEditing}
+        initial={{
+          name: card.name,
+          color: card.color ?? "",
+          logoUrl: card.logoUrl ?? "",
+          imageUrl: card.imageUrl ?? "",
+          creditLimit: card.creditLimit,
+          dueDay: card.dueDay ?? 0,
+          closingDay: card.closingDay ?? 0,
+        }}
+        onSubmit={async (input) => {
+          try {
+            await updateCard(card.id, input)
+            toast.success("Cartão atualizado")
+          } catch (err) {
+            toast.error(toErrorMessage(err))
+            throw err
+          }
+        }}
+      />
     </div>
   )
 }

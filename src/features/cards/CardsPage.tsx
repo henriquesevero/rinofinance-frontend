@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { CreditCard, GripVertical, Loader2, Pencil, Plus } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { GripVertical, Loader2, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { CardFormDialog } from "./components/CardFormDialog"
 import { CardOverviewTile } from "./components/CardOverviewTile"
+import { computeCardStats } from "./cardStats"
 import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "./store"
 import type { CardOverview } from "./types"
@@ -39,6 +40,20 @@ export function CardsPage() {
   useEffect(() => {
     setOrder(cards)
   }, [cards])
+
+  // Aggregate across all cards: what's still owed (quitação, as-of-today) and
+  // total credit limit — for the summary strip's "todo o quadro" view.
+  const { totalOwed, totalLimit } = useMemo(() => {
+    let totalOwed = 0
+    let totalLimit = 0
+    for (const c of cards) {
+      totalOwed += computeCardStats(c).totalOwed
+      totalLimit += c.creditLimit
+    }
+    return { totalOwed, totalLimit }
+  }, [cards])
+  const freeLimit = totalLimit - grandTotal
+  const usedPct = totalLimit > 0 ? Math.min(100, (grandTotal / totalLimit) * 100) : null
 
   function handleDragEnter(overId: string) {
     if (!draggingId || draggingId === overId) return
@@ -97,16 +112,55 @@ export function CardsPage() {
         </div>
       </div>
 
-      {/* total geral — compacto e discreto */}
-      <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[13rem]">
-        <div className="flex items-center gap-1.5">
-          <CreditCard className="size-3.5 text-red-500" />
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Total geral · mês atual
-          </h2>
-        </div>
-        <MoneyValue value={grandTotal} className="text-xl font-bold tracking-tight tabular-nums text-red-500" />
-      </Card>
+      {/* summary strip: the whole picture across every card */}
+      {order.length > 0 && (
+        <Card className="gap-0 overflow-hidden p-0">
+          <div className="grid gap-px bg-border sm:grid-cols-3">
+            <div className="flex flex-col justify-center gap-1 bg-card p-4 sm:p-5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Fatura do mês
+              </span>
+              <MoneyValue value={grandTotal} className="text-2xl font-bold tracking-tight tabular-nums text-red-500" />
+              <span className="text-xs text-muted-foreground">soma das faturas de todos os cartões</span>
+            </div>
+
+            <div className="flex flex-col justify-center gap-1 bg-card p-4 sm:p-5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Total que devo
+              </span>
+              <MoneyValue value={totalOwed} className="text-2xl font-bold tracking-tight tabular-nums text-red-500" />
+              <span className="text-xs text-muted-foreground">quitação — parcelas ainda a pagar</span>
+            </div>
+
+            <div className="flex flex-col justify-center gap-2 bg-card p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Limite disponível
+                </span>
+                {usedPct !== null && (
+                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{Math.round(usedPct)}% usado</span>
+                )}
+              </div>
+              {totalLimit > 0 ? (
+                <>
+                  <MoneyValue
+                    value={freeLimit}
+                    className={cn(
+                      "text-2xl font-bold tracking-tight tabular-nums",
+                      freeLimit >= 0 ? "text-emerald-500" : "text-red-500"
+                    )}
+                  />
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-red-500 transition-[width] duration-500" style={{ width: `${usedPct}%` }} />
+                  </div>
+                </>
+              ) : (
+                <span className="text-sm text-muted-foreground">Defina o limite dos cartões</span>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {order.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">Nenhum cartão cadastrado ainda.</p>
@@ -132,7 +186,7 @@ export function CardsPage() {
                 onDragEnd={handleDragEnd}
                 title="Arraste para reordenar"
                 aria-label="Arraste para reordenar"
-                className="absolute left-3 top-3 z-10 cursor-grab rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100 active:cursor-grabbing"
+                className="absolute left-3 top-3 z-10 hidden cursor-grab rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100 active:cursor-grabbing sm:block"
               >
                 <GripVertical className="size-4" />
               </div>
@@ -145,7 +199,7 @@ export function CardsPage() {
                 }}
                 title="Editar cartão"
                 aria-label="Editar cartão"
-                className="absolute right-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100"
+                className="absolute right-3 top-3 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover/drag:opacity-100 [@media(hover:none)]:opacity-100"
               >
                 <Pencil className="size-4" />
               </button>
