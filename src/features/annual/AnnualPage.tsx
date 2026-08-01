@@ -36,20 +36,31 @@ export function AnnualPage() {
   const byId = useCategoriesStore((s) => s.byId)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const categoriesCount = useCategoriesStore((s) => s.categories.length)
+  const assets = useInvestmentsStore((s) => s.assets)
+  const totalPatrimony = useInvestmentsStore((s) => s.totalPatrimony)
+  const fetchAssets = useInvestmentsStore((s) => s.fetchAssets)
+  const [catMode, setCatMode] = useState<"expense" | "income">("expense")
 
   useEffect(() => {
     if (categoriesCount === 0) fetchCategories()
   }, [categoriesCount, fetchCategories])
+  useEffect(() => {
+    fetchAssets()
+  }, [fetchAssets])
 
   const highlightIndex = year === now.getFullYear() ? now.getMonth() : undefined
 
-  const topCategories = useMemo(() => {
-    if (!data) return []
-    return data.categoryTotals.slice(0, 6).map((c) => {
+  const resolve = (totals: { id: string; total: number }[]) =>
+    totals.slice(0, 6).map((c) => {
       const cat = c.id === "__none__" ? UNCATEGORIZED : byId(c.id) ?? UNCATEGORIZED
       return { ...c, name: cat.name, color: cat.color, icon: cat.icon ?? "tag" }
     })
-  }, [data, byId])
+  const topExpense = useMemo(() => (data ? resolve(data.expenseCategoryTotals) : []), [data, byId])
+  const topIncome = useMemo(() => (data ? resolve(data.incomeCategoryTotals) : []), [data, byId])
+  const activeAssets = useMemo(
+    () => assets.filter((a) => a.active).sort((a, b) => b.currentBalance - a.currentBalance),
+    [assets]
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -204,38 +215,102 @@ export function AnnualPage() {
             </ul>
           </Card>
 
-          {/* where the money went */}
-          {topCategories.length > 0 && (
+          {/* income & spending by category, toggleable */}
+          {(topExpense.length > 0 || topIncome.length > 0) && (
             <Card className="rf-fade-up flex flex-col gap-4 p-4 sm:p-5" style={{ animationDelay: "240ms" }}>
-              <h2 className="text-sm font-semibold">Onde você gastou no ano</h2>
-              <ul className="flex flex-col gap-3">
-                {topCategories.map((c) => {
-                  const share = data.totalExpense > 0 ? (c.total / data.totalExpense) * 100 : 0
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold">Por categoria</h2>
+                <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
+                  {(["expense", "income"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setCatMode(m)}
+                      className={cn(
+                        "rounded-md px-2.5 py-1 transition-colors",
+                        catMode === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {m === "expense" ? "Saídas" : "Entradas"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {(() => {
+                const list = catMode === "expense" ? topExpense : topIncome
+                const denom = catMode === "expense" ? data.totalExpense : data.totalIncome
+                if (list.length === 0) {
                   return (
-                    <li key={c.id} className="flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className="flex size-7 shrink-0 items-center justify-center rounded-lg"
-                          style={{ backgroundColor: `${c.color}22` }}
-                        >
-                          <CategoryIcon name={c.icon} className="size-4" style={{ color: c.color }} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm" title={c.name}>
-                          {c.name}
-                        </span>
-                        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{Math.round(share)}%</span>
-                        <MoneyValue value={c.total} className="w-24 shrink-0 text-right text-sm font-medium tabular-nums" />
-                      </div>
-                      <div className="ml-[2.375rem] h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full" style={{ width: `${share}%`, backgroundColor: c.color }} />
-                      </div>
-                    </li>
+                    <p className="py-3 text-center text-sm text-muted-foreground">
+                      Nada categorizado em {catMode === "expense" ? "saídas" : "entradas"} neste ano.
+                    </p>
                   )
-                })}
-              </ul>
+                }
+                return (
+                  <ul className="flex flex-col gap-3">
+                    {list.map((c) => {
+                      const share = denom > 0 ? (c.total / denom) * 100 : 0
+                      return (
+                        <li key={c.id} className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className="flex size-7 shrink-0 items-center justify-center rounded-lg"
+                              style={{ backgroundColor: `${c.color}22` }}
+                            >
+                              <CategoryIcon name={c.icon} className="size-4" style={{ color: c.color }} />
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-sm" title={c.name}>
+                              {c.name}
+                            </span>
+                            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{Math.round(share)}%</span>
+                            <MoneyValue value={c.total} className="w-24 shrink-0 text-right text-sm font-medium tabular-nums" />
+                          </div>
+                          <div className="ml-[2.375rem] h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full rounded-full" style={{ width: `${share}%`, backgroundColor: c.color }} />
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )
+              })()}
             </Card>
           )}
         </>
+      )}
+
+      {/* investments — a current snapshot (there's no month-by-month history),
+          shown regardless of the selected year and clearly labeled as such */}
+      {activeAssets.length > 0 && (
+        <Card className="rf-fade-up flex flex-col gap-4 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="size-4 text-emerald-500" />
+              <h2 className="text-sm font-semibold">Investimentos</h2>
+              <span className="text-xs text-muted-foreground">posição atual</span>
+            </div>
+            <MoneyValue value={totalPatrimony} className="text-lg font-bold tabular-nums text-emerald-500" />
+          </div>
+          <ul className="flex flex-col gap-3">
+            {activeAssets.map((a) => {
+              const share = totalPatrimony > 0 ? (a.currentBalance / totalPatrimony) * 100 : 0
+              return (
+                <li key={a.id} className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="min-w-0 flex-1 truncate text-sm" title={a.name}>
+                      {a.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{Math.round(share)}%</span>
+                    <MoneyValue value={a.currentBalance} className="w-24 shrink-0 text-right text-sm font-medium tabular-nums" />
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-emerald-500" style={{ width: `${share}%` }} />
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </Card>
       )}
     </div>
   )

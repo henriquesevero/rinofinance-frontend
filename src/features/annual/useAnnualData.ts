@@ -25,8 +25,9 @@ export interface AnnualData {
   avgExpense: number
   avgNet: number
   savingsRate: number | null
-  // Realized spending by category across the year, most first.
-  categoryTotals: { id: string; total: number }[]
+  // Realized totals by category across the year, most first.
+  expenseCategoryTotals: { id: string; total: number }[]
+  incomeCategoryTotals: { id: string; total: number }[]
 }
 
 // Fetches the 12 monthly summaries of a year in parallel and aggregates the
@@ -60,14 +61,22 @@ export function useAnnualData(year: number) {
         const active = months.filter((m) => m.income > 0 || m.expense > 0)
         const activeMonths = active.length
 
-        const catMap = new Map<string, number>()
+        const expenseCatMap = new Map<string, number>()
+        const incomeCatMap = new Map<string, number>()
         for (const s of summaries) {
           for (const e of s.expenses) {
             if (!e.active || !e.paid) continue
             const key = e.categoryId || "__none__"
-            catMap.set(key, (catMap.get(key) ?? 0) + e.amount)
+            expenseCatMap.set(key, (expenseCatMap.get(key) ?? 0) + e.amount)
+          }
+          for (const inc of s.incomes) {
+            if (!inc.active || !inc.received) continue
+            const key = inc.categoryId || "__none__"
+            incomeCatMap.set(key, (incomeCatMap.get(key) ?? 0) + inc.amount)
           }
         }
+        const rank = (map: Map<string, number>) =>
+          [...map.entries()].map(([id, total]) => ({ id, total })).sort((a, b) => b.total - a.total)
 
         setData({
           months,
@@ -81,9 +90,8 @@ export function useAnnualData(year: number) {
           avgExpense: activeMonths ? totalExpense / activeMonths : 0,
           avgNet: activeMonths ? (totalIncome - totalExpense) / activeMonths : 0,
           savingsRate: totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : null,
-          categoryTotals: [...catMap.entries()]
-            .map(([id, total]) => ({ id, total }))
-            .sort((a, b) => b.total - a.total),
+          expenseCategoryTotals: rank(expenseCatMap),
+          incomeCategoryTotals: rank(incomeCatMap),
         })
       })
       .catch((err) => {
