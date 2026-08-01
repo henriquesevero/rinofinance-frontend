@@ -11,6 +11,7 @@ export function AccountTile({ account }: { account: Account }) {
   return (
     <Link
       to={`/accounts/${account.id}`}
+      viewTransition
       className="group relative flex flex-col gap-2.5 overflow-hidden rounded-xl border border-border/60 bg-card p-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]"
     >
       <AccountAvatar account={account} className="size-8 shrink-0 rounded-lg ring-0" />

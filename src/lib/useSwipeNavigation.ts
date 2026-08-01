@@ -79,7 +79,7 @@ export function useSwipeNavigation(routes: string[]) {
 
       const next = dx < 0 ? idx + 1 : idx - 1
       if (next < 0 || next >= routes.length) return
-      navigate(routes[next])
+      navigate(routes[next], { viewTransition: true })
     }
 
     document.addEventListener("touchstart", onStart, { passive: true })

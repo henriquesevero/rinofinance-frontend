@@ -95,6 +95,7 @@ export function CardDetailPage() {
       <div className="flex items-center justify-between gap-3">
         <Link
           to="/cards"
+          viewTransition
           className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />

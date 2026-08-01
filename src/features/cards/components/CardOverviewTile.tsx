@@ -18,6 +18,7 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
   return (
     <Link
       to={`/cards/${card.id}`}
+      viewTransition
       className="group block rounded-xl transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_20px_50px_-16px_rgba(97,218,251,0.5)]"
     >
       <CardArt

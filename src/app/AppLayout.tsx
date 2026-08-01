@@ -87,6 +87,7 @@ export function AppLayout() {
             <NavLink
               key={to}
               to={to}
+              viewTransition
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -146,10 +147,7 @@ export function AppLayout() {
         </header>
 
         <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 md:px-8">
-          {/* keyed by route so each screen eases in instead of hard-cutting */}
-          <div key={location.pathname} className="rf-page">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>

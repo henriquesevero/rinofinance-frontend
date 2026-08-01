@@ -177,28 +177,26 @@
   animation: rf-celebrate 1.1s ease-out;
 }
 
-/* Gentle page transition on route change — a soft fade + tiny rise so screens
-   ease in instead of hard-cutting (the "blink"). Keyed by pathname so it
-   replays on every navigation, including the mobile swipe. */
-@keyframes rf-page-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (prefers-reduced-motion: reduce) {
+  .rf-fade-up,
+  .rf-celebrate {
+    animation: none;
   }
 }
 
-.rf-page {
-  animation: rf-page-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* Smooth screen changes via the View Transitions API (driven by React
+   Router's `viewTransition` navigations). The default root animation
+   cross-fades the outgoing screen out as the incoming one fades in — both are
+   composited together, so there's no blank "blink" between them. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.34s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rf-fade-up,
-  .rf-celebrate,
-  .rf-page {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
     animation: none;
   }
 }
