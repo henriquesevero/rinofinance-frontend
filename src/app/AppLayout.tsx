@@ -7,6 +7,7 @@ import { MonthSelector } from "@/components/MonthSelector"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { UserAvatar } from "@/components/UserAvatar"
 import { cn } from "@/lib/utils"
+import { useSwipeNavigation } from "@/lib/useSwipeNavigation"
 import { useAuthStore } from "@/features/auth/store"
 import { useCategoriesStore } from "@/features/categories/store"
 
@@ -20,6 +21,9 @@ const tabs = [
   { to: "/itens-possuidos", label: "Itens que possuo", icon: Package },
   { to: "/categories", label: "Categorias", icon: Tags },
 ]
+
+// Stable route order for the mobile left/right swipe navigation.
+const tabRoutes = tabs.map((t) => t.to)
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user)
@@ -35,6 +39,9 @@ export function AppLayout() {
   useEffect(() => {
     setNavOpen(false)
   }, [location.pathname])
+
+  // Mobile: swipe left/right to move between the top-level pages.
+  useSwipeNavigation(tabRoutes)
 
   // Load categories once for the whole authenticated session so their names
   // (CategoryChip, sort-by-category, etc.) are ready across every page right
@@ -53,6 +60,7 @@ export function AppLayout() {
 
       {/* sidebar: static column on md+, slide-in drawer on mobile */}
       <aside
+        data-swipe-ignore
         className={cn(
           "scrollbar-hide fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r bg-background px-3 pb-4 pt-[calc(env(safe-area-inset-top)_+_1rem)] transition-transform duration-200 md:translate-x-0 md:pt-4",
           navOpen ? "translate-x-0" : "-translate-x-full"
