@@ -1,20 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import {
-  ArrowLeft,
-  CalendarClock,
-  CalendarDays,
-  Eraser,
-  FileUp,
-  Flag,
-  Gauge,
-  Loader2,
-  MoreHorizontal,
-  Pencil,
-  Sparkles,
-  Trash2,
-  Wallet,
-} from "lucide-react"
+import { ArrowLeft, Eraser, FileUp, Gauge, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -152,57 +138,47 @@ export function CardDetailPage() {
         </div>
       </div>
 
-      {/* hero: identity, countdowns, the bill, and what it's made of */}
-      <Card className="flex flex-col gap-3 p-4 sm:p-5">
-        <div className="flex items-center gap-2.5">
-          <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-8 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold tracking-tight">{card.name}</h1>
+      {/* hero: identity + dates on the left, the bill on the right, then a
+          slim composition bar. One quiet meta line instead of a wall of pills. */}
+      <Card className="flex flex-col gap-3.5 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{card.name}</h1>
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
+                {stats.daysUntilClose !== null && (
+                  <span className="text-muted-foreground">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
+                )}
+                {stats.daysUntilDue !== null && (
+                  <span className="text-muted-foreground">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
+                )}
+                {stats.bestPurchaseDay !== null && (
+                  <span className="text-emerald-600 dark:text-emerald-400">Melhor compra dia {stats.bestPurchaseDay}</span>
+                )}
+                {stats.flaggedCount > 0 && (
+                  <span className="text-amber-600 dark:text-amber-400">{stats.flaggedCount} em atenção</span>
+                )}
+                {stats.endingThisMonthCount > 0 && (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* countdown / status chips */}
-        {(stats.daysUntilClose !== null ||
-          stats.daysUntilDue !== null ||
-          stats.bestPurchaseDay !== null ||
-          stats.flaggedCount > 0 ||
-          stats.endingThisMonthCount > 0) && (
-          <div className="flex flex-wrap gap-1.5">
-            {stats.daysUntilClose !== null && (
-              <Chip icon={CalendarClock}>{dayCountdown(stats.daysUntilClose, "Fecha")}</Chip>
-            )}
-            {stats.daysUntilDue !== null && (
-              <Chip icon={CalendarDays}>{dayCountdown(stats.daysUntilDue, "Vence")}</Chip>
-            )}
-            {stats.bestPurchaseDay !== null && (
-              <Chip icon={Sparkles} tone="green">
-                Melhor compra dia {stats.bestPurchaseDay}
-              </Chip>
-            )}
-            {stats.flaggedCount > 0 && (
-              <Chip icon={Flag} tone="amber">
-                {stats.flaggedCount} em atenção
-              </Chip>
-            )}
-            {stats.endingThisMonthCount > 0 && (
-              <Chip icon={Sparkles} tone="amber">
-                {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
-              </Chip>
-            )}
+          <div className="shrink-0 text-right">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Fatura do mês</p>
+            <MoneyValue
+              value={card.monthlyTotal}
+              className="block text-2xl font-bold tracking-tight tabular-nums"
+            />
           </div>
-        )}
-
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Fatura do mês</p>
-          <MoneyValue
-            value={card.monthlyTotal}
-            className="mt-0.5 block text-2xl font-bold tracking-tight tabular-nums sm:text-3xl"
-          />
         </div>
 
         {/* what the bill is made of */}
         {breakdownTotal > 0 && (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2">
             <div className="flex h-2 overflow-hidden rounded-full bg-muted">
               {breakdown.map((b) => (
                 <div
@@ -323,30 +299,5 @@ export function CardDetailPage() {
         }}
       />
     </div>
-  )
-}
-
-// A small rounded status pill used for the card's countdowns and alerts.
-function Chip({
-  icon: Icon,
-  children,
-  tone = "muted",
-}: {
-  icon: typeof CalendarDays
-  children: React.ReactNode
-  tone?: "muted" | "green" | "amber"
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
-        tone === "green" && "border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
-        tone === "amber" && "border-amber-500/30 text-amber-600 dark:text-amber-400",
-        tone === "muted" && "border-border text-muted-foreground"
-      )}
-    >
-      <Icon className="size-3" />
-      {children}
-    </span>
   )
 }
