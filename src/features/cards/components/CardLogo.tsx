@@ -14,20 +14,20 @@ interface CardLogoProps {
 // a badge in the card's color with its first letter.
 export function CardLogo({ name, color, logoUrl, className }: CardLogoProps) {
   const [failed, setFailed] = useState(false)
-  // A user-uploaded logo is shown as-is (object-contain, never stretched or
-  // cropped); only the auto-detected brand icon gets the zoom-crop that trims
-  // its padding/white plate.
+  // Rendered exactly like the account avatar: the uploaded image fills the
+  // clipped, rounded frame (object-cover); only the auto-detected brand icon
+  // gets the extra zoom that trims its padding/white plate.
   const uploaded = Boolean(logoUrl)
   const src = logoUrl || (!failed ? brandLogoSrc(bankDomain(name)) : "")
 
   if (src) {
     return (
-      <span className={cn("flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg", className)}>
+      <span className={cn("block size-9 shrink-0 overflow-hidden rounded-lg", className)}>
         <img
           src={src}
           alt={name}
           onError={() => setFailed(true)}
-          className={cn("size-full", uploaded ? "object-contain" : "scale-[1.45] object-cover")}
+          className={cn("size-full object-cover", !uploaded && "scale-[1.45]")}
         />
       </span>
     )

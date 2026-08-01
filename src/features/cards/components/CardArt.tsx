@@ -41,12 +41,12 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
         >
           {/* brand logo (uploaded or auto-detected), else a plain chip */}
           {logoSrc ? (
-            <span className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md drop-shadow-md">
+            <span className="inline-block size-8 shrink-0 overflow-hidden rounded-md drop-shadow-md">
               <img
                 src={logoSrc}
                 alt={card.name}
                 onError={() => setLogoFailed(true)}
-                className={cn("size-full", uploaded ? "object-contain" : "scale-[1.45] object-cover")}
+                className={cn("size-full object-cover", !uploaded && "scale-[1.45]")}
               />
             </span>
           ) : (
