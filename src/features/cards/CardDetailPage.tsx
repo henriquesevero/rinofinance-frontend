@@ -176,101 +176,93 @@ export function CardDetailPage() {
           </div>
         </div>
 
-        {/* what the bill is made of */}
+        {/* what the bill is made of — legend only (no bar) */}
         {breakdownTotal > 0 && (
-          <div className="flex flex-col gap-2">
-            <div className="flex h-2 overflow-hidden rounded-full bg-muted">
-              {breakdown.map((b) => (
-                <div
-                  key={b.label}
-                  className={cn("h-full transition-[width] duration-500", b.color)}
-                  style={{ width: `${(b.value / breakdownTotal) * 100}%` }}
-                />
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-              {breakdown.map((b) => (
-                <span key={b.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className={cn("size-2 rounded-full", b.color)} />
-                  {b.label}
-                  <MoneyValue value={b.value} className="font-semibold tabular-nums text-foreground" />
-                </span>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+            {breakdown.map((b) => (
+              <span key={b.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className={cn("size-2 rounded-full", b.color)} />
+                {b.label}
+                <MoneyValue value={b.value} className="font-semibold tabular-nums text-foreground" />
+              </span>
+            ))}
           </div>
         )}
-      </Card>
 
-      {/* supporting metrics: what I still owe + limit headroom */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="flex flex-col gap-1.5 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <Wallet className="size-3.5 shrink-0 text-red-500" />
-              <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Total que devo
-              </span>
+        {/* owed + limit, folded into the same panel — divider stacks on mobile,
+            splits into two columns on desktop so nothing breaks either way */}
+        <div className="grid grid-cols-1 border-t pt-3.5 sm:grid-cols-2">
+          {/* Total que devo */}
+          <div className="flex flex-col gap-1 pb-3.5 sm:pb-0 sm:pr-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <Wallet className="size-3.5 shrink-0 text-red-500" />
+                <span className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Total que devo
+                </span>
+              </div>
+              <div className="flex shrink-0 rounded-md bg-muted p-0.5 text-[10px] font-medium">
+                {(["future", "withCurrent"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setOwedMode(m)}
+                    className={cn(
+                      "rounded px-1.5 py-0.5 transition-colors",
+                      owedMode === m
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {m === "future" ? "Sem atual" : "Com atual"}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex shrink-0 rounded-md bg-muted p-0.5 text-[10px] font-medium">
-              {(["future", "withCurrent"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setOwedMode(m)}
-                  className={cn(
-                    "rounded px-1.5 py-0.5 transition-colors",
-                    owedMode === m
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {m === "future" ? "Sem atual" : "Com atual"}
-                </button>
-              ))}
-            </div>
+            <MoneyValue
+              value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
+              className="text-xl font-bold tracking-tight tabular-nums text-red-500"
+            />
+            <p className="text-[11px] leading-tight text-muted-foreground">
+              {owedMode === "future" ? "quitação — sem a parcela deste mês" : "incluindo a parcela deste mês"}
+            </p>
           </div>
-          <MoneyValue
-            value={owedMode === "future" ? stats.totalOwed : stats.totalOwedWithCurrent}
-            className="text-xl font-bold tracking-tight tabular-nums text-red-500"
-          />
-          <p className="text-[11px] leading-tight text-muted-foreground">
-            {owedMode === "future" ? "quitação — sem a parcela deste mês" : "incluindo a parcela deste mês"}
-          </p>
-        </Card>
 
-        <Card className="flex flex-col gap-1.5 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <Gauge className="size-3.5 shrink-0 text-red-500" />
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Limite usado
-              </span>
+          {/* Limite usado */}
+          <div className="flex flex-col gap-1 border-t pt-3.5 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Gauge className="size-3.5 shrink-0 text-red-500" />
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Limite usado
+                </span>
+              </div>
+              {usedPct !== null && (
+                <span className="text-xs font-medium text-muted-foreground tabular-nums">{Math.round(usedPct)}%</span>
+              )}
             </div>
-            {usedPct !== null && (
-              <span className="text-xs font-medium text-muted-foreground tabular-nums">{Math.round(usedPct)}%</span>
+            {usedPct !== null ? (
+              <>
+                <MoneyValue
+                  value={Math.max(0, card.creditLimit - card.monthlyTotal)}
+                  className="text-xl font-bold tracking-tight tabular-nums text-emerald-500"
+                />
+                <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-red-500 transition-[width] duration-500"
+                    style={{ width: `${usedPct}%` }}
+                  />
+                </div>
+                <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
+                  disponível de <MoneyValue value={card.creditLimit} /> de limite
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Defina o limite ao editar o cartão.</p>
             )}
           </div>
-          {usedPct !== null ? (
-            <>
-              <MoneyValue
-                value={Math.max(0, card.creditLimit - card.monthlyTotal)}
-                className="text-xl font-bold tracking-tight tabular-nums text-emerald-500"
-              />
-              <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-red-500 transition-[width] duration-500"
-                  style={{ width: `${usedPct}%` }}
-                />
-              </div>
-              <p className="text-[11px] leading-tight text-muted-foreground tabular-nums">
-                disponível de <MoneyValue value={card.creditLimit} /> de limite
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">Defina o limite ao editar o cartão.</p>
-          )}
-        </Card>
-      </div>
+        </div>
+      </Card>
 
       <CardSection card={card} />
 
