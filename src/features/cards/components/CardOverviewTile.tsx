@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom"
-import { ChevronRight } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
 import { CardArt } from "./CardArt"
 import { computeCardStats } from "../cardStats"
@@ -21,11 +20,11 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
   return (
     <Link
       to={`/cards/${card.id}`}
-      className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-b from-card to-background p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/50 hover:shadow-[0_16px_50px_-16px_rgba(97,218,251,0.45)]"
+      className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border/60 bg-card p-4 transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/50 hover:shadow-[0_16px_50px_-16px_rgba(97,218,251,0.45)]"
     >
       <CardArt card={card} />
 
-      <div className="flex flex-col gap-0.5 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
+      <div className="flex items-baseline justify-between gap-2">
         <MoneyValue value={card.monthlyTotal} className="min-w-0 text-lg font-bold tracking-tight tabular-nums" />
         {stats.daysUntilDue !== null && (
           <span className="shrink-0 text-xs text-muted-foreground">
@@ -39,23 +38,13 @@ export function CardOverviewTile({ card }: CardOverviewTileProps) {
       {usedPct !== null && (
         <div className="flex flex-col gap-1.5">
           <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-red-500"
-              style={{ width: `${Math.min(usedPct, 100)}%` }}
-            />
+            <div className="h-full rounded-full bg-red-500" style={{ width: `${Math.min(usedPct, 100)}%` }} />
           </div>
           <p className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
             {usedPct}% de <MoneyValue value={card.creditLimit} />
           </p>
         </div>
       )}
-
-      <div className="mt-auto border-t border-border/60 pt-2.5">
-        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
-          Ver detalhes
-          <ChevronRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-        </span>
-      </div>
     </Link>
   )
 }

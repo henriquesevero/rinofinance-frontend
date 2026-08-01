@@ -50,7 +50,6 @@ export function CardArt({ card, className }: CardArtProps) {
             <p className="truncate text-sm font-semibold tracking-wide drop-shadow @[13rem]:text-base" title={card.name}>
               {card.name}
             </p>
-            <p className="truncate font-mono text-[10px] tracking-[0.18em] text-white/80">•••• •••• •••• ••••</p>
           </div>
         </div>
       )}
