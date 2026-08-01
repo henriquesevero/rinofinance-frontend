@@ -203,7 +203,7 @@ export function CardsPage() {
                   }}
                   title="Editar cartão"
                   aria-label="Editar cartão"
-                  className="flex size-6 items-center justify-center rounded-md bg-black/30 text-white/90 opacity-0 backdrop-blur-sm transition hover:bg-black/50 group-hover/drag:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="flex size-6 items-center justify-center rounded-md bg-black/30 text-white/90 opacity-0 backdrop-blur-sm transition hover:bg-black/50 group-hover/drag:opacity-100"
                 >
                   <Pencil className="size-3.5" />
                 </button>
