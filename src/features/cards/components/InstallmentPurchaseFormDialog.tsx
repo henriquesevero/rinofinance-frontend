@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/MoneyInput"
 import { cn } from "@/lib/utils"
+import { normalizeDomain } from "@/lib/brandLogo"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import type { InstallmentPurchase, InstallmentPurchaseInput } from "../types"
 
@@ -62,7 +63,7 @@ export function InstallmentPurchaseFormDialog({
         installmentAmount,
         totalInstallments: oneOff ? 1 : Number(totalInstallments),
         firstInstallmentDate,
-        domain,
+        domain: normalizeDomain(domain),
         categoryId,
       })
       onOpenChange(false)
@@ -151,11 +152,13 @@ export function InstallmentPurchaseFormDialog({
             <Label htmlFor="purchase-domain">Site (opcional)</Label>
             <Input
               id="purchase-domain"
-              placeholder="Ex: apple.com"
+              placeholder="Ex: apple.com ou cole a URL do site"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Usado para exibir o logotipo da marca na lista.</p>
+            <p className="text-xs text-muted-foreground">
+              Cole a URL ou o domínio do site — usamos para buscar o logotipo da marca.
+            </p>
           </div>
 
           <DialogFooter>

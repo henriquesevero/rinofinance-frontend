@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/MoneyInput"
+import { normalizeDomain } from "@/lib/brandLogo"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import type { Subscription, SubscriptionInput } from "../types"
 
@@ -46,7 +47,7 @@ export function SubscriptionFormDialog({
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await onSubmit({ name, monthlyAmount, domain, categoryId })
+      await onSubmit({ name, monthlyAmount, domain: normalizeDomain(domain), categoryId })
       onOpenChange(false)
     } finally {
       setIsSubmitting(false)
@@ -93,11 +94,13 @@ export function SubscriptionFormDialog({
             <Label htmlFor="subscription-domain">Site (opcional)</Label>
             <Input
               id="subscription-domain"
-              placeholder="Ex: netflix.com"
+              placeholder="Ex: netflix.com ou cole a URL do site"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">Usado para exibir o logotipo da marca na lista.</p>
+            <p className="text-xs text-muted-foreground">
+              Cole a URL ou o domínio do site — usamos para buscar o logotipo da marca.
+            </p>
           </div>
 
           <DialogFooter>

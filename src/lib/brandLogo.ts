@@ -7,13 +7,29 @@
 // var can still override it per environment.
 const BRANDFETCH_CLIENT = import.meta.env?.VITE_BRANDFETCH_CLIENT || "1id6tOCGJiVC9uvsmeB"
 
+// Reduces whatever the user typed (a full URL, "www." prefix, a path, or a
+// bare domain) to the bare hostname Brandfetch needs — e.g.
+// "https://www.netflix.com/browse" → "netflix.com". Returns "" when empty.
+export function normalizeDomain(input: string): string {
+  let s = input.trim().toLowerCase()
+  if (!s) return ""
+  try {
+    // Prepend a scheme so the URL parser also handles bare "netflix.com/x".
+    s = new URL(s.includes("://") ? s : `https://${s}`).hostname
+  } catch {
+    s = s.replace(/^[a-z][a-z0-9+.-]*:\/\//, "").split(/[/?#]/)[0]
+  }
+  return s.replace(/^www\./, "")
+}
+
 // Builds a high-resolution, transparent brand icon URL from Brandfetch for a
-// domain. We request the square "icon" (the brand symbol, no white plate) at
-// 2× the display size for crisp retina rendering, and `fallback/404` so an
-// unknown brand returns HTTP 404 — letting callers show their own fallback
-// instead of a generic placeholder. Returns "" for an empty domain.
+// domain. Accepts a full URL or bare domain (normalized here). We request the
+// square "icon" (the brand symbol, no white plate) at 2× the display size for
+// crisp retina rendering, and `fallback/404` so an unknown brand returns HTTP
+// 404 — letting callers show their own fallback instead of a generic
+// placeholder. Returns "" for an empty domain.
 export function brandLogoSrc(domain: string, size = 64): string {
-  const d = domain.trim()
+  const d = normalizeDomain(domain)
   if (!d) return ""
   const px = Math.min(512, Math.max(64, Math.round(size * 2)))
   return `https://cdn.brandfetch.io/${d}/icon/w/${px}/h/${px}/fallback/404?c=${BRANDFETCH_CLIENT}`
