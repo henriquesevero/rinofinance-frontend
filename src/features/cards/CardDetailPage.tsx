@@ -146,7 +146,7 @@ export function CardDetailPage() {
             <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0" />
             <div className="min-w-0">
               <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{card.name}</h1>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs [&>*+*]:before:mr-1.5 [&>*+*]:before:text-muted-foreground/40 [&>*+*]:before:content-['·']">
+              <div className="mt-0.5 flex flex-col gap-y-0.5 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1.5 sm:[&>*+*]:before:mr-1.5 sm:[&>*+*]:before:text-muted-foreground/40 sm:[&>*+*]:before:content-['·']">
                 {stats.daysUntilClose !== null && (
                   <span className="text-muted-foreground">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
                 )}
@@ -154,7 +154,7 @@ export function CardDetailPage() {
                   <span className="text-muted-foreground">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
                 )}
                 {stats.bestPurchaseDay !== null && (
-                  <span className="text-emerald-600 dark:text-emerald-400">Melhor compra dia {stats.bestPurchaseDay}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">Melhor dia de compra dia {stats.bestPurchaseDay}</span>
                 )}
                 {stats.flaggedCount > 0 && (
                   <span className="text-amber-600 dark:text-amber-400">{stats.flaggedCount} em atenção</span>
