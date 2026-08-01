@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowDownLeft, ArrowLeft, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, Wallet } from "lucide-react"
+import { ArrowDownLeft, ArrowLeft, Check, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { MoneyValue } from "@/components/MoneyValue"
+import { MoneyInput } from "@/components/MoneyInput"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
@@ -41,6 +42,9 @@ export function AccountDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [purchaseDialog, setPurchaseDialog] = useState<PurchaseDialogState>(null)
+  const [editingBalance, setEditingBalance] = useState(false)
+  const [balanceDraft, setBalanceDraft] = useState(0)
+  const [savingBalance, setSavingBalance] = useState(false)
 
   useEffect(() => {
     if (accounts.length === 0) fetchAccounts()
@@ -87,21 +91,44 @@ export function AccountDetailPage() {
     }
   }
 
+  function startEditBalance() {
+    if (!account) return
+    setBalanceDraft(account.balance)
+    setEditingBalance(true)
+  }
+
+  // Quick inline balance edit — no need to open the full account form just to
+  // adjust how much is in the account.
+  async function saveBalance() {
+    if (!account) return
+    setSavingBalance(true)
+    try {
+      await updateAccount(account.id, {
+        name: account.name,
+        color: account.color ?? "",
+        imageUrl: account.imageUrl ?? "",
+        balance: balanceDraft,
+      })
+      toast.success("Saldo atualizado")
+      setEditingBalance(false)
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+    } finally {
+      setSavingBalance(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        to="/accounts"
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Contas
-      </Link>
-
+      {/* top bar: back + actions */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <AccountAvatar account={account} className="size-10 shrink-0" />
-          <h1 className="truncate text-2xl font-bold tracking-tight">{account.name}</h1>
-        </div>
+        <Link
+          to="/accounts"
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Contas
+        </Link>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
           <DropdownMenu>
@@ -126,22 +153,81 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatCard
-          icon={Wallet}
-          label="Saldo atual"
-          value={<MoneyValue value={account.balance} />}
-          tone={account.balance < 0 ? "danger" : "positive"}
-          sub="disponível na conta"
-        />
-        <StatCard
-          icon={ArrowDownLeft}
-          label="Compras no mês"
-          value={<MoneyValue value={account.monthlyDebitTotal} />}
-          tone="danger"
-          sub="débitos deste mês"
-        />
-      </div>
+      {/* hero: identity, editable balance, folded month debits */}
+      <Card className="flex flex-col gap-3.5 p-4 sm:p-5">
+        <div className="flex items-center gap-2.5">
+          <AccountAvatar account={account} className="size-9 shrink-0" />
+          <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{account.name}</h1>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Saldo atual</p>
+            {!editingBalance && (
+              <button
+                type="button"
+                onClick={startEditBalance}
+                className="flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:underline"
+              >
+                <Pencil className="size-3" />
+                Ajustar
+              </button>
+            )}
+          </div>
+          {editingBalance ? (
+            <div className="mt-1.5 flex items-center gap-2">
+              <MoneyInput
+                value={balanceDraft}
+                onValueChange={setBalanceDraft}
+                className="h-11 max-w-[13rem] text-lg font-bold"
+              />
+              <Button size="icon" className="size-9 shrink-0" onClick={saveBalance} disabled={savingBalance} aria-label="Salvar saldo">
+                <Check className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 shrink-0"
+                onClick={() => setEditingBalance(false)}
+                disabled={savingBalance}
+                aria-label="Cancelar"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={startEditBalance}
+              title="Toque para ajustar o saldo"
+              className="mt-0.5 block rounded-md text-left transition-colors hover:opacity-80"
+            >
+              <MoneyValue
+                value={account.balance}
+                className={cn(
+                  "text-3xl font-bold tracking-tight tabular-nums",
+                  account.balance < 0 ? "text-red-500" : "text-emerald-500"
+                )}
+              />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t pt-3">
+          <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <ArrowDownLeft className="size-3.5 text-red-500" />
+            Débitos do mês
+          </span>
+          <span className="flex items-center gap-2">
+            {account.purchases.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {account.purchases.length} {account.purchases.length === 1 ? "compra" : "compras"}
+              </span>
+            )}
+            <MoneyValue value={account.monthlyDebitTotal} className="font-bold tabular-nums text-red-500" />
+          </span>
+        </div>
+      </Card>
 
       <Card className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between gap-2">
@@ -270,33 +356,5 @@ export function AccountDetailPage() {
         onConfirm={handleDeleteAccount}
       />
     </div>
-  )
-}
-
-// A single metric tile in the account's stat grid — same shape as the card
-// detail page's stats: icon + uppercase label + prominent value + sub-line.
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  tone,
-}: {
-  icon: typeof Wallet
-  label: string
-  value: React.ReactNode
-  sub?: string
-  tone?: "positive" | "danger"
-}) {
-  const toneClass = tone === "positive" ? "text-emerald-500" : tone === "danger" ? "text-red-500" : ""
-  return (
-    <Card className="flex flex-col gap-1 p-3.5">
-      <div className="flex items-center gap-1.5">
-        <Icon className={cn("size-3", toneClass || "text-muted-foreground")} />
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
-      </div>
-      <div className={cn("text-lg font-bold tracking-tight tabular-nums", toneClass)}>{value}</div>
-      {sub && <p className="text-[11px] leading-tight text-muted-foreground">{sub}</p>}
-    </Card>
   )
 }

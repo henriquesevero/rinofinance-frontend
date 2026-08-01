@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { Loader2, Pencil, Plus, Wallet } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Loader2, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -28,6 +28,7 @@ export function AccountsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, reorderAccounts)
+  const totalDebits = useMemo(() => accounts.reduce((sum, a) => sum + a.monthlyDebitTotal, 0), [accounts])
 
   useEffect(() => {
     fetchAccounts()
@@ -51,7 +52,7 @@ export function AccountsPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Contas</h1>
-          <p className="text-muted-foreground">Conecte, visualize e gerencie suas conexões financeiras.</p>
+          <p className="text-muted-foreground">Seus saldos e compras no débito.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
@@ -68,14 +69,31 @@ export function AccountsPage() {
         </div>
       </div>
 
-      {/* saldo total — compacto e discreto */}
-      <Card className="flex w-full flex-col gap-1 p-4 sm:max-w-[13rem]">
-        <div className="flex items-center gap-1.5">
-          <Wallet className="size-3.5 text-emerald-500" />
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Saldo total</h2>
-        </div>
-        <MoneyValue value={totalBalance} className="text-xl font-bold tracking-tight tabular-nums text-emerald-500" />
-      </Card>
+      {/* summary strip: the whole picture across every account */}
+      {order.length > 0 && (
+        <Card className="gap-0 overflow-hidden p-0">
+          <div className="grid gap-px bg-border sm:grid-cols-2">
+            <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Saldo total</span>
+              <MoneyValue
+                value={totalBalance}
+                className={cn(
+                  "text-xl font-bold tracking-tight tabular-nums sm:text-2xl",
+                  totalBalance < 0 ? "text-red-500" : "text-emerald-500"
+                )}
+              />
+              <span className="text-xs text-muted-foreground">somado de todas as contas</span>
+            </div>
+            <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Débitos do mês
+              </span>
+              <MoneyValue value={totalDebits} className="text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl" />
+              <span className="text-xs text-muted-foreground">compras no débito deste mês</span>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {order.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
