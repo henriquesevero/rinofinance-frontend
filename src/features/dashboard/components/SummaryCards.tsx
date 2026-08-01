@@ -74,7 +74,7 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
 
         {/* Entradas */}
         <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-0.5 md:flex-row md:items-center md:justify-between md:gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               <span className="size-2 rounded-full bg-emerald-500" />
               Entradas
@@ -90,7 +90,7 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
 
         {/* Saídas */}
         <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-0.5 md:flex-row md:items-center md:justify-between md:gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               <span className="size-2 rounded-full bg-red-500" />
               Saídas
