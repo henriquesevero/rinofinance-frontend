@@ -235,7 +235,7 @@ export function CardSection({ card }: { card: CardOverview }) {
           (card.subscriptions.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma assinatura.</p>
           ) : (
-            <ul className="scrollbar-hide grid max-h-[22rem] grid-cols-2 gap-2.5 overflow-y-auto sm:grid-cols-3 lg:grid-cols-5">
+            <ul className="scrollbar-hide grid max-h-[22rem] grid-cols-1 gap-2.5 overflow-y-auto sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {subsDnd.order.map((subscription) => (
                 <li
                   key={subscription.id}
