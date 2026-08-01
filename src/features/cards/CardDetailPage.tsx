@@ -139,29 +139,33 @@ export function CardDetailPage() {
         </div>
       </div>
 
-      {/* hero: identity + dates on the left, the bill on the right, then a
-          slim composition bar. One quiet meta line instead of a wall of pills. */}
-      <Card className="flex flex-col gap-3.5 p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-4">
+      {/* hero: a colored header (the card's own color, white text) — the
+          equivalent of the account hero — over a neutral body that keeps the
+          debt/limit figures readable in their semantic colors. */}
+      <Card className="gap-0 overflow-hidden p-0">
+        <div
+          className="flex items-start justify-between gap-4 p-4 text-white sm:p-5"
+          style={{ background: `linear-gradient(150deg, ${card.color || "#6B7280"} 0%, rgba(0,0,0,0.5) 160%)` }}
+        >
           <div className="flex min-w-0 items-center gap-2.5">
-            <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0" />
+            <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0 ring-1 ring-white/30" />
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold leading-tight tracking-tight">{card.name}</h1>
-              <div className="mt-0.5 flex flex-col gap-y-0.5 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1.5 sm:[&>*+*]:before:mr-1.5 sm:[&>*+*]:before:text-muted-foreground/40 sm:[&>*+*]:before:content-['·']">
+              <h1 className="truncate text-lg font-bold leading-tight tracking-tight drop-shadow">{card.name}</h1>
+              <div className="mt-0.5 flex flex-col gap-y-0.5 text-xs drop-shadow sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1.5 sm:[&>*+*]:before:mr-1.5 sm:[&>*+*]:before:text-white/40 sm:[&>*+*]:before:content-['·']">
                 {stats.daysUntilClose !== null && (
-                  <span className="text-muted-foreground">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
+                  <span className="text-white/80">{dayCountdown(stats.daysUntilClose, "Fecha")}</span>
                 )}
                 {stats.daysUntilDue !== null && (
-                  <span className="text-muted-foreground">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
+                  <span className="text-white/80">{dayCountdown(stats.daysUntilDue, "Vence")}</span>
                 )}
                 {stats.bestPurchaseDay !== null && (
-                  <span className="text-emerald-600 dark:text-emerald-400">Melhor dia {stats.bestPurchaseDay}</span>
+                  <span className="text-emerald-200">Melhor dia {stats.bestPurchaseDay}</span>
                 )}
                 {stats.flaggedCount > 0 && (
-                  <span className="text-amber-600 dark:text-amber-400">{stats.flaggedCount} em atenção</span>
+                  <span className="text-amber-200">{stats.flaggedCount} em atenção</span>
                 )}
                 {stats.endingThisMonthCount > 0 && (
-                  <span className="text-amber-600 dark:text-amber-400">
+                  <span className="text-amber-200">
                     {stats.endingThisMonthCount} {stats.endingThisMonthCount === 1 ? "termina" : "terminam"} este mês
                   </span>
                 )}
@@ -169,14 +173,15 @@ export function CardDetailPage() {
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Fatura do mês</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70">Fatura do mês</p>
             <MoneyValue
               value={card.monthlyTotal}
-              className="block text-2xl font-bold tracking-tight tabular-nums"
+              className="block text-2xl font-bold tracking-tight tabular-nums drop-shadow"
             />
           </div>
         </div>
 
+      <div className="flex flex-col gap-3.5 p-4 sm:p-5">
         {/* what the bill is made of — legend only (no bar) */}
         {breakdownTotal > 0 && (
           <div className="flex flex-wrap gap-x-5 gap-y-1.5">
@@ -263,6 +268,7 @@ export function CardDetailPage() {
             )}
           </div>
         </div>
+      </div>
       </Card>
 
       <CardSection card={card} />
