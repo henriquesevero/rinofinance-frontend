@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { formatMoney } from "@/lib/money"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
+import { useMonthStore } from "@/lib/monthStore"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import { useCategoriesStore } from "@/features/categories/store"
 import { extractPdfLines } from "../fatura/pdf"
@@ -54,6 +55,7 @@ interface PreviewSubscription extends ParsedSubscription {
 
 export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: ImportFaturaDialogProps) {
   const importFatura = useCardsStore((s) => s.importFatura)
+  const setMonth = useMonthStore((s) => s.setMonth)
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -67,6 +69,7 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   const [installments, setInstallments] = useState<PreviewInstallment[]>([])
   const [subscriptions, setSubscriptions] = useState<PreviewSubscription[]>([])
   const [notImported, setNotImported] = useState<SkippedLine[]>([])
+  const [referenceMonth, setReferenceMonth] = useState<string | null>(null)
 
   function reset() {
     setStage("select")
@@ -74,6 +77,7 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     setInstallments([])
     setSubscriptions([])
     setNotImported([])
+    setReferenceMonth(null)
   }
 
   function handleClose(next: boolean) {
@@ -118,6 +122,7 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
         }))
       )
       setNotImported(parsed.notImported)
+      setReferenceMonth(parsed.referenceMonth)
       setStage("preview")
     } catch (err) {
       toast.error(toErrorMessage(err, "Não foi possível ler o arquivo"))
@@ -171,6 +176,9 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   async function handleImport() {
     setStage("importing")
     try {
+      // Land on the imported invoice's cycle month so every imported item
+      // (installments AND one-offs, which are month-scoped) is visible at once.
+      if (referenceMonth) setMonth(referenceMonth)
       const result = await importFatura(cardId, {
         installmentPurchases: installments
           .filter((p) => p.checked)

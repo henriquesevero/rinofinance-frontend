@@ -181,8 +181,10 @@ function classifyLine(
     installmentAmount: amount,
     totalInstallments: 1,
     currentInstallment: 1,
-    // One-off: use the real purchase date when parsed, else the cycle's 1st.
-    firstInstallmentDate: purchaseDate ?? `${referenceMonth}-01`,
+    // One-off: bill it in the invoice's cycle month (so it lands on THIS
+    // fatura like the installments do — the card list is scoped per month),
+    // keeping the real purchase day, which is only cosmetic.
+    firstInstallmentDate: withDay(`${referenceMonth}-01`, day),
     domain: logoDomain(description),
     isSingle: true,
   })
