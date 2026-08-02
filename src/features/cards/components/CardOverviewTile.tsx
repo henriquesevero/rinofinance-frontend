@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { MoneyValue } from "@/components/MoneyValue"
+import { useMonthStore } from "@/lib/monthStore"
 import { CardArt } from "./CardArt"
 import { computeCardStats } from "../cardStats"
 import type { CardOverview } from "../types"
@@ -13,7 +14,8 @@ interface CardOverviewTileProps {
 // flags, subscriptions) live on the detail page. On hover it lifts, zooms
 // slightly and gets a soft blue glow. The whole card links to its detail page.
 export function CardOverviewTile({ card }: CardOverviewTileProps) {
-  const stats = computeCardStats(card)
+  const month = useMonthStore((s) => s.month)
+  const stats = computeCardStats(card, month)
 
   return (
     <Link

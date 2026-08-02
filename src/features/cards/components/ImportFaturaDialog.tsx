@@ -55,6 +55,7 @@ interface PreviewSubscription extends ParsedSubscription {
 
 export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: ImportFaturaDialogProps) {
   const importFatura = useCardsStore((s) => s.importFatura)
+  const month = useMonthStore((s) => s.month)
   const setMonth = useMonthStore((s) => s.setMonth)
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
@@ -96,7 +97,7 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     try {
       let parsed: ParsedFatura
       if (isCsv) {
-        parsed = parseNubankCsv(await file.text())
+        parsed = parseNubankCsv(await file.text(), month)
       } else {
         parsed = parseFaturaLines(await extractPdfLines(file))
       }
@@ -193,6 +194,7 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
         subscriptions: subscriptions
           .filter((s) => s.checked)
           .map((s) => ({ name: s.name, monthlyAmount: s.monthlyAmount, domain: s.domain, categoryId: s.categoryId })),
+        referenceMonth: referenceMonth ?? "",
       })
       toast.success(`Importado: ${result.installmentPurchases} compra(s) e ${result.subscriptions} assinatura(s)`)
       handleClose(false)

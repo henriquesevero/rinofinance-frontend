@@ -1,93 +1,78 @@
 import type { CardOverview, InstallmentPurchase, Subscription } from "./types"
 
-// Collapse a Date to a comparable 0-based month ordinal (year*12 + month).
-function monthIndexFromDate(d: Date): number {
-  return d.getFullYear() * 12 + d.getMonth()
-}
-// Same, from a "YYYY-MM" or "YYYY-MM-DD" string.
+// A comparable 0-based month ordinal (year*12 + monthIndex) from a "YYYY-MM"
+// or "YYYY-MM-DD" string. Everything below compares purchases by month ordinal
+// so nothing depends on the day or the timezone.
 function monthIndexFromKey(key: string): number {
   const [y, m] = key.split("-").map(Number)
   return (y || 0) * 12 + ((m || 1) - 1)
 }
-// Whether an item ended via `canceledFrom` no longer bills in the reference
-// month ordinal (i.e. the reference is at or after its cancellation month).
+function firstMonthIndex(firstDate: string): number | null {
+  const [y, m] = firstDate.split("-").map(Number)
+  if (!y || !m) return null
+  return y * 12 + (m - 1)
+}
+// Whether an item ended via `canceledFrom` no longer bills at/after refIndex.
 function canceledBy(canceledFrom: string | undefined, refIndex: number): boolean {
   return !!canceledFrom && monthIndexFromKey(canceledFrom) <= refIndex
 }
-
-// Whether an installment purchase bills a charge in the current month —
-// mirrors the backend's IsActiveOn (started, not paid off, not canceled).
-// Parsed from the YYYY-MM-DD string directly to avoid timezone drift.
-function isActiveThisMonth(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
-): boolean {
-  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
-  if (!year || !month) return false
-  const now = new Date()
-  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return false
-  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
-  return elapsed >= 0 && elapsed < p.totalInstallments
+// Whether an item's `effectiveFrom` lower bound (visible-from month) has been
+// reached at refIndex — so it doesn't appear retroactively before an import.
+function startedBy(effectiveFrom: string | undefined, refIndex: number): boolean {
+  return !effectiveFrom || monthIndexFromKey(effectiveFrom) <= refIndex
 }
 
-// Whether an installment purchase is active (billing) in a specific month,
-// given as "YYYY-MM" — used to scope the card's lists to the viewed month so
-// canceled/ended items vanish from the current fatura but stay in the past.
+// Whether an installment purchase bills a charge in the given month "YYYY-MM":
+// it has started, isn't paid off, and isn't canceled by then. Used to scope
+// the card's lists to the viewed month.
 export function isPurchaseActiveInMonth(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">,
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom" | "effectiveFrom">,
   monthKey: string
 ): boolean {
-  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
-  if (!year || !month) return false
+  const first = firstMonthIndex(p.firstInstallmentDate)
+  if (first === null) return false
   const refIndex = monthIndexFromKey(monthKey)
-  if (canceledBy(p.canceledFrom, refIndex)) return false
-  const elapsed = refIndex - (year * 12 + (month - 1))
+  if (canceledBy(p.canceledFrom, refIndex) || !startedBy(p.effectiveFrom, refIndex)) return false
+  const elapsed = refIndex - first
   return elapsed >= 0 && elapsed < p.totalInstallments
 }
 
-// Whether a subscription bills in a given month "YYYY-MM": always, unless it
-// was ended before it (no start bound — mirrors the backend).
+// Whether a subscription bills in a given month "YYYY-MM": from its
+// effective-from month (if any) until it's canceled.
 export function isSubscriptionActiveInMonth(
-  s: Pick<Subscription, "canceledFrom">,
+  s: Pick<Subscription, "canceledFrom" | "effectiveFrom">,
   monthKey: string
 ): boolean {
-  return !canceledBy(s.canceledFrom, monthIndexFromKey(monthKey))
+  const refIndex = monthIndexFromKey(monthKey)
+  return startedBy(s.effectiveFrom, refIndex) && !canceledBy(s.canceledFrom, refIndex)
 }
 
-// Installments left to pay as of TODAY, for the "quitação" total — i.e. the
-// future installments only, NOT counting the one already on this month's
-// bill. A purchase at 7/12 has 5 left to pay (8→12). Computed from today so
-// it stays fixed regardless of which month the user is browsing (the API's
-// remainingTotal is relative to the requested month and would balloon on a
-// past month).
-function installmentsLeftToPay(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
+// How many installments are still owed as of the reference month.
+//   includeCurrent = true  → the reference month's parcela AND every future one
+//                            ("com atual").
+//   includeCurrent = false → future parcelas only, excluding the reference
+//                            month's ("sem atual" / quitação).
+// A purchase at parcela 2/3 (viewed in its 2nd month) owes 2 with current and
+// 1 without. Capped by an early cancellation.
+function installmentsOwed(
+  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">,
+  refIndex: number,
+  includeCurrent: boolean
 ): number {
-  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
-  if (!year || !month) return 0
-  const now = new Date()
-  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return 0
-  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
-  // How many installments have been billed so far, including the current
-  // month's (clamped to the plan's bounds).
-  const billed = Math.max(0, Math.min(elapsed + 1, p.totalInstallments))
-  return p.totalInstallments - billed
-}
-
-// Installments still owed as of TODAY *including* the current month's — i.e.
-// the parcela being billed now still counts. A purchase at 2/3 has 2 left
-// (the current 2nd + the future 3rd). Used for the alternative "total que
-// devo" that includes the month's installment.
-function installmentsRemainingWithCurrent(
-  p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments" | "canceledFrom">
-): number {
-  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
-  if (!year || !month) return 0
-  const now = new Date()
-  if (canceledBy(p.canceledFrom, monthIndexFromDate(now))) return 0
-  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
-  // Installments fully paid *before* the current month.
-  const paid = Math.max(0, Math.min(elapsed, p.totalInstallments))
-  return p.totalInstallments - paid
+  if (canceledBy(p.canceledFrom, refIndex)) return 0
+  const first = firstMonthIndex(p.firstInstallmentDate)
+  if (first === null) return 0
+  const elapsed = refIndex - first
+  let remaining = p.totalInstallments - elapsed - (includeCurrent ? 0 : 1)
+  if (remaining > p.totalInstallments) remaining = p.totalInstallments
+  if (remaining < 0) remaining = 0
+  // An early cancellation stops billing at `canceledFrom`: only the months
+  // from the reference up to (but excluding) that month still count.
+  if (p.canceledFrom) {
+    const cap = monthIndexFromKey(p.canceledFrom) - refIndex - (includeCurrent ? 0 : 1)
+    if (cap < remaining) remaining = Math.max(0, cap)
+  }
+  return remaining
 }
 
 export interface CardStats {
@@ -96,33 +81,28 @@ export interface CardStats {
   oneOffMonthly: number
   subscriptionMonthly: number
   flaggedCount: number
-  // Purchases whose last installment falls in the current month.
+  // Purchases whose last installment falls in the reference month.
   endingThisMonthCount: number
   subscriptionCount: number
-  // Total still owed on the card: the sum of every purchase's remaining
-  // installments × installment amount (subscriptions have no fixed end, so
-  // they don't count toward a "total debt"). Excludes the current month's
-  // installment (the "quitação" of what's left after this bill).
+  // Total still owed on installment plans (parceladas) only — one-off (1x)
+  // purchases don't count. `totalOwed` excludes the reference month's parcela
+  // (quitação after this bill); `totalOwedWithCurrent` includes it.
   totalOwed: number
-  // Same, but *including* the current month's installment — what you'd still
-  // pay counting the parcela being billed now.
   totalOwedWithCurrent: number
-  // Fraction of the credit limit used by this month's bill (0–1+), or
-  // null when no limit is configured.
+  // Fraction of the credit limit used by this month's bill / owed overall.
   limitUsedFraction: number | null
-  // Fraction of the credit limit committed by everything still owed
-  // (totalOwed / limit), or null when no limit is configured.
   limitOwedFraction: number | null
-  // Days until the next invoice due date, or null when no due day is set.
+  // Date-based countdowns, always relative to today (not the reference month).
   daysUntilDue: number | null
-  // Best day to make a new purchase (the day after the bill closes, giving
-  // the longest interest-free window), or null when no closing day is set.
   bestPurchaseDay: number | null
-  // Days until the current bill closes, or null when no closing day is set.
   daysUntilClose: number | null
 }
 
-export function computeCardStats(card: CardOverview): CardStats {
+// Computes a card's stats relative to `referenceMonth` ("YYYY-MM") — the month
+// the user is viewing — so the owed totals, the monthly composition and the
+// per-month list all agree. The day-based countdowns stay relative to today.
+export function computeCardStats(card: CardOverview, referenceMonth: string): CardStats {
+  const refIndex = monthIndexFromKey(referenceMonth)
   let installmentMonthly = 0
   let oneOffMonthly = 0
   let flaggedCount = 0
@@ -131,26 +111,34 @@ export function computeCardStats(card: CardOverview): CardStats {
   let totalOwedWithCurrent = 0
 
   for (const p of card.installmentPurchases) {
+    // Only purchases actually on the viewed month's bill count — the same set
+    // shown in the list. This is what makes "total que devo" match the fatura:
+    // finished purchases (past) and not-yet-started ones (future) are ignored,
+    // so leftover/other-month items never inflate the total.
+    const first = firstMonthIndex(p.firstInstallmentDate)
+    if (first === null || canceledBy(p.canceledFrom, refIndex) || !startedBy(p.effectiveFrom, refIndex)) continue
+    const elapsed = refIndex - first
+    if (elapsed < 0 || elapsed >= p.totalInstallments) continue
+
     if (p.flagged) flaggedCount++
-    // The user can exclude specific purchases from the "total que devo" sum.
-    if (!p.excludedFromOwed) {
-      totalOwed += installmentsLeftToPay(p) * p.installmentAmount
-      totalOwedWithCurrent += installmentsRemainingWithCurrent(p) * p.installmentAmount
+    // "Total que devo" is the debt carried in installment plans only — one-off
+    // (1x) purchases are a single charge on this month's bill, not carried
+    // debt, so they never count. The user can also exclude specific ones.
+    if (p.totalInstallments > 1 && !p.excludedFromOwed) {
+      totalOwed += installmentsOwed(p, refIndex, false) * p.installmentAmount
+      totalOwedWithCurrent += installmentsOwed(p, refIndex, true) * p.installmentAmount
     }
-    if (!isActiveThisMonth(p)) continue
     if (p.totalInstallments > 1) {
       installmentMonthly += p.installmentAmount
-      // Only real installment plans "end" — a 1x avulsa isn't a parcela
-      // finishing, and subscriptions don't count here at all.
-      if (p.remainingInstallments === 1) endingThisMonthCount++
+      if (elapsed === p.totalInstallments - 1) endingThisMonthCount++
     } else {
       oneOffMonthly += p.installmentAmount
     }
   }
 
-  const nowIndex = monthIndexFromDate(new Date())
   const subscriptionMonthly = card.subscriptions.reduce(
-    (sum, s) => (canceledBy(s.canceledFrom, nowIndex) ? sum : sum + s.monthlyAmount),
+    (sum, s) =>
+      startedBy(s.effectiveFrom, refIndex) && !canceledBy(s.canceledFrom, refIndex) ? sum + s.monthlyAmount : sum,
     0
   )
 

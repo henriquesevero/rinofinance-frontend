@@ -67,9 +67,13 @@ function shouldSkip(title: string, amount: number): boolean {
   )
 }
 
-// Parses the raw text of a Nubank CSV invoice into the same classified
-// shape the PDF parser produces, so the import dialog treats both alike.
-export function parseNubankCsv(text: string): ParsedFatura {
+// Parses the raw text of a Nubank CSV invoice into the same classified shape
+// the PDF parser produces. The Nubank CSV has no reliable due date and its
+// transactions straddle the cycle boundary, so guessing the invoice month from
+// the dates is unreliable — instead everything is anchored to `referenceMonth`
+// (the month the user is viewing when importing), which is deterministic: view
+// August, import August's invoice, and installment "2/3" lands on August.
+export function parseNubankCsv(text: string, referenceMonth: string): ParsedFatura {
   const rows = text
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -100,13 +104,7 @@ export function parseNubankCsv(text: string): ParsedFatura {
     entries.push({ date, title, amount })
   }
 
-  // Reference month = latest transaction month (≈ the invoice's closing
-  // month), used to anchor installment first-dates just like the PDF path.
-  const latestMonth = entries.reduce<string>((latest, e) => {
-    const month = e.date.slice(0, 7)
-    return month > latest ? month : latest
-  }, "")
-  const reference = latestMonth || currentMonth()
+  const reference = referenceMonth || currentMonth()
 
   const installmentPurchases: ParsedInstallment[] = []
   const subscriptions: ParsedSubscription[] = []
@@ -125,6 +123,8 @@ export function parseNubankCsv(text: string): ParsedFatura {
         installmentAmount: entry.amount,
         totalInstallments: total,
         currentInstallment: current,
+        // Anchor so installment `current` lands on the invoice month being
+        // imported into (the reference), preserving the real N/M numbering.
         firstInstallmentDate: monthMinus(reference, current - 1),
         domain: brand?.domain ?? "",
         isSingle: false,

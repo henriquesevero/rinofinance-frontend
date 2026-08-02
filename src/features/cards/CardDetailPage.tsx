@@ -20,6 +20,7 @@ import { CardSection } from "./components/CardSection"
 import { ClearCardDialog } from "./components/ClearCardDialog"
 import { ImportFaturaDialog } from "./components/ImportFaturaDialog"
 import { computeCardStats } from "./cardStats"
+import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "./store"
 
 const dayCountdown = (days: number, verb: string) =>
@@ -38,6 +39,7 @@ export function CardDetailPage() {
   const isLoading = useCardsStore((s) => s.isLoading)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const deleteCard = useCardsStore((s) => s.deleteCard)
+  const month = useMonthStore((s) => s.month)
   const updateCard = useCardsStore((s) => s.updateCard)
 
   async function handleDeleteCard() {
@@ -77,7 +79,7 @@ export function CardDetailPage() {
     )
   }
 
-  const stats = computeCardStats(card)
+  const stats = computeCardStats(card, month)
 
   // The month's bill broken into its parts — shows what the fatura is made of.
   const breakdown = [

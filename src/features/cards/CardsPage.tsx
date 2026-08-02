@@ -42,17 +42,17 @@ export function CardsPage() {
     setOrder(cards)
   }, [cards])
 
-  // Aggregate across all cards: what's still owed (quitação, as-of-today) and
-  // total credit limit — for the summary strip's "todo o quadro" view.
+  // Aggregate across all cards: what's still owed (quitação for the viewed
+  // month) and total credit limit — for the summary strip's "todo o quadro".
   const { totalOwed, totalLimit } = useMemo(() => {
     let totalOwed = 0
     let totalLimit = 0
     for (const c of cards) {
-      totalOwed += computeCardStats(c).totalOwed
+      totalOwed += computeCardStats(c, month).totalOwed
       totalLimit += c.creditLimit
     }
     return { totalOwed, totalLimit }
-  }, [cards])
+  }, [cards, month])
   const freeLimit = totalLimit - grandTotal
   const usedPct = totalLimit > 0 ? Math.min(100, (grandTotal / totalLimit) * 100) : null
 

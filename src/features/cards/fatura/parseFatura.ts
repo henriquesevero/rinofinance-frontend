@@ -112,17 +112,15 @@ export function monthMinus(referenceMonth: string, months: number): string {
   return `${y}-${m}-01`
 }
 
-// Extracts the invoice's purchase-cycle reference month ("YYYY-MM"),
-// falling back to the current month when it can't be found. An invoice due
-// on the 1st of month M bills the purchases made in the previous cycle, and
-// the app totals cards by that cycle month — so we shift one month back from
-// the due date (e.g. venc 01/08 → cycle 2026-07). This keeps imported items
-// showing in the right month and the installment counts correct.
+// Extracts the invoice's reference month ("YYYY-MM") — the month it's DUE
+// (when you pay it) — from the "venc. da fatura DD/MM/YYYY" line, falling back
+// to the current month. A fatura due 01/08/2026 lands on 2026-08, so imported
+// items appear in the month you actually pay the bill.
 export function extractReferenceMonth(lines: string[]): string {
   for (const line of lines) {
     const m = line.match(DUE_DATE_RE)
     if (m) {
-      const d = new Date(Number(m[3]), Number(m[2]) - 1 - 1, 1)
+      const d = new Date(Number(m[3]), Number(m[2]) - 1, 1)
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
     }
   }
