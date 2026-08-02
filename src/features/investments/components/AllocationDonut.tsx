@@ -8,7 +8,15 @@ interface Segment {
 // A portfolio-allocation donut: each active asset is an arc sized by its share
 // of the total, with the total patrimony in the middle. Pure SVG, no library —
 // the circumference is ~100 so each arc's dash length equals its percentage.
-export function AllocationDonut({ segments, total }: { segments: Segment[]; total: number }) {
+export function AllocationDonut({
+  segments,
+  total,
+  label = "Patrimônio",
+}: {
+  segments: Segment[]
+  total: number
+  label?: string
+}) {
   const r = 15.915
   let offset = 25 // start at 12 o'clock
   const arcs = segments.map((s) => {
@@ -39,7 +47,7 @@ export function AllocationDonut({ segments, total }: { segments: Segment[]; tota
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Patrimônio</span>
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
         <MoneyValue value={total} className="text-sm font-bold leading-tight tabular-nums" />
       </div>
     </div>
