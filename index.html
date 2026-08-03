@@ -12,8 +12,174 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="RinoFinance" />
     <title>RinoFinance</title>
+
+    <!-- Instant launch splash: painted straight from the HTML (before the JS/CSS
+         bundles load) so the app opens on brand instead of a blank screen. The
+         trend line draws itself from the lower tip to the top while a light
+         spark rides up it; main.tsx fades it out once the app is ready. -->
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        background: radial-gradient(125% 125% at 50% 36%, #1b1c25 0%, #121219 55%, #0a0a0e 100%);
+        opacity: 1;
+        transition: opacity 0.5s ease;
+      }
+      #splash.rf-splash-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .rf-splash-mark {
+        width: 96px;
+        height: 96px;
+        opacity: 0;
+        transform: scale(0.9);
+        transform-origin: center;
+        animation: rf-splash-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+        filter: drop-shadow(0 18px 44px rgba(97, 218, 251, 0.18));
+      }
+      .rf-splash-word {
+        font-family: "Geist Variable", system-ui, -apple-system, sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #f3f5f9;
+        opacity: 0;
+        transform: translateY(6px);
+        animation: rf-splash-word 0.6s ease-out 0.62s forwards;
+      }
+      .rf-splash-word span {
+        color: #61dafb;
+      }
+      /* The rising trend line + arrowhead draw themselves on. */
+      .rf-line {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: rf-draw 0.85s cubic-bezier(0.65, 0, 0.35, 1) 0.35s forwards;
+      }
+      .rf-arrow {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: rf-draw 0.35s ease-out 1.05s forwards;
+      }
+      .rf-glow {
+        opacity: 0;
+        animation: rf-glow 1.4s ease-out 0.5s forwards;
+      }
+      /* The travelling light, moved along the path by the SVG animateMotion. */
+      .rf-spark {
+        filter: drop-shadow(0 0 3.5px #61dafb) drop-shadow(0 0 1.5px #cff6ff);
+        opacity: 0;
+        animation: rf-spark 1.35s ease-out 0.35s forwards;
+      }
+      @keyframes rf-splash-pop {
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes rf-splash-word {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes rf-draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes rf-glow {
+        0% {
+          opacity: 0;
+        }
+        40% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.85;
+        }
+      }
+      @keyframes rf-spark {
+        0% {
+          opacity: 0;
+        }
+        14% {
+          opacity: 1;
+        }
+        82% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .rf-splash-mark,
+        .rf-splash-word {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+        .rf-line,
+        .rf-arrow {
+          stroke-dashoffset: 0;
+          animation: none;
+        }
+        .rf-glow {
+          opacity: 0.85;
+          animation: none;
+        }
+        .rf-spark {
+          display: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" aria-hidden="true">
+      <svg class="rf-splash-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sp-bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2A2B36" />
+            <stop offset="100%" stop-color="#15151C" />
+          </linearGradient>
+          <linearGradient id="sp-line" gradientUnits="userSpaceOnUse" x1="8" y1="27" x2="31" y2="12">
+            <stop offset="0%" stop-color="#2AA6C9" />
+            <stop offset="55%" stop-color="#61DAFB" />
+            <stop offset="100%" stop-color="#9EEBFF" />
+          </linearGradient>
+          <radialGradient id="sp-glow" cx="66%" cy="34%" r="60%">
+            <stop offset="0%" stop-color="#61DAFB" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="#61DAFB" stop-opacity="0" />
+          </radialGradient>
+          <filter id="sp-blur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2" />
+          </filter>
+        </defs>
+
+        <rect width="40" height="40" rx="11" fill="url(#sp-bg)" />
+        <rect x="0.6" y="0.6" width="38.8" height="38.8" rx="10.6" fill="none" stroke="#ffffff" stroke-opacity="0.06" />
+
+        <ellipse class="rf-glow" cx="27" cy="15" rx="12" ry="11" fill="url(#sp-glow)" filter="url(#sp-blur)" />
+
+        <g stroke="url(#sp-line)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path class="rf-line" pathLength="100" d="M8 27 L 16.5 20 L 22 24 L 31 13" />
+          <path class="rf-arrow" pathLength="100" d="M24 12.5 L 31 12.5 L 31 19.5" />
+        </g>
+
+        <circle class="rf-spark" r="1.7" fill="#EAFBFF">
+          <animateMotion dur="0.95s" begin="0.35s" fill="freeze" rotate="auto" path="M8 27 L 16.5 20 L 22 24 L 31 13" />
+        </circle>
+      </svg>
+      <div class="rf-splash-word">Rino<span>Finance</span></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
