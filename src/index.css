@@ -49,25 +49,27 @@
 }
 
 :root {
-    /* Soft cool-gray canvas (not pure white) with crisp white cards on top —
-       the elegant iOS "grouped" look, tinted to match the blue-slate theme. */
-    --background: oklch(0.967 0.005 260);
-    --foreground: oklch(0.22 0.02 262);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.22 0.02 262);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.22 0.02 262);
+    /* Soft cool-gray canvas (clearly deeper than the cards) with near-white
+       cards floating on top — the elegant iOS "grouped" look. The ~5% gap
+       between canvas and card is what gives separation instead of one flat
+       white sheet; cards step back from pure white to kill the glare. */
+    --background: oklch(0.943 0.007 262);
+    --foreground: oklch(0.2 0.021 262);
+    --card: oklch(0.995 0.0015 260);
+    --card-foreground: oklch(0.2 0.021 262);
+    --popover: oklch(0.995 0.0015 260);
+    --popover-foreground: oklch(0.2 0.021 262);
     --primary: oklch(0.56 0.15 255);
     --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.955 0.006 260);
+    --secondary: oklch(0.922 0.008 262);
     --secondary-foreground: oklch(0.26 0.02 262);
-    --muted: oklch(0.948 0.006 260);
-    --muted-foreground: oklch(0.52 0.02 262);
-    --accent: oklch(0.93 0.02 250);
+    --muted: oklch(0.922 0.007 262);
+    --muted-foreground: oklch(0.475 0.024 262);
+    --accent: oklch(0.92 0.022 250);
     --accent-foreground: oklch(0.42 0.14 255);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.905 0.008 260);
-    --input: oklch(0.92 0.008 260);
+    --border: oklch(0.882 0.009 262);
+    --input: oklch(0.9 0.009 262);
     --ring: oklch(0.62 0.14 255);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
@@ -124,6 +126,14 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    }
+  /* Light mode only: lift the cards off the deeper canvas with a soft, diffuse
+     shadow — the premium "grouped/floating" look. Dark mode keeps its flat
+     ring, since shadows read as muddy on slate. */
+  :root:not(.dark) [data-slot="card"] {
+    box-shadow:
+      0 1px 2px -1px oklch(0.2 0.02 262 / 0.06),
+      0 4px 14px -6px oklch(0.2 0.02 262 / 0.08);
     }
   body {
     @apply bg-background text-foreground;
