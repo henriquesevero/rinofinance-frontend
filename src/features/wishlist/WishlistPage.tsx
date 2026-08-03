@@ -10,10 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
+import { DragHandle } from "@/components/DragHandle"
 import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
+import { useReorder } from "@/lib/useReorder"
 import { ItemCard } from "./components/ItemCard"
 import { ItemFormDialog } from "./components/ItemFormDialog"
 import { SectionFormDialog } from "./components/SectionFormDialog"
@@ -76,6 +78,7 @@ function ListPage({
   const createItem = useStore((s) => s.createItem)
   const updateItem = useStore((s) => s.updateItem)
   const deleteItem = useStore((s) => s.deleteItem)
+  const reorderItems = useStore((s) => s.reorderItems)
 
   const [itemDialog, setItemDialog] = useState<ItemDialogState>(null)
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
@@ -104,6 +107,16 @@ function ListPage({
     [items]
   )
   const sectionTotal = (list: WishlistItem[]) => list.reduce((sum, i) => sum + i.price, 0)
+
+  // A within-section drag only reorders that section's items among their own
+  // slots; we merge the new sub-order back into the full list order (positions
+  // are global) and persist it, leaving every other item untouched.
+  function persistItemOrder(sectionOrderedIds: string[]) {
+    const set = new Set(sectionOrderedIds)
+    const queue = [...sectionOrderedIds]
+    const fullIds = items.map((i) => (set.has(i.id) ? (queue.shift() as string) : i.id))
+    reorderItems(fullIds).catch((err) => toast.error(toErrorMessage(err)))
+  }
 
   async function handleDeleteItem() {
     if (!deletingItem) return
@@ -247,14 +260,12 @@ function ListPage({
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
               >
-                {sectionItems.map((item) => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                    onEdit={() => setItemDialog({ mode: "edit", item })}
-                    onDelete={() => setDeletingItem(item)}
-                  />
-                ))}
+                <ReorderableItemGrid
+                  items={sectionItems}
+                  onReorder={persistItemOrder}
+                  onEdit={(item) => setItemDialog({ mode: "edit", item })}
+                  onDelete={(item) => setDeletingItem(item)}
+                />
               </Section>
             )
           })}
@@ -266,14 +277,12 @@ function ListPage({
               total={sectionTotal(ungrouped)}
               onAdd={() => setItemDialog({ mode: "create" })}
             >
-              {ungrouped.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onEdit={() => setItemDialog({ mode: "edit", item })}
-                  onDelete={() => setDeletingItem(item)}
-                />
-              ))}
+              <ReorderableItemGrid
+                items={ungrouped}
+                onReorder={persistItemOrder}
+                onEdit={(item) => setItemDialog({ mode: "edit", item })}
+                onDelete={(item) => setDeletingItem(item)}
+              />
             </Section>
           )}
         </div>
@@ -394,9 +403,41 @@ function Section({
         (count === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum item nesta seção.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{children}</div>
+          children
         ))}
     </section>
+  )
+}
+
+// A drag-reorderable grid of product tiles. Only the grip on each tile starts
+// a drag, so the store links and edit/delete stay clickable. `onReorder` gets
+// this section's ids in their new order.
+function ReorderableItemGrid({
+  items,
+  onReorder,
+  onEdit,
+  onDelete,
+}: {
+  items: WishlistItem[]
+  onReorder: (orderedIds: string[]) => void
+  onEdit: (item: WishlistItem) => void
+  onDelete: (item: WishlistItem) => void
+}) {
+  const { order, draggingId, getItemProps, getHandleProps } = useReorder(items, onReorder)
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {order.map((item) => (
+        <ItemCard
+          key={item.id}
+          item={item}
+          onEdit={() => onEdit(item)}
+          onDelete={() => onDelete(item)}
+          reorderProps={getItemProps(item.id)}
+          dragging={draggingId === item.id}
+          dragHandle={<DragHandle {...getHandleProps(item.id)} className="text-white/80 hover:text-white" />}
+        />
+      ))}
+    </div>
   )
 }
 

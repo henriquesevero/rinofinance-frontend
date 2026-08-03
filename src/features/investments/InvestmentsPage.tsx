@@ -3,8 +3,10 @@ import {
   Check,
   Coins,
   Loader2,
+  MoreHorizontal,
   Pencil,
   Plus,
+  Power,
   Trash2,
   TrendingDown,
   TrendingUp,
@@ -13,7 +15,13 @@ import {
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { MoneyValue } from "@/components/MoneyValue"
 import { MoneyInput } from "@/components/MoneyInput"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
@@ -47,6 +55,7 @@ function assetToInput(a: Asset): AssetInput {
 export function InvestmentsPage() {
   const [dialogState, setDialogState] = useState<DialogState>(null)
   const [proventoOpen, setProventoOpen] = useState(false)
+  const [proventoAssetId, setProventoAssetId] = useState<string | undefined>(undefined)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -125,6 +134,11 @@ export function InvestmentsPage() {
     }
   }
 
+  function openProvento(assetId?: string) {
+    setProventoAssetId(assetId)
+    setProventoOpen(true)
+  }
+
   function startEdit(asset: Asset) {
     // Quotas assets edit the current price (recomputes the value); value assets
     // edit the balance directly.
@@ -179,7 +193,7 @@ export function InvestmentsPage() {
               variant="ghost"
               size="icon"
               className="size-9"
-              onClick={() => setProventoOpen(true)}
+              onClick={() => openProvento()}
               aria-label="Registrar provento"
               title="Registrar provento"
             >
@@ -304,7 +318,7 @@ export function InvestmentsPage() {
                     />
                   </div>
 
-                  <ul className="flex flex-col">
+                  <ul className="grid grid-cols-1 gap-x-8 lg:grid-cols-2">
                     {g.assets.map((asset) => {
                       const editing = editingId === asset.id
                       const pnl = profit(asset.currentBalance, asset.investedAmount)
@@ -314,10 +328,11 @@ export function InvestmentsPage() {
                         <li
                           key={asset.id}
                           className={cn(
-                            "group flex items-center gap-3 rounded-md px-1 py-2.5 transition-colors hover:bg-muted/50",
-                            !asset.active && "opacity-55"
+                            "group flex items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50",
+                            !asset.active && "opacity-60"
                           )}
                         >
+                          {/* identity */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline gap-1.5">
                               <p className="min-w-0 truncate text-sm font-semibold" title={asset.name}>
@@ -325,6 +340,11 @@ export function InvestmentsPage() {
                               </p>
                               {asset.ticker && (
                                 <span className="min-w-0 truncate text-xs text-muted-foreground">{asset.name}</span>
+                              )}
+                              {!asset.active && (
+                                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                  fora
+                                </span>
                               )}
                             </div>
                             <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
@@ -343,6 +363,7 @@ export function InvestmentsPage() {
                             </div>
                           </div>
 
+                          {/* value + inline edit + actions, packed together on the right */}
                           {editing ? (
                             <div className="flex items-center gap-1.5">
                               <MoneyInput
@@ -371,21 +392,15 @@ export function InvestmentsPage() {
                               </Button>
                             </div>
                           ) : (
-                            <>
-                              <div className="flex flex-col items-end">
-                                <button
-                                  type="button"
-                                  onClick={() => startEdit(asset)}
-                                  title={isQuotas ? "Atualizar cotação" : "Atualizar valor"}
-                                  className="group/val flex items-center gap-1"
-                                >
-                                  <MoneyValue
-                                    value={asset.currentBalance}
-                                    className="text-sm font-semibold tabular-nums"
-                                  />
-                                  <Pencil className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/val:opacity-100 [@media(hover:none)]:opacity-100" />
-                                </button>
-                                {pnlPct !== null && (
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(asset)}
+                                title={isQuotas ? "Atualizar cotação" : "Atualizar valor"}
+                                className="flex flex-col items-end rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted"
+                              >
+                                <MoneyValue value={asset.currentBalance} className="text-sm font-semibold tabular-nums" />
+                                {pnlPct !== null ? (
                                   <span
                                     className={cn(
                                       "text-xs font-medium tabular-nums",
@@ -395,37 +410,54 @@ export function InvestmentsPage() {
                                     {pnl >= 0 ? "+" : ""}
                                     {pnlPct.toFixed(1)}%
                                   </span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">tocar p/ editar</span>
                                 )}
-                              </div>
+                              </button>
 
-                              <div className="flex shrink-0 items-center gap-0.5">
-                                <Switch
-                                  checked={asset.active}
-                                  onCheckedChange={() => handleToggle(asset.id)}
-                                  aria-label={asset.active ? "Tirar do patrimônio" : "Incluir no patrimônio"}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-8 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[popup-open]:opacity-100 [@media(hover:none)]:opacity-100"
+                                      aria-label="Ações do ativo"
+                                      title="Ações"
+                                    >
+                                      <MoreHorizontal className="size-4" />
+                                    </Button>
+                                  }
                                 />
-                                <div className="flex items-center sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8"
-                                    aria-label="Editar ativo"
-                                    onClick={() => setDialogState({ mode: "edit", asset })}
-                                  >
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem onClick={() => setDialogState({ mode: "edit", asset })}>
                                     <Pencil className="size-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8"
-                                    aria-label="Remover ativo"
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => openProvento(asset.id)}>
+                                    <Coins className="size-4" />
+                                    Registrar provento
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleToggle(asset.id)}>
+                                    <Power
+                                      className={cn(
+                                        "size-4",
+                                        asset.active ? "text-emerald-500" : "text-muted-foreground/50"
+                                      )}
+                                    />
+                                    {asset.active ? "Tirar do patrimônio" : "Incluir no patrimônio"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
                                     onClick={() => handleDelete(asset.id)}
+                                    className="text-destructive"
                                   >
                                     <Trash2 className="size-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </>
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           )}
                         </li>
                       )
@@ -444,7 +476,7 @@ export function InvestmentsPage() {
                   <Coins className="size-4 shrink-0 text-emerald-500" />
                   <h2 className="text-sm font-semibold">Proventos recebidos</h2>
                 </div>
-                <Button variant="ghost" size="sm" className="h-8" onClick={() => setProventoOpen(true)}>
+                <Button variant="ghost" size="sm" className="h-8" onClick={() => openProvento()}>
                   <Plus className="size-4" />
                   Registrar
                 </Button>
@@ -500,6 +532,7 @@ export function InvestmentsPage() {
       <ProventoDialog
         open={proventoOpen}
         onOpenChange={setProventoOpen}
+        defaultAssetId={proventoAssetId}
         assets={activeAssets.length > 0 ? activeAssets : assets}
         onSubmit={async (assetId, amount, date) => {
           await addProvento(assetId, amount, date)

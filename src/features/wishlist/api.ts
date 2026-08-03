@@ -14,4 +14,6 @@ export const wishlistApi = {
     apiClient.post<WishlistItem>(`/api/wishlist/items?kind=${kind}`, input),
   updateItem: (id: string, input: ItemInput) => apiClient.put<WishlistItem>(`/api/wishlist/items/${id}`, input),
   removeItem: (id: string) => apiClient.delete(`/api/wishlist/items/${id}`),
+  reorderItems: (kind: string, ids: string[]) =>
+    apiClient.put(`/api/wishlist/items/order?kind=${kind}`, { ids }),
 }

@@ -1,20 +1,27 @@
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { ExternalLink, Pencil, ShoppingBag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MoneyValue } from "@/components/MoneyValue"
 import { normalizeDomain } from "@/lib/brandLogo"
+import { cn } from "@/lib/utils"
 import type { WishlistItem } from "../types"
 
 interface ItemCardProps {
   item: WishlistItem
   onEdit: () => void
   onDelete: () => void
+  // Drop-target props from useReorder().getItemProps(id), spread on the tile.
+  reorderProps?: React.HTMLAttributes<HTMLDivElement>
+  // A drag handle (grip) rendered in the tile's corner when reordering is on.
+  dragHandle?: ReactNode
+  // Dims the tile while it's the one being dragged.
+  dragging?: boolean
 }
 
 // A product tile in the "loja" grid: image, name and price. When it has a
 // link the whole tile opens the store in a new tab; edit/delete appear on
 // hover without triggering the link.
-export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
+export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dragging }: ItemCardProps) {
   // Remote store images can hotlink-block (403) — fall back to the placeholder.
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
@@ -53,7 +60,18 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
   )
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]">
+    <div
+      {...reorderProps}
+      className={cn(
+        "group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]",
+        dragging && "opacity-40"
+      )}
+    >
+      {dragHandle && (
+        <div className="absolute left-2 top-2 z-10 flex size-7 items-center justify-center rounded-md bg-black/25 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+          {dragHandle}
+        </div>
+      )}
       {item.url ? (
         <a
           href={item.url}

@@ -16,6 +16,7 @@ interface WishlistState {
   createItem: (input: ItemInput) => Promise<void>
   updateItem: (id: string, input: ItemInput) => Promise<void>
   deleteItem: (id: string) => Promise<void>
+  reorderItems: (ids: string[]) => Promise<void>
   reset: () => void
 }
 
@@ -54,6 +55,7 @@ function createListStore(kind: string) {
       createItem: (input) => mutate(() => wishlistApi.createItem(kind, input)),
       updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
       deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
+      reorderItems: (ids) => mutate(() => wishlistApi.reorderItems(kind, ids)),
 
       reset: () => set({ sections: [], items: [], total: 0, isLoading: false, error: null }),
     }
