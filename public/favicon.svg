@@ -1,16 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2A2B36" />
-      <stop offset="100%" stop-color="#15151C" />
+    <linearGradient id="bg" x1="0.15" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#252633" />
+      <stop offset="55%" stop-color="#16171F" />
+      <stop offset="100%" stop-color="#0E0E14" />
     </linearGradient>
     <linearGradient id="line" gradientUnits="userSpaceOnUse" x1="8" y1="27" x2="31" y2="12">
       <stop offset="0%" stop-color="#2AA6C9" />
       <stop offset="55%" stop-color="#61DAFB" />
-      <stop offset="100%" stop-color="#9EEBFF" />
+      <stop offset="100%" stop-color="#CFF6FF" />
     </linearGradient>
+    <radialGradient id="glow" cx="66%" cy="34%" r="60%">
+      <stop offset="0%" stop-color="#61DAFB" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#61DAFB" stop-opacity="0" />
+    </radialGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2" />
+    </filter>
   </defs>
   <rect width="40" height="40" rx="11" fill="url(#bg)" />
+  <rect x="0.6" y="0.6" width="38.8" height="38.8" rx="10.6" fill="none" stroke="#ffffff" stroke-opacity="0.06" />
+  <ellipse cx="27" cy="15" rx="12" ry="11" fill="url(#glow)" filter="url(#blur)" />
   <g fill="none" stroke="url(#line)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 27 L 16.5 20 L 22 24 L 31 13" />
     <path d="M24 12.5 L 31 12.5 L 31 19.5" />
