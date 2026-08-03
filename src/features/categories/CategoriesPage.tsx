@@ -167,7 +167,7 @@ export function CategoriesPage() {
                   <span className="text-xl font-bold text-muted-foreground sm:text-2xl">—</span>
                 )}
               </Cell>
-              <Cell label="Sem categoria" sub={uncategorized > 0 ? "toque p/ organizar" : "tudo certo"}>
+              <Cell label="Sem categoria" sub={uncategorized > 0 ? "a categorizar" : "tudo certo"}>
                 {uncategorized > 0 ? (
                   <MoneyValue value={uncategorized} className="text-xl font-bold tracking-tight tabular-nums text-amber-500 sm:text-2xl" />
                 ) : (
