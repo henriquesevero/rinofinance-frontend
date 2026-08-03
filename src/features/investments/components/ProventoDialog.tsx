@@ -18,7 +18,6 @@ interface ProventoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   assets: Asset[]
-  // Preselected asset when opened from a specific position.
   defaultAssetId?: string
   onSubmit: (assetId: string, amount: number, date: string) => Promise<void>
 }

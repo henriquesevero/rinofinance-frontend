@@ -19,10 +19,8 @@ export function DashboardPage() {
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const month = useMonthStore((s) => s.month)
-  // Charts are secondary here — collapsed by default like on Entradas & Saídas.
   const [showCharts, setShowCharts] = useState(false)
 
-  // Re-fetch whenever the selected month changes so the whole page reflects it.
   useEffect(() => {
     fetchSummary()
     fetchCards()
@@ -38,8 +36,6 @@ export function DashboardPage() {
 
   if (!summary) return null
 
-  // Spent = sum of the month's active expenses ("saídas"), matching the
-  // spending-distribution donut so both figures agree.
   const spent = summary.expenses.reduce((sum, e) => (e.active ? sum + e.amount : sum), 0)
 
   return (
@@ -58,18 +54,15 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* financial overview: accounts, cards, investments */}
       <div className="rf-fade-up" style={{ animationDelay: "70ms" }}>
         <FinancialOverview />
       </div>
 
-      {/* month balance + spending distribution */}
       <div className="rf-fade-up grid gap-6 lg:grid-cols-2" style={{ animationDelay: "140ms" }}>
         <MonthBalanceCard income={summary.totalIncome} spent={spent} />
         <SpendingDonut expenses={summary.expenses} incomes={summary.incomes} />
       </div>
 
-      {/* charts at the end — collapsed by default, same as Entradas & Saídas */}
       {showCharts ? (
         <>
           <RecurrencesPanel />
@@ -97,8 +90,6 @@ export function DashboardPage() {
   )
 }
 
-// Layout-matching placeholders shown while the dashboard loads — a calmer,
-// more polished first paint than a spinner.
 function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-6">

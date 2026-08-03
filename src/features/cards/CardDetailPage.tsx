@@ -32,8 +32,6 @@ export function CardDetailPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  // "Total que devo" mode: quitação (without this month's installment) vs
-  // including the current month's parcela.
   const [owedMode, setOwedMode] = useState<"future" | "withCurrent">("future")
   const cards = useCardsStore((s) => s.cards)
   const isLoading = useCardsStore((s) => s.isLoading)
@@ -52,8 +50,6 @@ export function CardDetailPage() {
     }
   }
 
-  // Cards may not be loaded yet on a fresh page load / refresh straight
-  // onto this route.
   useEffect(() => {
     if (cards.length === 0) fetchCards()
   }, [cards.length, fetchCards])
@@ -81,7 +77,6 @@ export function CardDetailPage() {
 
   const stats = computeCardStats(card, month)
 
-  // The month's bill broken into its parts — shows what the fatura is made of.
   const breakdown = [
     { label: "Parcelas", value: stats.installmentMonthly, color: "bg-red-500" },
     { label: "Avulsas", value: stats.oneOffMonthly, color: "bg-orange-400" },
@@ -93,7 +88,6 @@ export function CardDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* top bar: back + actions */}
       <div className="flex items-center justify-between gap-3">
         <Link
           to="/cards"
@@ -141,17 +135,11 @@ export function CardDetailPage() {
         </div>
       </div>
 
-      {/* hero: a colored header (the card's own color, white text) — the
-          equivalent of the account hero — over a neutral body that keeps the
-          debt/limit figures readable in their semantic colors. */}
-      {/* hero: the whole block filled with the card's color, all figures in
-          white/translucent for contrast. */}
       <Card className="gap-0 overflow-hidden p-0">
         <div
           className="flex flex-col gap-3.5 p-4 text-white sm:p-5"
           style={{ background: `linear-gradient(150deg, ${card.color || "#6B7280"} 0%, rgba(0,0,0,0.5) 160%)` }}
         >
-          {/* identity + bill */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-center gap-2.5">
               <CardLogo name={card.name} color={card.color} logoUrl={card.logoUrl} className="size-9 shrink-0 ring-1 ring-white/30" />
@@ -187,7 +175,6 @@ export function CardDetailPage() {
             </div>
           </div>
 
-          {/* what the bill is made of — legend only (no bar) */}
           {breakdownTotal > 0 && (
             <div className="flex flex-wrap gap-x-5 gap-y-1.5">
               {breakdown.map((b) => (
@@ -200,9 +187,7 @@ export function CardDetailPage() {
             </div>
           )}
 
-          {/* owed + limit, folded into the same panel */}
           <div className="grid grid-cols-1 border-t border-white/15 pt-3.5 sm:grid-cols-2">
-            {/* Total que devo */}
             <div className="flex flex-col gap-1 pb-3.5 sm:pb-0 sm:pr-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-1.5">
@@ -236,7 +221,6 @@ export function CardDetailPage() {
               </p>
             </div>
 
-            {/* Limite usado */}
             <div className="flex flex-col gap-1 border-t border-white/15 pt-3.5 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">

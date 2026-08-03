@@ -11,9 +11,7 @@ export interface Account {
   name: string
   color?: string
   imageUrl?: string
-  // Current balance: debit purchases decrement it; editable at any time.
   balance: number
-  // Sum of the current month's debit purchases.
   monthlyDebitTotal: number
   purchases: AccountPurchase[]
 }

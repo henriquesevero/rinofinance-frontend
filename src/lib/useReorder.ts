@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 
-// Generic drag-and-drop reordering for a list of items with stable ids.
-// Keeps a local working copy synced from `items`, reorders it live while
-// dragging, and calls `persist` with the new id order when a drag that
-// changed the order ends. Only a designated handle starts the drag, so
-// rows/links stay clickable.
 export function useReorder<T extends { id: string }>(items: T[], persist: (orderedIds: string[]) => void) {
   const [order, setOrder] = useState<T[]>(items)
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -27,7 +22,6 @@ export function useReorder<T extends { id: string }>(items: T[], persist: (order
     })
   }
 
-  // Spread onto each row/item container (the drop target).
   function getItemProps(id: string) {
     return {
       "data-reorder-item": true,
@@ -37,7 +31,6 @@ export function useReorder<T extends { id: string }>(items: T[], persist: (order
     }
   }
 
-  // Spread onto the drag handle inside each item (the only drag source).
   function getHandleProps(id: string) {
     return {
       draggable: true,

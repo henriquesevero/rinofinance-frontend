@@ -10,9 +10,6 @@ import { AccountSelect } from "@/features/accounts/components/AccountSelect"
 import { useAccountsStore } from "@/features/accounts/store"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 
-// Quick-launch a debit purchase onto an account from the dashboard, without
-// navigating to the account's page. It's an account purchase (not a
-// standalone saída), so it reduces the account's available balance.
 export function AccountDebitQuickDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const accounts = useAccountsStore((s) => s.accounts)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)

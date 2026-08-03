@@ -11,9 +11,6 @@ interface VisibilityState {
   toggle: () => void
 }
 
-// Global, persisted "hide monetary values" preference — the eye toggle
-// familiar from banking apps. Lives outside any feature store since it
-// affects every screen (dashboard, cards, investments) uniformly.
 export const useVisibilityStore = create<VisibilityState>((set, get) => ({
   hidden: loadInitial(),
   toggle: () => {

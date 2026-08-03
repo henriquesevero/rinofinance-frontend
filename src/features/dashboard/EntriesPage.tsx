@@ -15,7 +15,6 @@ import { SummaryCards } from "./components/SummaryCards"
 import { useMonthStore } from "@/lib/monthStore"
 import { useDashboardStore } from "./store"
 
-// Shared filter/search/group state applied to both income and expense lists.
 export interface EntriesFilters {
   search: string
   pendingOnly: boolean
@@ -25,8 +24,6 @@ export interface EntriesFilters {
 
 const ALL = "__all__"
 
-// Entradas & Saídas: everything about managing the month's recurring income
-// and expenses — moved off the dashboard so it stays a pure overview.
 export function EntriesPage() {
   const summary = useDashboardStore((s) => s.summary)
   const isLoading = useDashboardStore((s) => s.isLoading)
@@ -51,8 +48,6 @@ export function EntriesPage() {
 
   const filters: EntriesFilters = { search, pendingOnly, categoryId, groupBy }
 
-  // Realized totals for the summary: only active items count (matching the
-  // totalIncome/totalExpense the API already sums as "ativas").
   const { receivedIncome, paidExpense } = useMemo(() => {
     let receivedIncome = 0
     let paidExpense = 0
@@ -94,7 +89,6 @@ export function EntriesPage() {
         />
       </div>
 
-      {/* toolbar: search + quick filters */}
       <div className="rf-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: "120ms" }}>
         <div className="relative min-w-[9rem] flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -151,7 +145,6 @@ export function EntriesPage() {
   )
 }
 
-// Layout-matching placeholders while the month loads — calmer than a spinner.
 function EntriesSkeleton() {
   return (
     <div className="flex flex-col gap-6">

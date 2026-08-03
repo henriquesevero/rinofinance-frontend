@@ -16,8 +16,6 @@ function getInitials(name: string): string {
   return initials || "?"
 }
 
-// Shows the user's photo when set, falling back to a blue initials
-// avatar (matching the brand identity) otherwise.
 export function UserAvatar({ name, avatarUrl, className }: UserAvatarProps) {
   if (avatarUrl) {
     return (

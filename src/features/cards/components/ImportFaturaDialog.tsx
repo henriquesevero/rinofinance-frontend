@@ -32,16 +32,12 @@ interface ImportFaturaDialogProps {
 
 type Stage = "select" | "parsing" | "preview" | "importing"
 
-// Only these two invoice formats are understood by the parsers. The chosen
-// source decides which parser runs, instead of guessing from the file type.
 type Source = "itau" | "nubank"
 const SOURCES: Record<Source, { label: string; domain: string; fileHint: string; accept: string }> = {
   itau: { label: "Itaú", domain: "itau.com.br", fileHint: "Fatura em PDF", accept: "application/pdf" },
   nubank: { label: "Nubank", domain: "nubank.com.br", fileHint: "Fatura em CSV", accept: ".csv,text/csv" },
 }
 
-// Rows shown in the preview, each with a checkbox so the user can drop
-// mis-read or unwanted lines before confirming.
 interface PreviewInstallment extends ParsedInstallment {
   key: string
   checked: boolean
@@ -61,7 +57,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Ensure categories are loaded so auto-categorization can resolve them.
   useEffect(() => {
     if (categories.length === 0) fetchCategories()
   }, [categories.length, fetchCategories])
@@ -131,8 +126,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     }
   }
 
-  // Parceladas ordered by installments still remaining — most-remaining
-  // first, down to the ones closest to finishing.
   const parceladas = useMemo(
     () =>
       installments
@@ -161,8 +154,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   function setSubscriptionCategory(key: string, categoryId: string) {
     setSubscriptions((prev) => prev.map((s) => (s.key === key ? { ...s, categoryId } : s)))
   }
-  // Selects/deselects every installment matching the group predicate at
-  // once (used by the group-header checkbox).
   function setInstallmentGroup(predicate: (p: PreviewInstallment) => boolean, checked: boolean) {
     setInstallments((prev) => prev.map((p) => (predicate(p) ? { ...p, checked } : p)))
   }
@@ -177,8 +168,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   async function handleImport() {
     setStage("importing")
     try {
-      // Land on the imported invoice's cycle month so every imported item
-      // (installments AND one-offs, which are month-scoped) is visible at once.
       if (referenceMonth) setMonth(referenceMonth)
       const result = await importFatura(cardId, {
         installmentPurchases: installments
@@ -215,7 +204,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
           <DialogTitle>Importar fatura — {cardName}</DialogTitle>
         </DialogHeader>
 
-        {/* Step 1 — pick the bank. Only Itaú and Nubank are supported. */}
         {stage === "select" && source === null && (
           <div className="flex flex-col gap-4 py-4">
             <p className="text-center text-sm text-muted-foreground">
@@ -242,7 +230,6 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
           </div>
         )}
 
-        {/* Step 2 — pick the file for the chosen bank. */}
         {source !== null && (stage === "select" || stage === "parsing") && (
           <div className="flex flex-col items-center gap-4 py-6 text-center">
             <BrandLogo domain={SOURCES[source].domain} fallbackIcon={CreditCard} size={96} className="size-12 rounded-lg" />

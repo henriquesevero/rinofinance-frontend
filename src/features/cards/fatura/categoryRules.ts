@@ -1,7 +1,5 @@
 import type { Category } from "@/features/categories/types"
 
-// Lowercases and strips accents so "saude" matches "Saúde", "almoco" matches
-// "Almoço", etc.
 function normalize(s: string): string {
   return s
     .toLowerCase()
@@ -9,26 +7,16 @@ function normalize(s: string): string {
     .replace(/[̀-ͯ]/g, "")
 }
 
-// A rule links merchant hints (found in a statement line) to a category
-// concept. Because categories are user-defined, the concept is resolved to
-// one of the USER's categories by name — `categoryNames` is tried in order,
-// so the first that matches an existing category wins (priority).
 interface CategoryRule {
   merchants: string[]
   categoryNames: string[]
 }
 
-// Tuned to the user's actual categories: Alimentação, Restaurantes, Delivery,
-// Almoço, Moradia, Estudos, Saúde, Carro, Transporte, Lazer, Entretenimento,
-// Seguros, Amenidades, Anuidades, Roupas, Infraestrutura Casa, Eletronicos,
-// Viagem, Estética, Custo Fixo. All strings are accent-insensitive.
 const RULES: CategoryRule[] = [
-  // Delivery de comida (antes do transporte, p/ pegar "uber eats")
   {
     merchants: ["ifood", "ifd*", "ifd ", "99food", "99 food", "rappi", "uber eats", "ubereats", "uber *eats", "aiqfome", "delivery"],
     categoryNames: ["delivery", "alimenta", "restaurante"],
   },
-  // Transporte por app / mobilidade
   {
     merchants: [
       "uber", "99app", "99*", "99 tecnolog", "99pop", "cabify", "indriver", "taxi",
@@ -36,7 +24,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["transporte", "carro"],
   },
-  // Combustível / carro
   {
     merchants: [
       "posto", "combust", "gasolina", "shell", "ipiranga", "petrobras", "br mania",
@@ -45,7 +32,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["carro", "transporte"],
   },
-  // Mercado / supermercado -> Alimentação (não há categoria "Mercado")
   {
     merchants: [
       "mercado", "supermerc", "atacad", "carrefour", "pao de acucar", "pão de açúcar",
@@ -54,7 +40,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["alimenta", "almoco", "custo fixo"],
   },
-  // Restaurantes / lanches
   {
     merchants: [
       "restaurante", "lanchonete", "padaria", "pizza", "pizzar", "burger", "mc donald",
@@ -64,7 +49,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["restaurante", "almoco", "alimenta"],
   },
-  // Saúde / farmácia
   {
     merchants: [
       "drogasil", "drogaria", "farmacia", "farmácia", "farma", "panvel", "raia",
@@ -73,7 +57,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["saude"],
   },
-  // Estética / beleza
   {
     merchants: [
       "salao", "salão", "cabeleire", "barbearia", "barber", "manicure", "estetica",
@@ -81,7 +64,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["estetica", "amenidades"],
   },
-  // Roupas / vestuário
   {
     merchants: [
       "renner", "riachuelo", "c&a", "cea ", "zara", "hering", "shein", "marisa",
@@ -90,7 +72,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["roupas"],
   },
-  // Eletrônicos
   {
     merchants: [
       "kabum", "pichau", "terabyte", "fast shop", "apple store", "samsung", "dell",
@@ -98,7 +79,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["eletronico", "amenidades"],
   },
-  // Streaming / serviços digitais -> Entretenimento
   {
     merchants: [
       "netflix", "spotify", "disney", "hbo", "max.com", "prime video", "amazon prime",
@@ -108,12 +88,10 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["entretenimento", "lazer", "anuidades"],
   },
-  // Lazer / eventos
   {
     merchants: ["cinema", "cinemark", "sympla", "ingresso", "eventim", "teatro", "show", "parque"],
     categoryNames: ["lazer", "entretenimento"],
   },
-  // Viagem
   {
     merchants: [
       "decolar", "latam", "gol ", "azul ", "booking", "airbnb", "hotel", "pousada",
@@ -121,7 +99,6 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["viagem"],
   },
-  // Estudos / educação
   {
     merchants: [
       "alura", "udemy", "coursera", "hotmart", "curso", "faculdade", "universidade",
@@ -129,12 +106,10 @@ const RULES: CategoryRule[] = [
     ],
     categoryNames: ["estudos"],
   },
-  // Seguros
   {
     merchants: ["seguro", "seguradora", "porto seguro", "allianz", "prudential", "metlife", "sulamerica"],
     categoryNames: ["seguros"],
   },
-  // Moradia / contas da casa
   {
     merchants: [
       "aluguel", "condominio", "condomínio", "enel", "cemig", "cpfl", "light ", "energia",
@@ -145,8 +120,6 @@ const RULES: CategoryRule[] = [
   },
 ]
 
-// Suggests one of the user's own category ids for a purchase description, or
-// "" when nothing matches (unknown merchant, or no fitting category exists).
 export function suggestCategoryId(description: string, categories: Category[]): string {
   const desc = normalize(description)
   const cats = categories.map((c) => ({ id: c.id, name: normalize(c.name) }))

@@ -4,14 +4,10 @@ import { MoneyValue } from "@/components/MoneyValue"
 import { cn } from "@/lib/utils"
 
 interface MonthBalanceCardProps {
-  // Month's active income and spending, already computed upstream.
   income: number
   spent: number
 }
 
-// "Balanço do mês": the month's bottom line — income minus spending — with a
-// sobra/déficit headline, the savings rate, and a bar comparison of entradas
-// vs. saídas. Replaces the old budget card with a metric that needs no setup.
 export function MonthBalanceCard({ income, spent }: MonthBalanceCardProps) {
   const result = income - spent
   const positive = result >= 0

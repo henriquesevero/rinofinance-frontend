@@ -66,7 +66,6 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFo
     }
   }, [open, asset])
 
-  // When the class changes on a fresh asset, follow that class's natural mode.
   function handleClassChange(value: string) {
     setAssetClass(value)
     if (!asset) setMode(classMeta(value).defaultMode)
@@ -158,7 +157,6 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSubmit }: AssetFo
             />
           </div>
 
-          {/* Mode toggle: por cotas (qtd × preço) vs por valor (saldo direto). */}
           <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1 text-sm">
             <ModeButton active={mode === "quotas"} onClick={() => setMode("quotas")}>
               Por cotas

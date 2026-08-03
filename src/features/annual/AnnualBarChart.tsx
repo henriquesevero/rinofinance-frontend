@@ -4,8 +4,6 @@ import { cn } from "@/lib/utils"
 import { useVisibilityStore } from "@/lib/visibility-store"
 import type { AnnualMonth } from "./useAnnualData"
 
-// Grouped monthly bar chart of realized income vs. expense across a year —
-// plain elements, no chart lib. Hover a month for its exact figures.
 export function AnnualBarChart({ months, highlightIndex }: { months: AnnualMonth[]; highlightIndex?: number }) {
   const [hovered, setHovered] = useState<number | null>(null)
   const hidden = useVisibilityStore((s) => s.hidden)
@@ -18,7 +16,6 @@ export function AnnualBarChart({ months, highlightIndex }: { months: AnnualMonth
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        {/* y-axis */}
         <div className="flex h-56 flex-col justify-between py-1 text-right text-[10px] text-muted-foreground">
           {gridValues.map((v, i) => (
             <span key={i}>{hidden ? "•••" : compact(v)}</span>
@@ -26,14 +23,12 @@ export function AnnualBarChart({ months, highlightIndex }: { months: AnnualMonth
         </div>
 
         <div className="relative flex-1">
-          {/* gridlines */}
           <div className="absolute inset-0 flex h-56 flex-col justify-between">
             {gridValues.map((_, i) => (
               <div key={i} className="border-t border-dashed border-border/60" />
             ))}
           </div>
 
-          {/* columns */}
           <div className="relative flex h-56 items-end">
             {months.map((m, index) => {
               const isHovered = hovered === index
@@ -81,7 +76,6 @@ export function AnnualBarChart({ months, highlightIndex }: { months: AnnualMonth
         </div>
       </div>
 
-      {/* x-axis labels */}
       <div className="flex pl-8">
         {months.map((m, index) => (
           <span

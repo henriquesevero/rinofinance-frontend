@@ -20,8 +20,6 @@ interface InstallmentPurchaseFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   purchase?: InstallmentPurchase
-  // When true, this is a one-off ("avulsa", 1x) purchase: the installments
-  // count is fixed to 1 and its field is hidden.
   oneOff?: boolean
   onSubmit: (input: InstallmentPurchaseInput) => Promise<void>
 }

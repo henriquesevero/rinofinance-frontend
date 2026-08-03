@@ -8,7 +8,6 @@ export type SeriesKey = "installments" | "subscriptions" | "oneOff" | "debit"
 export interface SeriesMeta {
   key: SeriesKey
   label: string
-  // Tailwind bg-* class for bars/dots.
   color: string
 }
 
@@ -27,14 +26,11 @@ export interface MonthlyPoint {
   debit: number
 }
 
-// Splits "YYYY-MM-DD" into a 1-based year/month, timezone-safe.
 function yearMonth(date: string): [number, number] {
   const [y, m] = date.split("-").map(Number)
   return [y || 0, m || 0]
 }
 
-// Whether an installment bills a charge in (year, monthIndex0) — mirrors the
-// backend's IsActiveOn: started and not yet paid off.
 function isActiveIn(firstDate: string, total: number, year: number, monthIndex0: number): boolean {
   const [fy, fm] = yearMonth(firstDate)
   if (!fy || !fm) return false
@@ -42,13 +38,6 @@ function isActiveIn(firstDate: string, total: number, year: number, monthIndex0:
   return elapsed >= 0 && elapsed < total
 }
 
-// Builds the 12-month projection for the given year from card data (plus the
-// debit purchases of the given accounts):
-// - Parcelamentos: installments (total > 1) active in each month.
-// - Assinaturas: recurring, counted every month.
-// - Avulsas: one-off (1x) purchases in the month they fall.
-// - Débito (conta): account debit purchases in the month they fall, summed
-//   across the accounts the caller chose to include.
 export function computeYearProjection(
   cards: CardOverview[],
   accounts: Account[],
@@ -105,8 +94,6 @@ export function breakdownForMonth(projection: MonthlyPoint[], monthIndex0: numbe
   }
 }
 
-// Sum of every series across the whole year — the "committed" total shown
-// next to the current period's payments.
 export function yearTotal(projection: MonthlyPoint[]): number {
   return projection.reduce((sum, p) => sum + p.installments + p.subscriptions + p.oneOff + p.debit, 0)
 }

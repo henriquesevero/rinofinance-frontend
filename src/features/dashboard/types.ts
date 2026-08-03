@@ -27,9 +27,6 @@ export interface DashboardSummary {
   netBalance: number
 }
 
-// Annual view: the whole year computed server-side in one request, with both
-// "realized" (received/paid) and "planned" (all active) figures precomputed so
-// switching modes needs no refetch.
 export interface AnnualMonthSummary {
   index: number
   incomeRealized: number

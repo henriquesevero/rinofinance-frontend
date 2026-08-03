@@ -31,9 +31,6 @@ interface ExpenseFormDialogProps {
   onSubmitAccountLinked: (name: string, accountId: string, categoryId: string) => Promise<void>
 }
 
-// Handles create (manual amount, linked to a card, or linked to an account
-// — both mirror a live total) and edit (name + amount only; linked expenses
-// aren't edited, their amount is managed).
 export function ExpenseFormDialog({
   open,
   onOpenChange,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -26,9 +26,6 @@ const FULL_MONTHS = [
 ]
 const UNCATEGORIZED = { name: "Sem categoria", color: "#9CA3AF", icon: "tag" }
 
-// "Visão anual": how the whole year went, month by month — realized income vs.
-// spending, the annual bottom line, best/worst months, and where the money
-// went. Navigate any year with the ‹ › selector.
 export function AnnualPage() {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -51,13 +48,16 @@ export function AnnualPage() {
 
   const highlightIndex = year === now.getFullYear() ? now.getMonth() : undefined
 
-  const resolve = (totals: { id: string; total: number }[]) =>
-    totals.slice(0, 6).map((c) => {
-      const cat = c.id === "__none__" ? UNCATEGORIZED : byId(c.id) ?? UNCATEGORIZED
-      return { ...c, name: cat.name, color: cat.color, icon: cat.icon ?? "tag" }
-    })
-  const topExpense = useMemo(() => (data ? resolve(data.expenseCategoryTotals) : []), [data, byId])
-  const topIncome = useMemo(() => (data ? resolve(data.incomeCategoryTotals) : []), [data, byId])
+  const resolve = useCallback(
+    (totals: { id: string; total: number }[]) =>
+      totals.slice(0, 6).map((c) => {
+        const cat = c.id === "__none__" ? UNCATEGORIZED : byId(c.id) ?? UNCATEGORIZED
+        return { ...c, name: cat.name, color: cat.color, icon: cat.icon ?? "tag" }
+      }),
+    [byId]
+  )
+  const topExpense = useMemo(() => (data ? resolve(data.expenseCategoryTotals) : []), [data, resolve])
+  const topIncome = useMemo(() => (data ? resolve(data.incomeCategoryTotals) : []), [data, resolve])
   const activeAssets = useMemo(
     () => assets.filter((a) => a.active).sort((a, b) => b.currentBalance - a.currentBalance),
     [assets]
@@ -95,7 +95,6 @@ export function AnnualPage() {
         </div>
       </div>
 
-      {/* realized vs planned lens */}
       <div className="rf-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: "30ms" }}>
         <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
           {(["realized", "planned"] as const).map((m) => (
@@ -136,7 +135,6 @@ export function AnnualPage() {
         </Card>
       ) : (
         <>
-          {/* year totals */}
           <Card className="rf-fade-up gap-0 overflow-hidden p-0" style={{ animationDelay: "60ms" }}>
             <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
               <Cell label="Entradas no ano">
@@ -157,7 +155,6 @@ export function AnnualPage() {
             </div>
           </Card>
 
-          {/* the year at a glance */}
           <Card className="rf-fade-up flex flex-col gap-4 p-4 sm:p-5" style={{ animationDelay: "120ms" }}>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold">Entradas e saídas por mês</h2>
@@ -173,7 +170,6 @@ export function AnnualPage() {
             <AnnualBarChart months={data.months} highlightIndex={highlightIndex} />
           </Card>
 
-          {/* insights */}
           <div className="rf-fade-up grid grid-cols-2 gap-3 lg:grid-cols-4" style={{ animationDelay: "160ms" }}>
             <Insight
               icon={ArrowUpRight}
@@ -205,7 +201,6 @@ export function AnnualPage() {
             />
           </div>
 
-          {/* month-by-month breakdown */}
           <Card className="rf-fade-up flex flex-col gap-1 p-4 sm:p-5" style={{ animationDelay: "200ms" }}>
             <div className="mb-1 hidden grid-cols-[1fr_auto_auto_auto] gap-4 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
               <span>Mês</span>
@@ -241,7 +236,6 @@ export function AnnualPage() {
             </ul>
           </Card>
 
-          {/* income & spending by category, toggleable */}
           {(topExpense.length > 0 || topIncome.length > 0) && (
             <Card className="rf-fade-up flex flex-col gap-4 p-4 sm:p-5" style={{ animationDelay: "240ms" }}>
               <div className="flex items-center justify-between gap-3">
@@ -305,8 +299,6 @@ export function AnnualPage() {
         </>
       )}
 
-      {/* investments — a current snapshot (there's no month-by-month history),
-          shown regardless of the selected year and clearly labeled as such */}
       {activeAssets.length > 0 && (
         <Card className="rf-fade-up flex flex-col gap-4 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">

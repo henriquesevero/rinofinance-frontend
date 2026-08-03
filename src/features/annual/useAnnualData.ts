@@ -6,10 +6,10 @@ import { toErrorMessage } from "@/lib/errors"
 const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
 export interface AnnualMonth {
-  index: number // 0-based
+  index: number
   label: string
-  income: number // entradas do mês (recebidas ou previstas, conforme o modo)
-  expense: number // saídas do mês (pagas ou previstas, conforme o modo)
+  income: number
+  expense: number
   net: number
 }
 
@@ -18,7 +18,6 @@ export interface AnnualData {
   totalIncome: number
   totalExpense: number
   net: number
-  // Best/worst by net among months that had any activity.
   bestMonth: AnnualMonth | null
   worstMonth: AnnualMonth | null
   activeMonths: number
@@ -26,23 +25,14 @@ export interface AnnualData {
   avgExpense: number
   avgNet: number
   savingsRate: number | null
-  // Realized totals by category across the year, most first.
   expenseCategoryTotals: { id: string; total: number }[]
   incomeCategoryTotals: { id: string; total: number }[]
 }
 
-// The two lenses on the year: "realized" counts only what was actually
-// received/paid each month (varies month to month); "planned" counts every
-// active item regardless of its paid/received flag (so categorized entries
-// always show, even when not yet marked off).
 export type AnnualMode = "realized" | "planned"
 
-// Cache the raw yearly payload so revisiting a year — or toggling the mode,
-// which is a pure client-side reshape — never re-hits the API.
 const yearCache = new Map<number, AnnualSummary>()
 
-// Reshapes the server's precomputed yearly payload into the view model for the
-// selected mode. No network — both modes come from the same response.
 function aggregate(raw: AnnualSummary, mode: AnnualMode): AnnualData {
   const planned = mode === "planned"
 
@@ -74,19 +64,12 @@ function aggregate(raw: AnnualSummary, mode: AnnualMode): AnnualData {
   }
 }
 
-// Fetches the whole year in a single request (the backend computes all 12
-// months in one pass) and aggregates it for the chosen mode. The fetch depends
-// only on the year; switching mode reshapes the cached payload instantly.
 export function useAnnualData(year: number, mode: AnnualMode) {
   const [raw, setRaw] = useState<AnnualSummary | null>(() => yearCache.get(year) ?? null)
   const [isLoading, setIsLoading] = useState(() => !yearCache.has(year))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Stale-while-revalidate: show the cached year instantly (no spinner, no
-    // 12-request wait), then refresh it in the background so edits made on
-    // other screens still land. Only the year drives this — switching mode
-    // reshapes the cached payload without any request.
     const cached = yearCache.get(year)
     setRaw(cached ?? null)
     setIsLoading(!cached)
@@ -101,8 +84,6 @@ export function useAnnualData(year: number, mode: AnnualMode) {
         setRaw(res)
       })
       .catch((err) => {
-        // Keep showing the cached data if we have it; only surface an error
-        // when there's nothing to fall back on.
         if (!cancelled && !yearCache.has(year)) setError(toErrorMessage(err))
       })
       .finally(() => {

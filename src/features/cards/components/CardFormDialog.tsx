@@ -19,10 +19,7 @@ import { toErrorMessage } from "@/lib/errors"
 import { toast } from "sonner"
 import type { CardInput } from "../types"
 
-// Common Brazilian card brand colors, as a quick-pick starting point —
-// the free color input below still lets the user match any card exactly.
 const COLOR_PRESETS = [
-  // Bancos digitais
   { label: "Nubank", value: "#8A05BE" },
   { label: "Nubank Ultravioleta", value: "#4B2067" },
   { label: "Inter", value: "#FF7A00" },
@@ -36,7 +33,6 @@ const COLOR_PRESETS = [
   { label: "Banco Original", value: "#7DB61C" },
   { label: "Digio", value: "#0B2A5B" },
   { label: "Ame", value: "#FF0090" },
-  // Bancos tradicionais
   { label: "Itaú", value: "#EC7000" },
   { label: "Santander", value: "#EC0000" },
   { label: "Bradesco", value: "#CC092F" },
@@ -47,12 +43,10 @@ const COLOR_PRESETS = [
   { label: "Sicoob", value: "#00995D" },
   { label: "Sicredi", value: "#3B7C3E" },
   { label: "Banco Pan", value: "#00A9E0" },
-  // Bandeiras
   { label: "Visa", value: "#1A1F71" },
   { label: "Mastercard", value: "#EB001B" },
   { label: "Elo", value: "#FFCB05" },
   { label: "American Express", value: "#2E77BC" },
-  // Neutros
   { label: "Preto", value: "#111827" },
   { label: "Grafite", value: "#374151" },
   { label: "Neutro", value: "#6B7280" },
@@ -64,8 +58,6 @@ interface CardFormDialogProps {
   onOpenChange: (open: boolean) => void
   initial?: CardInput
   onSubmit: (input: CardInput) => Promise<void>
-  // When provided (edit mode), a discreet "Excluir cartão" action appears,
-  // guarded by a confirmation. The caller handles removal + any navigation.
   onDelete?: () => Promise<void> | void
 }
 
@@ -99,8 +91,6 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
     event.target.value = ""
     if (!file) return
     try {
-      // Larger than the avatar-sized logo: this is the full card art shown
-      // at ~600px wide in the overview grid.
       setImageUrl(await resizeImageToDataUrl(file, 700, 0.82))
     } catch (err) {
       toast.error(toErrorMessage(err))
@@ -145,7 +135,6 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
           <DialogDescription>Aparência, limite e datas da fatura.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* appearance: the preview itself is the upload target */}
           <div className="flex flex-col items-center gap-2.5">
             <div className="relative w-full max-w-[220px]">
               <button
@@ -156,7 +145,6 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
               >
                 <CardArt card={{ name: name || "Cartão", color, imageUrl, logoUrl }} />
               </button>
-              {/* camera badge — makes the tap affordance discoverable on touch */}
               <span className="pointer-events-none absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white shadow-sm backdrop-blur-sm">
                 <ImagePlus className="size-3.5" />
               </span>

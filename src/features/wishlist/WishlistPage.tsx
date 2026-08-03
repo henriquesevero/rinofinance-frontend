@@ -89,7 +89,6 @@ function ListPage({
     fetchWishlist()
   }, [fetchWishlist])
 
-  // Items grouped by section id (with a NONE bucket for the ungrouped ones).
   const itemsBySection = useMemo(() => {
     const map = new Map<string, WishlistItem[]>()
     for (const item of items) {
@@ -108,9 +107,6 @@ function ListPage({
   )
   const sectionTotal = (list: WishlistItem[]) => list.reduce((sum, i) => sum + i.price, 0)
 
-  // A within-section drag only reorders that section's items among their own
-  // slots; we merge the new sub-order back into the full list order (positions
-  // are global) and persist it, leaving every other item untouched.
   function persistItemOrder(sectionOrderedIds: string[]) {
     const set = new Set(sectionOrderedIds)
     const queue = [...sectionOrderedIds]
@@ -214,7 +210,6 @@ function ListPage({
         </div>
       </div>
 
-      {/* summary strip: the whole list at a glance */}
       {!isEmpty && (
         <Card className="gap-0 overflow-hidden p-0">
           <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
@@ -340,8 +335,6 @@ function ListPage({
   )
 }
 
-// A titled section (Eletrônicos, Roupas, ...) with an item grid. Real
-// sections get edit/delete; the "Sem seção" bucket only gets an add button.
 function Section({
   title,
   count,
@@ -409,9 +402,6 @@ function Section({
   )
 }
 
-// A drag-reorderable grid of product tiles. Only the grip on each tile starts
-// a drag, so the store links and edit/delete stay clickable. `onReorder` gets
-// this section's ids in their new order.
 function ReorderableItemGrid({
   items,
   onReorder,
@@ -441,7 +431,6 @@ function ReorderableItemGrid({
   )
 }
 
-// One metric in the summary strip: uppercase label above a prominent value.
 function Cell({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5", className)}>

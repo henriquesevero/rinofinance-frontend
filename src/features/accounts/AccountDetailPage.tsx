@@ -96,8 +96,6 @@ export function AccountDetailPage() {
     setEditingBalance(true)
   }
 
-  // Quick inline balance edit — no need to open the full account form just to
-  // adjust how much is in the account.
   async function saveBalance() {
     if (!account) return
     setSavingBalance(true)
@@ -119,7 +117,6 @@ export function AccountDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* top bar: back + actions */}
       <div className="flex items-center justify-between gap-3">
         <Link
           to="/accounts"
@@ -153,8 +150,6 @@ export function AccountDetailPage() {
         </div>
       </div>
 
-      {/* hero: filled with the account's chosen color — identity + debits on
-          the left, editable balance on the right, all in white for contrast */}
       <Card
         className="relative flex flex-row items-center justify-between gap-3 overflow-hidden border-transparent p-4 text-white ring-1 ring-black/10"
         style={{ background: `linear-gradient(150deg, ${account.color || "#6B7280"} 0%, rgba(0,0,0,0.5) 160%)` }}

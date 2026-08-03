@@ -5,9 +5,6 @@ interface Segment {
   value: number
 }
 
-// A portfolio-allocation donut: each active asset is an arc sized by its share
-// of the total, with the total patrimony in the middle. Pure SVG, no library —
-// the circumference is ~100 so each arc's dash length equals its percentage.
 export function AllocationDonut({
   segments,
   total,
@@ -18,7 +15,7 @@ export function AllocationDonut({
   label?: string
 }) {
   const r = 15.915
-  let offset = 25 // start at 12 o'clock
+  let offset = 25
   const arcs = segments.map((s) => {
     const pct = total > 0 ? (s.value / total) * 100 : 0
     const arc = { color: s.color, dash: pct, gap: 100 - pct, offset }

@@ -74,9 +74,6 @@ export function CardSection({ card }: { card: CardOverview }) {
     return (id?: string) => (id ? map.get(id) ?? "" : "")
   }, [categories])
 
-  // Lists are scoped to the month being viewed: an item ended ("encerrado")
-  // from this month on disappears here, but is still visible when browsing an
-  // earlier month — so clearing the current fatura never rewrites the past.
   const avulsas = useMemo(
     () =>
       sortPurchases(
@@ -105,9 +102,6 @@ export function CardSection({ card }: { card: CardOverview }) {
     [card.subscriptions, subSortKey, categoryName, month]
   )
 
-  // Manual reordering only applies to the "Ordem padrão" (position) sort.
-  // Avulsas and parceladas share one entity, so each group persists the full
-  // purchase order with the other group left in place.
   const canReorderAvulsas = avulsaSortKey === "default"
   const canReorderParceladas = sortKey === "default"
   const canReorderSubs = subSortKey === "default"
@@ -119,8 +113,6 @@ export function CardSection({ card }: { card: CardOverview }) {
   )
   const subsDnd = useReorder(sortedSubscriptions, (ids) => reorderSubscriptions(card.id, ids))
 
-  // Removing an item preserves history: it's "ended" from the viewed month
-  // onward (earlier months keep it) rather than deleted from every month.
   async function handleDeletePurchase(id: string) {
     try {
       await clearCard(card.id, { installmentPurchaseIds: [id], subscriptionIds: [], mode: "end" })
@@ -288,7 +280,6 @@ export function CardSection({ card }: { card: CardOverview }) {
                       className="text-xs font-medium text-muted-foreground tabular-nums"
                     />
                   </div>
-                  {/* hover actions overlay the value area, keeping the tile compact */}
                   <div className="absolute inset-y-0 right-0 flex items-center gap-0.5 rounded-r-lg bg-card pl-4 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:bg-transparent [@media(hover:none)]:pl-0 [@media(hover:none)]:opacity-100">
                     <Button
                       variant="ghost"
@@ -355,8 +346,6 @@ export function CardSection({ card }: { card: CardOverview }) {
   )
 }
 
-// Header row shared by the three groups: a collapse toggle (chevron + icon +
-// title + count) and, on the right, a discreet "..." sort menu plus a "+".
 function GroupHeader({
   icon: Icon,
   title,
@@ -398,9 +387,6 @@ function GroupHeader({
   )
 }
 
-// A single purchase row, shared by the "avulsas" and "parceladas" lists.
-// One-off purchases (totalInstallments === 1) show just their value; the
-// installment detail subline only makes sense for parcelas.
 function PurchaseRow({
   purchase,
   onToggleFlag,

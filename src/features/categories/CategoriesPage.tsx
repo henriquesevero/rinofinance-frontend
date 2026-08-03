@@ -39,8 +39,6 @@ export function CategoriesPage() {
   const deleteCategory = useCategoriesStore((s) => s.deleteCategory)
   const reorderCategories = useCategoriesStore((s) => s.reorderCategories)
 
-  // Usage is derived from the same month-scoped data the dashboard shows, so
-  // the numbers agree across screens.
   const month = useMonthStore((s) => s.month)
   const cards = useCardsStore((s) => s.cards)
   const fetchCards = useCardsStore((s) => s.fetchCards)
@@ -61,13 +59,11 @@ export function CategoriesPage() {
     fetchSummary()
   }, [fetchCategories, fetchCards, fetchSummary])
 
-  const expenses = summary?.expenses ?? []
   const { slices, total } = useMemo(
-    () => computeCategorySpending(cards, expenses, categories),
-    [cards, expenses, categories]
+    () => computeCategorySpending(cards, summary?.expenses ?? [], categories),
+    [cards, summary, categories]
   )
 
-  // Per-category spend for the viewed month, plus the derived headline figures.
   const usageById = useMemo(() => {
     const map = new Map<string, number>()
     for (const s of slices) map.set(s.id, s.total)
@@ -148,7 +144,6 @@ export function CategoriesPage() {
         </div>
       ) : (
         <>
-          {/* summary strip — this month at a glance */}
           <Card className="gap-0 overflow-hidden p-0">
             <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-4">
               <Cell label="Categorias">
@@ -177,7 +172,6 @@ export function CategoriesPage() {
             </div>
           </Card>
 
-          {/* category list with usage — internal scroll like Entradas & Saídas */}
           <Card className="flex flex-col gap-1 p-2 sm:p-3">
             <ul className="scrollbar-hide flex max-h-[24rem] flex-col overflow-y-auto sm:max-h-[30rem]">
               {order.map((category) => {

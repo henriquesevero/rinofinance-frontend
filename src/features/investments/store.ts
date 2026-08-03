@@ -18,7 +18,6 @@ interface InvestmentsState {
   deleteAsset: (id: string) => Promise<void>
   addProvento: (assetId: string, amount: number, date: string) => Promise<void>
   removeProvento: (id: string) => Promise<void>
-  // Clears all data back to the empty initial state (used on logout).
   reset: () => void
 }
 

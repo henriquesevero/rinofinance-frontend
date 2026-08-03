@@ -7,10 +7,6 @@ interface LogoProps {
   markClassName?: string
 }
 
-// Brand mark: an upward growth trend line with an arrowhead — a clear
-// finance/"crescimento" symbol — on a dark rounded-square badge, in React
-// blue with a soft glow. The identity stays fixed across themes; the
-// wordmark uses the theme foreground. public/favicon.svg mirrors this.
 export function Logo({ className, showWordmark = true, markClassName }: LogoProps) {
   const id = useId()
   const bgId = `${id}-bg`
@@ -40,14 +36,11 @@ export function Logo({ className, showWordmark = true, markClassName }: LogoProp
           </filter>
         </defs>
 
-        {/* Dark rounded-square badge */}
         <rect width="40" height="40" rx="11" fill={`url(#${bgId})`} />
         <rect x="0.6" y="0.6" width="38.8" height="38.8" rx="10.6" fill="none" stroke="#ffffff" strokeOpacity="0.06" />
 
-        {/* Blue glow near the rising tip */}
         <ellipse cx="27" cy="15" rx="12" ry="11" fill={`url(#${glowId})`} filter={`url(#${blurId})`} />
 
-        {/* Upward trend line + arrowhead */}
         <g
           fill="none"
           stroke={`url(#${lineId})`}

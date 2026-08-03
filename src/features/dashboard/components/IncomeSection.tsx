@@ -55,7 +55,6 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
     )
   }, [incomes, filters])
 
-  // Manual drag-reorder only makes sense on the full, ungrouped list.
   const canReorder = !filters.search && !filters.pendingOnly && !filters.categoryId && !filters.groupBy
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(visible, reorderIncomes)
   const rows = canReorder ? order : visible
@@ -135,8 +134,6 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
         )}
       >
         <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
-          {/* Fixed-width handle slot, reserved even when reordering is off
-              (filtered/grouped), so rows never shift left between states. */}
           <div className="hidden w-4 shrink-0 sm:block">
             {withHandle && (
               <DragHandle

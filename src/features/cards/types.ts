@@ -10,12 +10,7 @@ export interface InstallmentPurchase {
   flagged: boolean
   excludedFromOwed?: boolean
   categoryId?: string
-  // When set (YYYY-MM-DD, first of month), the item stops billing from this
-  // month onward; earlier months still show it. Empty = natural schedule.
   canceledFrom?: string
-  // When set, the first month the item is visible (set on import) — it won't
-  // appear in earlier months even if its schedule reaches back. Empty = per
-  // schedule.
   effectiveFrom?: string
 }
 
@@ -77,7 +72,6 @@ export interface SubscriptionInput {
 export interface ImportFaturaPayload {
   installmentPurchases: InstallmentPurchaseInput[]
   subscriptions: SubscriptionInput[]
-  // The fatura's month ("YYYY-MM"); imported items are only visible from it on.
   referenceMonth: string
 }
 
@@ -89,8 +83,6 @@ export interface ImportFaturaResult {
 export interface ClearCardPayload {
   installmentPurchaseIds: string[]
   subscriptionIds: string[]
-  // "end" stops items from the reference month onward (keeps past months);
-  // "delete" permanently removes them from every month.
   mode: "end" | "delete"
 }
 

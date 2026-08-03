@@ -16,9 +16,6 @@ interface SpendingDonutProps {
 
 const UNCATEGORIZED = { id: "__none__", name: "Sem categoria", color: "#9CA3AF" }
 
-// "Distribuição dos gastos": a donut of the month's spending split by category
-// with a ranked list (share, value, and a real month-over-month trend arrow).
-// The Gastos/Entradas toggle flips it to income by category.
 export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
@@ -28,9 +25,6 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
     if (categories.length === 0) fetchCategories()
   }, [categories.length, fetchCategories])
 
-  // The spending distribution comes straight from the expenses ("saídas")
-  // defined on the Entradas & Saídas screen, grouped by category (active
-  // ones only) — same shape as the income breakdown below.
   const expenseData = useMemo(() => {
     const byId = new Map(categories.map((c) => [c.id, c]))
     const totals = new Map<string, number>()
@@ -48,7 +42,6 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
     return { slices, total: slices.reduce((s, x) => s + x.total, 0) }
   }, [expenses, categories])
 
-  // Income grouped by category, mirroring the expense breakdown's shape.
   const incomeData = useMemo(() => {
     const byId = new Map(categories.map((c) => [c.id, c]))
     const totals = new Map<string, number>()
@@ -66,7 +59,6 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
     return { slices, total: slices.reduce((s, x) => s + x.total, 0) }
   }, [incomes, categories])
 
-  // Snapshot this month's spending so future months can show a real trend.
   const key = monthKey()
   useEffect(() => {
     if (expenseData.total > 0) recordSnapshot(key, expenseData.slices)
@@ -76,10 +68,8 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
   const { slices, total } = mode === "gastos" ? expenseData : incomeData
   const label = mode === "gastos" ? "Gasto total" : "Entradas"
 
-  // Donut geometry: r chosen so the circumference is ~100, letting each
-  // slice's dash length equal its percentage directly.
   const r = 15.915
-  let offset = 25 // start at 12 o'clock
+  let offset = 25
   const arcs = slices.map((s) => {
     const pct = total > 0 ? (s.total / total) * 100 : 0
     const arc = { s, pct, dash: pct, gap: 100 - pct, offset }
@@ -126,7 +116,6 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
         </p>
       ) : (
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          {/* donut */}
           <div className="relative shrink-0">
             <svg viewBox="0 0 42 42" className="size-44">
               <circle cx="21" cy="21" r={r} fill="none" className="stroke-muted" strokeWidth="4" />
@@ -151,7 +140,6 @@ export function SpendingDonut({ expenses, incomes }: SpendingDonutProps) {
             </div>
           </div>
 
-          {/* ranked list */}
           <ul className="flex min-w-0 flex-1 flex-col gap-2.5 self-stretch">
             {slices.slice(0, 6).map((s) => {
               const trend = mode === "gastos" ? trendFor(prev, s.id, s.total) : null

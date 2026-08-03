@@ -7,9 +7,6 @@ interface MonthSelectorProps {
   className?: string
 }
 
-// Global month picker: ‹ Julho de 2026 › with a discreet "voltar ao mês
-// atual" shortcut when viewing another month. Drives what period the whole
-// app shows.
 export function MonthSelector({ className }: MonthSelectorProps) {
   const month = useMonthStore((s) => s.month)
   const shift = useMonthStore((s) => s.shift)

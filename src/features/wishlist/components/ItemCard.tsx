@@ -10,19 +10,12 @@ interface ItemCardProps {
   item: WishlistItem
   onEdit: () => void
   onDelete: () => void
-  // Drop-target props from useReorder().getItemProps(id), spread on the tile.
   reorderProps?: React.HTMLAttributes<HTMLDivElement>
-  // A drag handle (grip) rendered in the tile's corner when reordering is on.
   dragHandle?: ReactNode
-  // Dims the tile while it's the one being dragged.
   dragging?: boolean
 }
 
-// A product tile in the "loja" grid: image, name and price. When it has a
-// link the whole tile opens the store in a new tab; edit/delete appear on
-// hover without triggering the link.
 export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dragging }: ItemCardProps) {
-  // Remote store images can hotlink-block (403) — fall back to the placeholder.
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
   const store = item.url ? normalizeDomain(item.url) : ""

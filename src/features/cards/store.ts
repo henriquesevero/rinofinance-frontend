@@ -35,14 +35,10 @@ interface CardsState {
   reorderCards: (orderedIds: string[]) => Promise<void>
   reorderInstallmentPurchases: (cardId: string, ids: string[]) => Promise<void>
   reorderSubscriptions: (cardId: string, ids: string[]) => Promise<void>
-  // Clears all data back to the empty initial state (used on logout).
   reset: () => void
 }
 
 export const useCardsStore = create<CardsState>((set, get) => {
-  // Same reasoning as the dashboard store: monthly totals (per card and
-  // grand total) are computed server-side from installment dates, so
-  // every mutation just refetches instead of recomputing locally.
   async function mutate(action: () => Promise<unknown>) {
     try {
       await action()
@@ -98,7 +94,6 @@ export const useCardsStore = create<CardsState>((set, get) => {
 
     clearCard: async (cardId, payload) => {
       try {
-        // Pass the viewed month so "end" mode ends items from that month on.
         const result = await cardsApi.clearCard(cardId, payload, useMonthStore.getState().month)
         await get().fetchCards()
         return result
@@ -109,9 +104,6 @@ export const useCardsStore = create<CardsState>((set, get) => {
     },
 
     reorderCards: async (orderedIds) => {
-      // Optimistically apply the new order locally, then persist. The
-      // per-card monthly totals don't change, so no refetch is needed on
-      // success — only on failure, to snap back to the server's order.
       const previous = get().cards
       const byId = new Map(previous.map((c) => [c.id, c]))
       const reordered = orderedIds.map((id) => byId.get(id)).filter((c): c is CardOverview => Boolean(c))

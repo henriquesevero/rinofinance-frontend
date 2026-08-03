@@ -5,21 +5,13 @@ import type { CardOverview } from "../types"
 
 interface CardArtProps {
   card: Pick<CardOverview, "name" | "color" | "imageUrl" | "logoUrl">
-  // Optional Wallet-style content laid over the bottom of the card (e.g. the
-  // month's bill), on a gradient scrim for legibility over any background.
   overlay?: React.ReactNode
   className?: string
 }
 
-// Renders a credit card at real-card proportions (~1.586:1). When the
-// user uploaded a card image it fills the frame; otherwise we synthesize a
-// bank-like card from the chosen accent color, with the bank's brand logo
-// (auto-detected from the name) and the card's name.
 export function CardArt({ card, overlay, className }: CardArtProps) {
   const color = card.color || "#6B7280"
   const [logoFailed, setLogoFailed] = useState(false)
-  // A user-uploaded logo is shown as-is (object-contain, never cropped); only
-  // the auto-detected brand favicon gets the zoom-crop that trims its padding.
   const uploaded = Boolean(card.logoUrl)
   const logoSrc = card.logoUrl || (!logoFailed ? brandLogoSrc(bankDomain(card.name)) : "")
 
@@ -39,7 +31,6 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
             background: `linear-gradient(135deg, ${color} 0%, rgba(0,0,0,0.45) 140%)`,
           }}
         >
-          {/* brand logo (uploaded or auto-detected), else a plain chip */}
           {logoSrc ? (
             <span className="inline-block size-8 shrink-0 overflow-hidden rounded-md drop-shadow-md">
               <img

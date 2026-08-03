@@ -28,8 +28,6 @@ export function CardsPage() {
   const reorderCards = useCardsStore((s) => s.reorderCards)
   const month = useMonthStore((s) => s.month)
 
-  // Local working copy so drag reordering feels instant; kept in sync with
-  // the store's order whenever it changes.
   const [order, setOrder] = useState<CardOverview[]>(cards)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const orderBeforeDrag = useRef<string[]>([])
@@ -42,8 +40,6 @@ export function CardsPage() {
     setOrder(cards)
   }, [cards])
 
-  // Aggregate across all cards: what's still owed (quitação for the viewed
-  // month) and total credit limit — for the summary strip's "todo o quadro".
   const { totalOwed, totalLimit } = useMemo(() => {
     let totalOwed = 0
     let totalLimit = 0
@@ -113,7 +109,6 @@ export function CardsPage() {
         </div>
       </div>
 
-      {/* summary strip: the whole picture across every card */}
       {order.length > 0 && (
         <Card className="gap-0 overflow-hidden p-0">
           <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3">
@@ -176,8 +171,6 @@ export function CardsPage() {
               onDragEnter={() => handleDragEnter(card.id)}
               onDrop={(e) => e.preventDefault()}
             >
-              {/* discreet action cluster in the top-right corner, clear of the
-                  card's logo (top-left) and the bill (bottom) */}
               <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
                 <span
                   draggable

@@ -38,7 +38,6 @@ type DialogState = { mode: "create" } | { mode: "edit"; asset: Asset } | null
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
-// A whole-asset payload from an existing asset, used for inline/partial edits.
 function assetToInput(a: Asset): AssetInput {
   return {
     name: a.name,
@@ -84,8 +83,6 @@ export function InvestmentsPage() {
   const totalPnlPct = profitPct(totalPatrimony, totalInvested)
   const yieldOnCost = totalInvested > 0 ? (totalProventos / totalInvested) * 100 : null
 
-  // Group every asset by class in the canonical display order; the subtotal and
-  // allocation only count active positions (the ones inside the patrimony).
   const groups = useMemo(() => {
     return ASSET_CLASSES.map((meta) => {
       const inClass = assets
@@ -140,8 +137,6 @@ export function InvestmentsPage() {
   }
 
   function startEdit(asset: Asset) {
-    // Quotas assets edit the current price (recomputes the value); value assets
-    // edit the balance directly.
     setDraft(asset.quantity > 0 ? asset.currentPrice : asset.currentBalance)
     setEditingId(asset.id)
   }
@@ -228,7 +223,6 @@ export function InvestmentsPage() {
         </div>
       ) : (
         <>
-          {/* summary strip */}
           <Card className="gap-0 overflow-hidden p-0">
             <div className="grid grid-cols-2 gap-px bg-border lg:grid-cols-4">
               <Cell label="Patrimônio">
@@ -265,7 +259,6 @@ export function InvestmentsPage() {
             </div>
           </Card>
 
-          {/* allocation by class */}
           {allocation.length > 0 && (
             <Card className="flex flex-col gap-5 p-4 sm:p-5">
               <div className="flex items-center gap-2">
@@ -296,7 +289,6 @@ export function InvestmentsPage() {
             </Card>
           )}
 
-          {/* positions grouped by class */}
           <Card className="flex flex-col gap-4 p-4 sm:p-5">
             <div className="flex items-center gap-2">
               <Coins className="size-4 shrink-0 text-emerald-500" />
@@ -332,7 +324,6 @@ export function InvestmentsPage() {
                             !asset.active && "opacity-60"
                           )}
                         >
-                          {/* identity */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline gap-1.5">
                               <p className="min-w-0 truncate text-sm font-semibold" title={asset.name}>
@@ -363,7 +354,6 @@ export function InvestmentsPage() {
                             </div>
                           </div>
 
-                          {/* value + inline edit + actions, packed together on the right */}
                           {editing ? (
                             <div className="flex items-center gap-1.5">
                               <MoneyInput
@@ -468,7 +458,6 @@ export function InvestmentsPage() {
             </div>
           </Card>
 
-          {/* proventos */}
           {proventos.length > 0 && (
             <Card className="flex flex-col gap-3 p-4 sm:p-5">
               <div className="flex items-center justify-between gap-2">

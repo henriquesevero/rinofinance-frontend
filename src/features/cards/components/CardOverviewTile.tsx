@@ -9,10 +9,6 @@ interface CardOverviewTileProps {
   card: CardOverview
 }
 
-// One card in the overview grid — just the card itself (no surrounding frame),
-// with the month's bill laid over it Wallet-style. Deeper stats (limit usage,
-// flags, subscriptions) live on the detail page. On hover it lifts, zooms
-// slightly and gets a soft blue glow. The whole card links to its detail page.
 export function CardOverviewTile({ card }: CardOverviewTileProps) {
   const month = useMonthStore((s) => s.month)
   const stats = computeCardStats(card, month)

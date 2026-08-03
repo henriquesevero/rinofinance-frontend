@@ -10,9 +10,6 @@ interface CategoryBreakdownPanelProps {
   expenses: Expense[]
 }
 
-// "Gastos por categoria": a single stacked bar of the month's spending split
-// by category, with a compact legend below. Hovering a segment reveals its
-// category and amount.
 export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps) {
   const cards = useCardsStore((s) => s.cards)
   const categories = useCategoriesStore((s) => s.categories)
@@ -28,8 +25,6 @@ export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps
     [cards, expenses, categories]
   )
 
-  // Precompute each segment's horizontal position so the tooltip can sit
-  // centered over the hovered slice.
   const segments = useMemo(() => {
     let acc = 0
     return slices.map((s) => {
@@ -68,7 +63,6 @@ export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps
           </p>
         ) : (
           <div className="flex flex-col gap-5">
-            {/* stacked bar */}
             <div className="relative" onMouseLeave={() => setHovered(null)}>
               {activeSeg && (
                 <div
@@ -105,7 +99,6 @@ export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps
               </div>
             </div>
 
-            {/* legend */}
             <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
               {slices.map((s) => (
                 <div

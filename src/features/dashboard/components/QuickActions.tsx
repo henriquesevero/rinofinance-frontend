@@ -12,8 +12,6 @@ import { CardPurchaseDialog } from "./CardPurchaseDialog"
 
 type Action = "debit" | "credit" | "installment" | null
 
-// A single discreet dropdown to quickly log a purchase (debit, credit or
-// installment) without leaving the page — replaces the old row of buttons.
 export function QuickActions() {
   const [action, setAction] = useState<Action>(null)
 

@@ -15,8 +15,6 @@ import { formatMoney } from "@/lib/money"
 const pctOf = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0)
 const fmtPct = (v: number) => `${v.toFixed(1)}%`
 
-// The three-card financial overview at the top of the dashboard — bank
-// accounts, credit cards and investments.
 export function FinancialOverview() {
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const fetchAssets = useInvestmentsStore((s) => s.fetchAssets)
@@ -45,8 +43,6 @@ function SectionHeader({ icon: Icon, label, accent }: { icon: typeof Landmark; l
   )
 }
 
-// A friendly empty state: a muted icon, a short line, and a discreet link to
-// add the first item — shown inside a card's list when there's nothing yet.
 function EmptyState({ icon: Icon, label, to, cta }: { icon: typeof Landmark; label: string; to: string; cta: string }) {
   return (
     <li className="flex flex-col items-center gap-2 py-6 text-center">

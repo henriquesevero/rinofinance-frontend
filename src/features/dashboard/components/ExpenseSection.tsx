@@ -162,8 +162,6 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
         )}
       >
         <div className="flex min-w-0 items-center gap-2 sm:flex-1 sm:gap-3">
-          {/* Fixed-width handle slot, reserved even when reordering is off
-              (filtered/grouped), so rows never shift left between states. */}
           <div className="hidden w-4 shrink-0 sm:block">
             {withHandle && (
               <DragHandle

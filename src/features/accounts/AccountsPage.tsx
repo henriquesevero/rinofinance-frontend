@@ -69,7 +69,6 @@ export function AccountsPage() {
         </div>
       </div>
 
-      {/* summary strip: the whole picture across every account */}
       {order.length > 0 && (
         <Card className="gap-0 overflow-hidden p-0">
           <div className="grid gap-px bg-border sm:grid-cols-2">

@@ -18,9 +18,13 @@ interface ClearCardDialogProps {
   card: CardOverview
 }
 
-// Lets the user bulk-delete a card's items, choosing by group (parceladas
-// / avulsas / assinaturas), all at once, or individually. Selection starts
-// empty since this is destructive — you opt in to what gets removed.
+function toggleInSet(set: Set<string>, id: string): Set<string> {
+  const next = new Set(set)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  return next
+}
+
 export function ClearCardDialog({ open, onOpenChange, card }: ClearCardDialogProps) {
   const clearCard = useCardsStore((s) => s.clearCard)
   const month = useMonthStore((s) => s.month)
@@ -37,7 +41,6 @@ export function ClearCardDialog({ open, onOpenChange, card }: ClearCardDialogPro
     }
   }, [open])
 
-  // Scope to the viewed month's fatura — the items actually on this bill.
   const parceladas = useMemo(
     () => card.installmentPurchases.filter((p) => p.totalInstallments > 1 && isPurchaseActiveInMonth(p, month)),
     [card.installmentPurchases, month]
@@ -55,18 +58,10 @@ export function ClearCardDialog({ open, onOpenChange, card }: ClearCardDialogPro
   const selectedCount = selectedPurchases.size + selectedSubs.size
 
   function togglePurchase(id: string) {
-    setSelectedPurchases((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+    setSelectedPurchases((prev) => toggleInSet(prev, id))
   }
   function toggleSub(id: string) {
-    setSelectedSubs((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
+    setSelectedSubs((prev) => toggleInSet(prev, id))
   }
   function setPurchaseGroup(ids: string[], checked: boolean) {
     setSelectedPurchases((prev) => {
@@ -120,7 +115,6 @@ export function ClearCardDialog({ open, onOpenChange, card }: ClearCardDialogPro
           <p className="py-6 text-center text-sm text-muted-foreground">Este cartão não tem nada para limpar.</p>
         ) : (
           <>
-            {/* mode: keep history (default) vs wipe it */}
             <div className="flex flex-col gap-1.5">
               <div className="flex rounded-lg bg-muted p-0.5 text-xs font-medium">
                 {(["end", "delete"] as const).map((m) => (

@@ -20,10 +20,6 @@ function Bar({ done, total, color }: { done: number; total: number; color: strin
   )
 }
 
-// One cohesive "Balanço do mês" panel with hairline dividers (Apple Settings
-// style): the projected balance as the hero, flanked by income and expense
-// with slim received/paid progress. Calmer and more confident than three
-// separate cards.
 export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIncome, paidExpense }: SummaryCardsProps) {
   const toReceive = Math.max(0, totalIncome - receivedIncome)
   const toPay = Math.max(0, totalExpense - paidExpense)
@@ -31,8 +27,6 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
   const projectedPositive = netBalance >= 0
   const realizedPositive = realized >= 0
 
-  // Celebrate the moment the projected balance crosses from red into the green
-  // — a single emerald glow pulse over the hero cell. Skips the first render.
   const [celebrate, setCelebrate] = useState(false)
   const prevPositive = useRef(projectedPositive)
   useEffect(() => {
@@ -48,7 +42,6 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
   return (
     <Card className="gap-0 overflow-hidden p-0">
       <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-[1.2fr_1fr_1fr]">
-        {/* Hero: balance */}
         <div
           className={cn(
             "col-span-2 flex flex-col justify-center gap-0.5 bg-card p-4 sm:col-span-1 sm:gap-1 sm:p-5",
@@ -72,7 +65,6 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
           </span>
         </div>
 
-        {/* Entradas */}
         <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
           <div className="flex flex-col gap-0.5 md:flex-row md:items-center md:justify-between md:gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -88,7 +80,6 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance, receivedIn
           </span>
         </div>
 
-        {/* Saídas */}
         <div className="flex flex-col justify-center gap-1.5 bg-card p-4 sm:gap-2 sm:p-5">
           <div className="flex flex-col gap-0.5 md:flex-row md:items-center md:justify-between md:gap-2">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">

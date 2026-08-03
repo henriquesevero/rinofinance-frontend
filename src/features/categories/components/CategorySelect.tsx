@@ -4,7 +4,6 @@ import { CategoryIcon } from "../categoryIcons"
 import { useCategoriesStore } from "../store"
 
 interface CategorySelectProps {
-  // Empty string means "no category".
   value: string
   onChange: (categoryId: string) => void
   id?: string
@@ -12,9 +11,6 @@ interface CategorySelectProps {
 
 const NONE = "__none__"
 
-// Reusable category picker backed by the categories store. Renders each
-// category with its color dot and optional emoji; "Sem categoria" clears
-// the selection.
 export function CategorySelect({ value, onChange, id }: CategorySelectProps) {
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)

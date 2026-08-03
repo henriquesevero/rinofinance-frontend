@@ -1,20 +1,6 @@
 import { useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
-// Mobile-only left/right swipe to move between the top-level pages, in the
-// given route order (swipe left → next page, swipe right → previous).
-//
-// Built to never fight other gestures. It only ever navigates on release, and
-// only for a decisive, quick, mostly-horizontal flick. It bails out entirely
-// when the gesture:
-//   - is multi-touch (pinch/zoom),
-//   - starts inside a horizontally-scrollable region (charts, tables),
-//   - starts on a draggable, a form control, or a slider,
-//   - starts inside a dialog/menu (modals, dropdowns),
-//   - starts at the very screen edge (browser back/forward gestures),
-//   - or is opted out via a `data-swipe-ignore` ancestor.
-// Because it never calls preventDefault, native vertical scrolling and inner
-// horizontal scrolling keep working untouched.
 export function useSwipeNavigation(routes: string[]) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -52,7 +38,6 @@ export function useSwipeNavigation(routes: string[]) {
       startX = t.clientX
       startY = t.clientY
       startT = Date.now()
-      // Leave the outer ~24px to the browser's own edge back/forward gestures.
       ignore = startX < 24 || startX > window.innerWidth - 24 || shouldIgnore(e.target)
       tracking = true
     }
@@ -70,12 +55,12 @@ export function useSwipeNavigation(routes: string[]) {
       const dx = t.clientX - startX
       const dy = t.clientY - startY
 
-      if (Date.now() - startT > 600) return // too slow to be a flick
-      if (Math.abs(dx) < 70) return // too short
-      if (Math.abs(dx) < Math.abs(dy) * 1.7) return // not clearly horizontal
+      if (Date.now() - startT > 600) return
+      if (Math.abs(dx) < 70) return
+      if (Math.abs(dx) < Math.abs(dy) * 1.7) return
 
       const idx = routes.indexOf(location.pathname)
-      if (idx === -1) return // only between top-level tab pages, not detail views
+      if (idx === -1) return
 
       const next = dx < 0 ? idx + 1 : idx - 1
       if (next < 0 || next >= routes.length) return

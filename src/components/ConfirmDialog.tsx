@@ -16,13 +16,10 @@ interface ConfirmDialogProps {
   description?: ReactNode
   confirmLabel?: string
   cancelLabel?: string
-  /** Styles the confirm button as destructive (red). */
   destructive?: boolean
   onConfirm: () => void | Promise<void>
 }
 
-// A system-styled confirmation modal, replacing the native window.confirm().
-// Awaits onConfirm (so it can run an async delete) and only closes on success.
 export function ConfirmDialog({
   open,
   onOpenChange,

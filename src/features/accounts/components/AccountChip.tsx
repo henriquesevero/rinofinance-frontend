@@ -1,9 +1,6 @@
 import { Landmark } from "lucide-react"
 import { useAccountsStore } from "../store"
 
-// Small inline badge showing which account a debit expense was paid from.
-// Renders nothing when the expense has no account or it was deleted.
-// `dense` renders borderless (icon + name) for a compact meta subline.
 export function AccountChip({ accountId, dense }: { accountId?: string; dense?: boolean }) {
   const account = useAccountsStore((s) => s.byId(accountId))
   if (!account) return null

@@ -1,7 +1,6 @@
 import { apiClient } from "@/lib/api-client"
 import type { ItemInput, SectionInput, UnfurlResult, WishlistItem, WishlistOverview, WishlistSection } from "./types"
 
-// kind: "wishlist" (itens a comprar) or "owned" (itens possuídos).
 export const wishlistApi = {
   overview: (kind: string) => apiClient.get<WishlistOverview>(`/api/wishlist?kind=${kind}`),
   unfurl: (url: string) => apiClient.get<UnfurlResult>(`/api/wishlist/unfurl?url=${encodeURIComponent(url)}`),

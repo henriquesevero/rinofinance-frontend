@@ -92,8 +92,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 }))
 
-// A 401 from any request means the token expired or was revoked; drop it
-// so ProtectedRoute redirects to /login on the next render.
 window.addEventListener("rinofinance:unauthorized", () => {
   useAuthStore.setState({ token: null, user: null })
 })

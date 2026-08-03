@@ -21,9 +21,6 @@ export interface SortConfig {
   options: { value: string; label: string }[]
 }
 
-// A single discreet "..." menu holding a section's secondary controls:
-// an optional sort (single choice, checkmarked) plus grouped bulk "mark all"
-// actions — so the section header stays clean (just title · ... · +).
 export function BulkActionsMenu({ groups, sort }: { groups: BulkActionGroup[]; sort?: SortConfig }) {
   return (
     <DropdownMenu>

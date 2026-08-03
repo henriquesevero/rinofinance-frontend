@@ -28,15 +28,10 @@ interface DashboardState {
   setAllIncomesReceived: (received: boolean) => Promise<void>
   setAllExpensesActive: (active: boolean) => Promise<void>
   setAllExpensesPaid: (paid: boolean) => Promise<void>
-  // Clears all data back to the empty initial state (used on logout).
   reset: () => void
 }
 
 export const useDashboardStore = create<DashboardState>((set, get) => {
-  // Every mutation below re-fetches the whole summary instead of patching
-  // local state: totals, active-sum, and card-linked expense amounts are
-  // all computed server-side, so refetching is the only way to stay
-  // correct without re-implementing that logic in the client.
   async function mutate(action: () => Promise<unknown>) {
     try {
       await action()
@@ -69,13 +64,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => incomeApi.createAccountLinked(name, accountId, categoryId)),
     updateIncome: (id, name, amount, categoryId) => mutate(() => incomeApi.update(id, name, amount, categoryId)),
     toggleIncome: (id) => mutate(() => incomeApi.toggle(id)),
-    // Optimistic + no success refetch: flip `received` locally at once so the
-    // checkmark responds to the tap instantly. We deliberately DON'T refetch on
-    // success — a concurrent refetch would return a snapshot taken before other
-    // in-flight taps landed and clobber their checkmarks (the "unmarks itself"
-    // bug). `received` doesn't affect any server-computed total, and the
-    // received/paid/balance figures recompute from local state, so the local
-    // flip is authoritative. Only refetch to roll back on failure.
     toggleIncomeReceived: async (id) => {
       const summary = get().summary
       if (!summary) return
@@ -102,7 +90,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
       mutate(() => expenseApi.createAccountLinked(name, accountId, categoryId)),
     updateExpense: (id, name, amount, categoryId) => mutate(() => expenseApi.update(id, name, amount, categoryId)),
     toggleExpense: (id) => mutate(() => expenseApi.toggle(id)),
-    // Optimistic + no success refetch (see toggleIncomeReceived).
     toggleExpensePaid: async (id) => {
       const summary = get().summary
       if (!summary) return
@@ -125,9 +112,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => {
     reorderIncomes: (ids) => mutate(() => incomeApi.reorder(ids)),
     reorderExpenses: (ids) => mutate(() => expenseApi.reorder(ids)),
 
-    // Bulk mark/unmark: only flip the items that differ from the target,
-    // then refetch once. The per-item endpoints are toggles, so items
-    // already at the target are left untouched.
     setAllIncomesActive: (active) =>
       mutate(() =>
         Promise.all(

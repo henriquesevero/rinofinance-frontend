@@ -12,9 +12,7 @@ interface CategoriesState {
   updateCategory: (id: string, input: CategoryInput) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
   reorderCategories: (ids: string[]) => Promise<void>
-  // Lookup helper for rendering an item's category chip.
   byId: (id?: string) => Category | undefined
-  // Clears all data back to the empty initial state (used on logout).
   reset: () => void
 }
 

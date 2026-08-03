@@ -18,13 +18,10 @@ interface AccountsState {
   updatePurchase: (id: string, input: AccountPurchaseInput) => Promise<void>
   deletePurchase: (id: string) => Promise<void>
   byId: (id?: string) => Account | undefined
-  // Clears all data back to the empty initial state (used on logout).
   reset: () => void
 }
 
 export const useAccountsStore = create<AccountsState>((set, get) => {
-  // Totals (available balance, monthly debit) are computed server-side, so
-  // every mutation refetches the overview instead of patching locally.
   async function mutate(action: () => Promise<unknown>) {
     try {
       await action()

@@ -25,9 +25,6 @@ interface IncomeFormDialogProps {
   onSubmitAccountLinked: (name: string, accountId: string, categoryId: string) => Promise<void>
 }
 
-// Handles create (manual amount OR linked to a bank account, mirroring the
-// card-linked expense rule) and edit (name + amount only — account-linked
-// incomes aren't offered for editing, their amount follows the balance).
 export function IncomeFormDialog({
   open,
   onOpenChange,

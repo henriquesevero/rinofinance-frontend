@@ -9,9 +9,6 @@ interface AccountAvatarProps {
   className?: string
 }
 
-// The account's logo: an uploaded image, else the bank's brand logo
-// auto-detected from the account name (e.g. "Nubank" → Nubank logo), else a
-// colored square with a bank icon. Used everywhere (list, detail, form).
 export function AccountAvatar({ account, className }: AccountAvatarProps) {
   const [failed, setFailed] = useState(false)
   const src = account.imageUrl || (!failed ? brandLogoSrc(bankDomain(account.name)) : "")
@@ -23,9 +20,6 @@ export function AccountAvatar({ account, className }: AccountAvatarProps) {
           src={src}
           alt={account.name}
           onError={() => setFailed(true)}
-          // Brand icons come from Brandfetch with a little padding (and some,
-          // like Itaú, on a white plate). Zoom in slightly so the mark fills
-          // edge-to-edge — the rounded, clipped frame removes any white border.
           className={cn("size-full object-cover", account.imageUrl ? "" : "scale-[1.45]")}
         />
       ) : (

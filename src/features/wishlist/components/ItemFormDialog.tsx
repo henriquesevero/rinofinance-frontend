@@ -21,8 +21,6 @@ import type { ItemInput, WishlistItem, WishlistSection } from "../types"
 
 const NO_SECTION = "__none__"
 
-// Best-effort parse of a price string ("1999.99", "R$ 1.999,99", "1999,90")
-// into a number of reais. Returns 0 when it can't be read.
 function parsePrice(raw: string): number {
   const s = raw.replace(/[^\d.,]/g, "")
   if (!s) return 0
@@ -43,7 +41,6 @@ interface ItemFormDialogProps {
   onOpenChange: (open: boolean) => void
   item?: WishlistItem
   sections: WishlistSection[]
-  // Pre-selected section when adding from a section's "+".
   defaultSectionId?: string
   onSubmit: (input: ItemInput) => Promise<void>
 }
@@ -80,7 +77,6 @@ export function ItemFormDialog({ open, onOpenChange, item, sections, defaultSect
     }
   }
 
-  // Pull the product image/name/price from the store link.
   async function handleUnfurl() {
     if (!url.trim()) return
     setIsFetching(true)

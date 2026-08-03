@@ -37,9 +37,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     try {
       body = JSON.parse(text)
     } catch {
-      // Non-JSON body (e.g. an infra/proxy error page) — fall through
-      // with body = null so the generic fallback message below is used
-      // instead of letting a raw SyntaxError reach the caller.
       body = null
     }
   }

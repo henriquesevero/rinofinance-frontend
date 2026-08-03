@@ -11,9 +11,6 @@ import { useCardsStore } from "@/features/cards/store"
 import { CategorySelect } from "@/features/categories/components/CategorySelect"
 import { useDashboardStore } from "../store"
 
-// Quick-launch a card purchase from the dashboard, without navigating to
-// the cards page. mode "credit" is a one-off (1x) purchase; mode
-// "installment" lets the user set the number of installments.
 export function CardPurchaseDialog({
   open,
   onOpenChange,

@@ -30,9 +30,6 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-// Curated set of professional line icons for categories. The stored
-// `category.icon` holds one of these string keys (not an emoji), so the
-// same glyph renders consistently everywhere.
 export const CATEGORY_ICONS: { name: string; Icon: LucideIcon }[] = [
   { name: "utensils", Icon: Utensils },
   { name: "cart", Icon: ShoppingCart },
@@ -66,14 +63,11 @@ export const CATEGORY_ICONS: { name: string; Icon: LucideIcon }[] = [
 const ICON_MAP = new Map(CATEGORY_ICONS.map((i) => [i.name, i.Icon]))
 
 interface CategoryIconProps {
-  // A key from CATEGORY_ICONS. Unknown/empty falls back to a generic tag.
   name?: string
   className?: string
   style?: React.CSSProperties
 }
 
-// Renders a category's icon by key, falling back to a neutral tag icon so
-// every category always has a mark.
 export function CategoryIcon({ name, className, style }: CategoryIconProps) {
   const Icon = (name && ICON_MAP.get(name)) || Tag
   return <Icon className={className} style={style} />

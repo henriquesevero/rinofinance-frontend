@@ -7,10 +7,6 @@ import { useAccountsStore } from "@/features/accounts/store"
 import { breakdownForMonth, computeYearProjection, MONTH_LABELS, SERIES, yearTotal } from "../recurrences"
 import { MonthlyBarChart } from "./MonthlyBarChart"
 
-// Recorrências: a 12-month projection of committed spending (installments,
-// subscriptions, one-offs and account debits) plus this month's breakdown.
-// Kept deliberately simple — a static legend, no per-series/account/card
-// toggles — so the section reads cleanly.
 export function RecurrencesPanel() {
   const cards = useCardsStore((s) => s.cards)
   const accounts = useAccountsStore((s) => s.accounts)
@@ -38,7 +34,6 @@ export function RecurrencesPanel() {
             <h2 className="text-base font-semibold">Recorrências</h2>
             <p className="text-sm text-muted-foreground">Projeção do ano / {year}</p>
           </div>
-          {/* static legend */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
             {SERIES.map((s) => (
               <span key={s.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">

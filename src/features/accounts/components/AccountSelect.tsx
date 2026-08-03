@@ -9,8 +9,6 @@ interface AccountSelectProps {
   id?: string
 }
 
-// Picker for the account a debit purchase is paid from, showing each
-// account's color dot and current balance.
 export function AccountSelect({ value, onChange, id }: AccountSelectProps) {
   const accounts = useAccountsStore((s) => s.accounts)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)

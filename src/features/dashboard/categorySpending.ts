@@ -20,11 +20,6 @@ function isActiveThisMonth(p: Pick<InstallmentPurchase, "firstInstallmentDate" |
   return elapsed >= 0 && elapsed < p.totalInstallments
 }
 
-// Sums the current month's spending grouped by category, across card
-// installments (active this month), subscriptions and standalone expenses.
-// Card-linked expenses are skipped because their amount already mirrors a
-// card's total, which we count via the card's own items — counting both
-// would double up.
 export function computeCategorySpending(
   cards: CardOverview[],
   expenses: Expense[],
@@ -58,7 +53,6 @@ export function computeCategorySpending(
         ? { id: cat.id, name: cat.name, color: cat.color, icon: cat.icon, total }
         : { ...UNCATEGORIZED, total }
     })
-    // Merge any deleted-category leftovers into the uncategorized bucket.
     .reduce<CategorySlice[]>((acc, slice) => {
       const existing = acc.find((s) => s.id === slice.id)
       if (existing) existing.total += slice.total

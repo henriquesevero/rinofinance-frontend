@@ -5,21 +5,16 @@ export interface ParsedInstallment {
   installmentAmount: number
   totalInstallments: number
   currentInstallment: number
-  firstInstallmentDate: string // YYYY-MM-DD (real purchase day when known)
+  firstInstallmentDate: string
   domain: string
-  isSingle: boolean // true for one-off ("avulsa") purchases (1x)
+  isSingle: boolean
 }
 
-// Brazilian month abbreviations as they appear on statement lines.
 const MONTH_ABBR: Record<string, number> = {
   jan: 1, fev: 2, mar: 3, abr: 4, mai: 5, jun: 6,
   jul: 7, ago: 8, set: 9, out: 10, nov: 11, dez: 12,
 }
 
-// Builds a full "YYYY-MM-DD" purchase date from a line's "DD / mmm" prefix,
-// inferring the year from the invoice's reference month (a month later than
-// the reference means it belongs to the previous year). Returns null when the
-// month abbreviation isn't recognized.
 function cycleDate(day: number, monthAbbr: string, referenceMonth: string): string | null {
   const mn = MONTH_ABBR[monthAbbr.toLowerCase()]
   if (!mn || !day || day < 1 || day > 31) return null
@@ -28,9 +23,6 @@ function cycleDate(day: number, monthAbbr: string, referenceMonth: string): stri
   return `${year}-${String(mn).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
-// Replaces the day in a "YYYY-MM-01" string with the real purchase day, so an
-// installment keeps its computed first-installment month but shows the day it
-// was bought (the day is cosmetic — month totals ignore it).
 function withDay(monthFirst: string, day: string | null): string {
   return day ? `${monthFirst.slice(0, 8)}${day}` : monthFirst
 }
@@ -41,10 +33,6 @@ export interface ParsedSubscription {
   domain: string
 }
 
-// A line that was recognized as money movement but deliberately left out
-// of the import (payment, previous invoice, IOF, dollar conversion) or that
-// couldn't be confidently parsed — surfaced so the user knows what was
-// skipped.
 export interface SkippedLine {
   description: string
   amount: number | null
@@ -52,15 +40,12 @@ export interface SkippedLine {
 }
 
 export interface ParsedFatura {
-  referenceMonth: string // YYYY-MM
+  referenceMonth: string
   installmentPurchases: ParsedInstallment[]
   subscriptions: ParsedSubscription[]
   notImported: SkippedLine[]
 }
 
-// Structural totals and payments that are never real charges — always
-// skipped. IOF and currency conversion are intentionally NOT here: the user
-// wants those imported (as one-off items) so they can review/uncheck them.
 const SKIP_KEYWORDS = [
   "pagamento efetuado",
   "total ",
@@ -70,21 +55,12 @@ const SKIP_KEYWORDS = [
   "encargos e serviços",
 ]
 
-// A transaction line looks like: "04 / mai Sympla*rogerio Can03/05 R$ 57,14".
-// Capture the leading date and the trailing "R$ value"; everything between
-// is the description.
 const TRANSACTION_RE = /^(\d{1,2})\s*\/\s*([a-zç]{3})\s+(.+?)\s+R\$\s*([\d.,]+)\s*$/i
-// Installment marker at the end of a description: "03/05" or "03 / 05".
 const INSTALLMENT_RE = /\s*(\d{2})\s*\/\s*(\d{2})\s*$/
-// Due date: "venc. da fatura 01/08/2026".
 const DUE_DATE_RE = /venc\S*\s*da\s*fatura\s*(\d{2})\/(\d{2})\/(\d{4})/i
-// A dateless line still carrying an "R$ value" — e.g. an international
-// purchase listed under a conversion line.
 const DATELESS_VALUE_RE = /^(.+?)\s+R\$\s*([\d.,]+)\s*$/i
-// Section headers / totals that are structural, never purchases.
 const STRUCTURAL_RE = /total|lançamentos|fatura|venc|melhor data|emitido|agência|conta corrente|saldo/i
 
-// Human-readable reason for why a recognized line was left out.
 function skipReason(description: string): string {
   const lower = description.toLowerCase()
   if (lower.includes("pagamento")) return "Pagamento da fatura"
@@ -102,7 +78,6 @@ export function parseBrazilianAmount(raw: string): number {
   return Number(normalized)
 }
 
-// Subtracts `months` from a "YYYY-MM" and returns "YYYY-MM-01".
 export function monthMinus(referenceMonth: string, months: number): string {
   const [year, month] = referenceMonth.split("-").map(Number)
   const zeroBased = month - 1 - months
@@ -112,10 +87,6 @@ export function monthMinus(referenceMonth: string, months: number): string {
   return `${y}-${m}-01`
 }
 
-// Extracts the invoice's reference month ("YYYY-MM") — the month it's DUE
-// (when you pay it) — from the "venc. da fatura DD/MM/YYYY" line, falling back
-// to the current month. A fatura due 01/08/2026 lands on 2026-08, so imported
-// items appear in the month you actually pay the bill.
 export function extractReferenceMonth(lines: string[]): string {
   for (const line of lines) {
     const m = line.match(DUE_DATE_RE)
@@ -133,17 +104,12 @@ function shouldSkip(description: string): boolean {
   return SKIP_KEYWORDS.some((k) => lower.includes(k))
 }
 
-// Classifies a purchase line (already stripped of date/skip noise) into an
-// installment, a subscription, or a one-off ("avulsa") purchase, pushing it
-// onto the right bucket. Shared by dated lines and dateless ones (e.g.
-// international charges listed under a conversion line).
 function classifyLine(
   description: string,
   amount: number,
   referenceMonth: string,
   installmentPurchases: ParsedInstallment[],
   subscriptions: ParsedSubscription[],
-  // Real purchase date "YYYY-MM-DD" parsed from the line, when available.
   purchaseDate: string | null = null
 ): void {
   const brand = detectBrand(description)
@@ -160,9 +126,7 @@ function classifyLine(
       installmentAmount: amount,
       totalInstallments: total,
       currentInstallment: current,
-      // Keep the computed first-installment month, but carry the real day.
       firstInstallmentDate: withDay(monthMinus(referenceMonth, current - 1), day),
-      // Detect the logo from the merchant name (no installment digits).
       domain: logoDomain(name),
       isSingle: false,
     })
@@ -179,19 +143,12 @@ function classifyLine(
     installmentAmount: amount,
     totalInstallments: 1,
     currentInstallment: 1,
-    // One-off: bill it in the invoice's cycle month (so it lands on THIS
-    // fatura like the installments do — the card list is scoped per month),
-    // keeping the real purchase day, which is only cosmetic.
     firstInstallmentDate: withDay(`${referenceMonth}-01`, day),
     domain: logoDomain(description),
     isSingle: true,
   })
 }
 
-// Parses reconstructed statement text lines into classified purchases and
-// subscriptions. Installment purchases (with an NN/MM marker) win over
-// subscription detection; a recurring known service without a marker
-// becomes a subscription; anything else becomes a one-off (1x) purchase.
 export function parseFaturaLines(lines: string[]): ParsedFatura {
   const referenceMonth = extractReferenceMonth(lines)
   const installmentPurchases: ParsedInstallment[] = []
@@ -202,9 +159,6 @@ export function parseFaturaLines(lines: string[]): ParsedFatura {
     const line = rawLine.replace(/\s+/g, " ").trim()
     const match = line.match(TRANSACTION_RE)
 
-    // Dateless lines: capture real-looking purchases that couldn't be
-    // parsed (e.g. international entries) as "not imported"; ignore
-    // structural/zero-value noise.
     if (!match) {
       const dateless = line.match(DATELESS_VALUE_RE)
       if (dateless) {
@@ -214,8 +168,6 @@ export function parseFaturaLines(lines: string[]): ParsedFatura {
           if (shouldSkip(desc)) {
             notImported.push({ description: desc, amount: value, reason: skipReason(desc) })
           } else {
-            // A real purchase listed without a leading date (e.g. an
-            // international charge shown under a conversion line) — import it.
             classifyLine(desc, value, referenceMonth, installmentPurchases, subscriptions)
           }
         }

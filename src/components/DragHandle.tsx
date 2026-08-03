@@ -3,9 +3,6 @@ import { cn } from "@/lib/utils"
 
 type DragHandleProps = React.HTMLAttributes<HTMLSpanElement> & { draggable?: boolean }
 
-// A small grip that acts as the drag source for reorderable lists. Appears
-// muted and turns grabbable on hover; spread the props from
-// useReorder().getHandleProps(id) onto it.
 export function DragHandle({ className, ...props }: DragHandleProps) {
   return (
     <span

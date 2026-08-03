@@ -1,7 +1,3 @@
-// Asset classes mirror the backend's `assetClasses` set. Each one carries a
-// label, a short plural for headers, an allocation color and whether it's a
-// "por cotas" (quantity × price) or "por valor" (single balance) position by
-// default — so the form and the portfolio group everything consistently.
 export type AssetClass =
   | "acao"
   | "fii"
@@ -17,12 +13,9 @@ export interface ClassMeta {
   label: string
   plural: string
   color: string
-  // "quotas" → tracked by quantity + preço médio + preço atual (ações, FIIs…).
-  // "value"  → tracked by a single invested/current amount (renda fixa, reserva).
   defaultMode: "quotas" | "value"
 }
 
-// Display + form order. The first entries are the "por cota" market assets.
 export const ASSET_CLASSES: ClassMeta[] = [
   { value: "acao", label: "Ação", plural: "Ações", color: "#3b82f6", defaultMode: "quotas" },
   { value: "fii", label: "FII", plural: "Fundos imobiliários", color: "#8b5cf6", defaultMode: "quotas" },

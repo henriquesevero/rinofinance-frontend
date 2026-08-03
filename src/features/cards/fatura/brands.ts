@@ -1,7 +1,3 @@
-// Maps merchant keywords found in a statement line to a brand: a display
-// label, a domain for the Brandfetch logo, and whether the charge is a
-// recurring service (subscription) vs a one-off purchase. Matching is a
-// case-insensitive substring test against the raw description.
 interface Brand {
   keyword: string
   label: string
@@ -10,7 +6,6 @@ interface Brand {
 }
 
 const BRANDS: Brand[] = [
-  // Recurring services -> imported as subscriptions
   { keyword: "netflix", label: "Netflix", domain: "netflix.com", recurring: true },
   { keyword: "spotify", label: "Spotify", domain: "spotify.com", recurring: true },
   { keyword: "apple.com", label: "Apple", domain: "apple.com", recurring: true },
@@ -26,9 +21,6 @@ const BRANDS: Brand[] = [
   { keyword: "openai", label: "ChatGPT", domain: "openai.com", recurring: true },
   { keyword: "*googl", label: "Google", domain: "google.com", recurring: true },
 
-  // Known brands (one-off) -> just for the logo. Keywords match how they
-  // actually appear on statements (e.g. "99*" for 99 rides, "playstatio"
-  // for the truncated PlayStation descriptor).
   { keyword: "uber", label: "Uber", domain: "uber.com", recurring: false },
   { keyword: "ifd*", label: "iFood", domain: "ifood.com.br", recurring: false },
   { keyword: "ifood", label: "iFood", domain: "ifood.com.br", recurring: false },
@@ -64,28 +56,18 @@ const BRANDS: Brand[] = [
   { keyword: "porto seguro", label: "Porto Seguro", domain: "portoseguro.com.br", recurring: false },
 ]
 
-// Payment-acquirer / descriptor prefixes that appear before the real
-// merchant on statements (e.g. "Mp *Fever", "Ec *LinuxTips"). Stripped so
-// the domain heuristic can read the actual merchant name after them.
 const ACQUIRER_PREFIX_RE = /^[a-z0-9&]{1,5}\s*\*+\s*/
 
-// Returns the first brand whose keyword appears in the description, or null.
 export function detectBrand(description: string): Brand | null {
   const haystack = description.toLowerCase()
   return BRANDS.find((b) => haystack.includes(b.keyword)) ?? null
 }
 
-// Best-effort logo domain for an item: its stored domain, else a known
-// brand matched from the name, else a heuristic "<first-word>.com" (covers
-// single-brand names like "Spotify", "TotalPass"). Empty when nothing fits,
-// so BrandLogo falls back to its icon.
 export function logoDomain(name: string, storedDomain?: string): string {
   const stored = storedDomain?.trim()
   if (stored) return stored
   const brand = detectBrand(name)
   if (brand) return brand.domain
-  // Heuristic: drop a leading acquirer prefix ("Mp *", "Ec *"), then use the
-  // first meaningful merchant word as a .com domain.
   const cleaned = name
     .toLowerCase()
     .normalize("NFD")

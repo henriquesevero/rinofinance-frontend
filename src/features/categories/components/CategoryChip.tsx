@@ -3,14 +3,9 @@ import { useCategoriesStore } from "../store"
 
 interface CategoryChipProps {
   categoryId?: string
-  // When true, renders borderless (just colored icon + name) for use in a
-  // dense meta subline; otherwise a bordered pill.
   dense?: boolean
 }
 
-// Small inline badge for an item's category (colored icon + name). Renders
-// nothing when the item has no category or its category was deleted, so
-// lists stay clean.
 export function CategoryChip({ categoryId, dense }: CategoryChipProps) {
   const category = useCategoriesStore((s) => s.byId(categoryId))
   if (!category) return null

@@ -8,16 +8,8 @@ import {
   type SkippedLine,
 } from "./parseFatura"
 
-// Nubank exports the invoice as a CSV with a "date,title,amount" header.
-// Example rows:
-//   2026-07-05,Cara de Sapo Presentes - Parcela 1/3,"99,98"
-//   2026-06-28,Pagamento recebido,"- 1.465,39"
-// Installments are marked as "- Parcela N/M" at the end of the title;
-// amounts use Brazilian formatting and payments/credits are negative.
 const INSTALLMENT_RE = /\s*-\s*Parcela\s+(\d+)\s*\/\s*(\d+)\s*$/i
 
-// Splits one CSV line into fields, honoring double-quoted values (the
-// amount column is quoted because it contains a comma).
 function splitCsvLine(line: string): string[] {
   const fields: string[] = []
   let current = ""
@@ -42,7 +34,6 @@ function splitCsvLine(line: string): string[] {
   return fields.map((f) => f.trim())
 }
 
-// Human-readable reason a recognized row was left out of the import.
 function skipReason(title: string, amount: number): string {
   const lower = title.toLowerCase()
   if (amount < 0 || lower.includes("pagamento")) return "Pagamento/crédito"
@@ -67,19 +58,12 @@ function shouldSkip(title: string, amount: number): boolean {
   )
 }
 
-// Parses the raw text of a Nubank CSV invoice into the same classified shape
-// the PDF parser produces. The Nubank CSV has no reliable due date and its
-// transactions straddle the cycle boundary, so guessing the invoice month from
-// the dates is unreliable — instead everything is anchored to `referenceMonth`
-// (the month the user is viewing when importing), which is deterministic: view
-// August, import August's invoice, and installment "2/3" lands on August.
 export function parseNubankCsv(text: string, referenceMonth: string): ParsedFatura {
   const rows = text
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean)
 
-  // Drop the header row if present.
   if (rows.length > 0 && /^date\s*,\s*title\s*,\s*amount/i.test(rows[0])) {
     rows.shift()
   }
@@ -123,8 +107,6 @@ export function parseNubankCsv(text: string, referenceMonth: string): ParsedFatu
         installmentAmount: entry.amount,
         totalInstallments: total,
         currentInstallment: current,
-        // Anchor so installment `current` lands on the invoice month being
-        // imported into (the reference), preserving the real N/M numbering.
         firstInstallmentDate: monthMinus(reference, current - 1),
         domain: brand?.domain ?? "",
         isSingle: false,

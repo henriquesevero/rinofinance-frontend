@@ -1,8 +1,3 @@
-// Resizes an image file client-side (via canvas) and returns it as a data
-// URL so it stays small enough to store inline (no object storage needed for
-// this version). Photos default to JPEG; logos should pass "image/png" (or
-// "image/webp") to keep sharp edges/text and transparency instead of the
-// blocky, opaque result JPEG gives them.
 export function resizeImageToDataUrl(
   file: File,
   maxSize = 256,
@@ -30,11 +25,9 @@ export function resizeImageToDataUrl(
           reject(new Error("Não foi possível processar a imagem"))
           return
         }
-        // Higher-quality downscaling — noticeably crisper than the default.
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = "high"
         ctx.drawImage(img, 0, 0, width, height)
-        // PNG is lossless (ignores quality); JPEG/WebP use it.
         resolve(canvas.toDataURL(mime, mime === "image/png" ? undefined : quality))
       }
       img.src = reader.result as string
