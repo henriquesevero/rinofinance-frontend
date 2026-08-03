@@ -177,9 +177,9 @@ export function CategoriesPage() {
             </div>
           </Card>
 
-          {/* category list with usage */}
+          {/* category list with usage — internal scroll like Entradas & Saídas */}
           <Card className="flex flex-col gap-1 p-2 sm:p-3">
-            <ul className="flex flex-col">
+            <ul className="scrollbar-hide flex max-h-[24rem] flex-col overflow-y-auto sm:max-h-[30rem]">
               {order.map((category) => {
                 const usage = usageById.get(category.id) ?? 0
                 const share = total > 0 ? (usage / total) * 100 : 0
