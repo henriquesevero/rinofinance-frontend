@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { dashboardApi } from "@/features/dashboard/api"
+import type { AnnualSummary } from "@/features/dashboard/types"
 import { toErrorMessage } from "@/lib/errors"
 
 const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
@@ -7,8 +8,8 @@ const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "S
 export interface AnnualMonth {
   index: number // 0-based
   label: string
-  income: number // entradas recebidas no mês
-  expense: number // saídas pagas no mês
+  income: number // entradas do mês (recebidas ou previstas, conforme o modo)
+  expense: number // saídas do mês (pagas ou previstas, conforme o modo)
   net: number
 }
 
@@ -36,72 +37,73 @@ export interface AnnualData {
 // always show, even when not yet marked off).
 export type AnnualMode = "realized" | "planned"
 
-// Fetches the 12 monthly summaries of a year in parallel and aggregates them
-// according to `mode`. Recomputes whenever the year or mode changes.
+// Cache the raw yearly payload so revisiting a year — or toggling the mode,
+// which is a pure client-side reshape — never re-hits the API.
+const yearCache = new Map<number, AnnualSummary>()
+
+// Reshapes the server's precomputed yearly payload into the view model for the
+// selected mode. No network — both modes come from the same response.
+function aggregate(raw: AnnualSummary, mode: AnnualMode): AnnualData {
+  const planned = mode === "planned"
+
+  const months: AnnualMonth[] = raw.months.map((m) => {
+    const income = planned ? m.incomePlanned : m.incomeRealized
+    const expense = planned ? m.expensePlanned : m.expenseRealized
+    return { index: m.index, label: MONTH_LABELS[m.index], income, expense, net: income - expense }
+  })
+
+  const totalIncome = months.reduce((s, m) => s + m.income, 0)
+  const totalExpense = months.reduce((s, m) => s + m.expense, 0)
+  const active = months.filter((m) => m.income > 0 || m.expense > 0)
+  const activeMonths = active.length
+
+  return {
+    months,
+    totalIncome,
+    totalExpense,
+    net: totalIncome - totalExpense,
+    bestMonth: active.length ? active.reduce((a, b) => (b.net > a.net ? b : a)) : null,
+    worstMonth: active.length ? active.reduce((a, b) => (b.net < a.net ? b : a)) : null,
+    activeMonths,
+    avgIncome: activeMonths ? totalIncome / activeMonths : 0,
+    avgExpense: activeMonths ? totalExpense / activeMonths : 0,
+    avgNet: activeMonths ? (totalIncome - totalExpense) / activeMonths : 0,
+    savingsRate: totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : null,
+    expenseCategoryTotals: planned ? raw.expenseCategoriesPlanned : raw.expenseCategoriesRealized,
+    incomeCategoryTotals: planned ? raw.incomeCategoriesPlanned : raw.incomeCategoriesRealized,
+  }
+}
+
+// Fetches the whole year in a single request (the backend computes all 12
+// months in one pass) and aggregates it for the chosen mode. The fetch depends
+// only on the year; switching mode reshapes the cached payload instantly.
 export function useAnnualData(year: number, mode: AnnualMode) {
-  const [data, setData] = useState<AnnualData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [raw, setRaw] = useState<AnnualSummary | null>(() => yearCache.get(year) ?? null)
+  const [isLoading, setIsLoading] = useState(() => !yearCache.has(year))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let cancelled = false
-    setIsLoading(true)
+    // Stale-while-revalidate: show the cached year instantly (no spinner, no
+    // 12-request wait), then refresh it in the background so edits made on
+    // other screens still land. Only the year drives this — switching mode
+    // reshapes the cached payload without any request.
+    const cached = yearCache.get(year)
+    setRaw(cached ?? null)
+    setIsLoading(!cached)
     setError(null)
 
-    const planned = mode === "planned"
-
-    Promise.all(
-      Array.from({ length: 12 }, (_, i) => dashboardApi.getSummary(`${year}-${String(i + 1).padStart(2, "0")}`))
-    )
-      .then((summaries) => {
+    let cancelled = false
+    dashboardApi
+      .getAnnual(year)
+      .then((res) => {
         if (cancelled) return
-
-        const months: AnnualMonth[] = summaries.map((s, i) => {
-          const income = s.incomes.reduce((sum, inc) => (inc.active && (planned || inc.received) ? sum + inc.amount : sum), 0)
-          const expense = s.expenses.reduce((sum, e) => (e.active && (planned || e.paid) ? sum + e.amount : sum), 0)
-          return { index: i, label: MONTH_LABELS[i], income, expense, net: income - expense }
-        })
-
-        const totalIncome = months.reduce((s, m) => s + m.income, 0)
-        const totalExpense = months.reduce((s, m) => s + m.expense, 0)
-        const active = months.filter((m) => m.income > 0 || m.expense > 0)
-        const activeMonths = active.length
-
-        const expenseCatMap = new Map<string, number>()
-        const incomeCatMap = new Map<string, number>()
-        for (const s of summaries) {
-          for (const e of s.expenses) {
-            if (!e.active || (!planned && !e.paid)) continue
-            const key = e.categoryId || "__none__"
-            expenseCatMap.set(key, (expenseCatMap.get(key) ?? 0) + e.amount)
-          }
-          for (const inc of s.incomes) {
-            if (!inc.active || (!planned && !inc.received)) continue
-            const key = inc.categoryId || "__none__"
-            incomeCatMap.set(key, (incomeCatMap.get(key) ?? 0) + inc.amount)
-          }
-        }
-        const rank = (map: Map<string, number>) =>
-          [...map.entries()].map(([id, total]) => ({ id, total })).sort((a, b) => b.total - a.total)
-
-        setData({
-          months,
-          totalIncome,
-          totalExpense,
-          net: totalIncome - totalExpense,
-          bestMonth: active.length ? active.reduce((a, b) => (b.net > a.net ? b : a)) : null,
-          worstMonth: active.length ? active.reduce((a, b) => (b.net < a.net ? b : a)) : null,
-          activeMonths,
-          avgIncome: activeMonths ? totalIncome / activeMonths : 0,
-          avgExpense: activeMonths ? totalExpense / activeMonths : 0,
-          avgNet: activeMonths ? (totalIncome - totalExpense) / activeMonths : 0,
-          savingsRate: totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome : null,
-          expenseCategoryTotals: rank(expenseCatMap),
-          incomeCategoryTotals: rank(incomeCatMap),
-        })
+        yearCache.set(year, res)
+        setRaw(res)
       })
       .catch((err) => {
-        if (!cancelled) setError(toErrorMessage(err))
+        // Keep showing the cached data if we have it; only surface an error
+        // when there's nothing to fall back on.
+        if (!cancelled && !yearCache.has(year)) setError(toErrorMessage(err))
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -110,7 +112,9 @@ export function useAnnualData(year: number, mode: AnnualMode) {
     return () => {
       cancelled = true
     }
-  }, [year, mode])
+  }, [year])
+
+  const data = useMemo(() => (raw ? aggregate(raw, mode) : null), [raw, mode])
 
   return { data, isLoading, error }
 }

@@ -1,9 +1,10 @@
 import { apiClient } from "@/lib/api-client"
-import type { DashboardSummary, Expense, Income } from "./types"
+import type { AnnualSummary, DashboardSummary, Expense, Income } from "./types"
 
 export const dashboardApi = {
   getSummary: (month?: string) =>
     apiClient.get<DashboardSummary>(`/api/dashboard/summary${month ? `?month=${month}` : ""}`),
+  getAnnual: (year: number) => apiClient.get<AnnualSummary>(`/api/dashboard/annual?year=${year}`),
 }
 
 export const incomeApi = {
