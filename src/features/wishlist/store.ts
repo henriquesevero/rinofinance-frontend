@@ -20,7 +20,7 @@ interface WishlistState {
   reset: () => void
 }
 
-function createListStore(kind: string) {
+export function createListStore(kind: string) {
   return create<WishlistState>((set, get) => {
     async function mutate(action: () => Promise<unknown>) {
       try {

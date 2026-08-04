@@ -23,6 +23,7 @@ import { UserAvatar } from "@/components/UserAvatar"
 import { toErrorMessage } from "@/lib/errors"
 import { resizeImageToDataUrl } from "@/lib/image"
 import { gravatarUrl, imageExists } from "@/lib/gravatar"
+import { NotificationsCard } from "@/features/notifications/NotificationsCard"
 import { accountApi } from "./api"
 import { useAuthStore } from "./store"
 
@@ -238,6 +239,8 @@ export function SettingsPage() {
           </CardFooter>
         </form>
       </Card>
+
+      <NotificationsCard />
 
       <Card>
         <form onSubmit={handleSaveEmail} className="contents">

@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from "react"
-import { ExternalLink, Pencil, ShoppingBag, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ExternalLink, ShoppingBag, X } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
 import { normalizeDomain } from "@/lib/brandLogo"
 import { cn } from "@/lib/utils"
@@ -8,6 +7,7 @@ import type { WishlistItem } from "../types"
 
 interface ItemCardProps {
   item: WishlistItem
+  editing: boolean
   onEdit: () => void
   onDelete: () => void
   reorderProps?: React.HTMLAttributes<HTMLDivElement>
@@ -15,7 +15,7 @@ interface ItemCardProps {
   dragging?: boolean
 }
 
-export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dragging }: ItemCardProps) {
+export function ItemCard({ item, editing, onEdit, onDelete, reorderProps, dragHandle, dragging }: ItemCardProps) {
   const [imgFailed, setImgFailed] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
   const store = item.url ? normalizeDomain(item.url) : ""
@@ -42,7 +42,7 @@ export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dra
           {item.name}
         </p>
         <MoneyValue value={item.price} className="text-base font-bold tracking-tight tabular-nums" />
-        {store && (
+        {store && !editing && (
           <span className="mt-auto flex items-center gap-1 truncate pt-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
             <span className="truncate">{store}</span>
             <ExternalLink className="size-3 shrink-0" />
@@ -56,16 +56,38 @@ export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dra
     <div
       {...reorderProps}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]",
+        "group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out",
+        !editing && "hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]",
         dragging && "opacity-40"
       )}
     >
-      {dragHandle && (
-        <div className="absolute left-2 top-2 z-10 flex size-7 items-center justify-center rounded-md bg-black/25 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
+      {editing && dragHandle && (
+        <div className="absolute left-2 top-2 z-10 flex size-7 items-center justify-center rounded-md bg-black/35 text-white shadow-sm backdrop-blur-sm">
           {dragHandle}
         </div>
       )}
-      {item.url ? (
+
+      {editing && (
+        <button
+          type="button"
+          aria-label={`Remover ${item.name}`}
+          onClick={onDelete}
+          className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-destructive text-white shadow-sm transition hover:brightness-110"
+        >
+          <X className="size-4" strokeWidth={3} />
+        </button>
+      )}
+
+      {editing ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={`Editar ${item.name}`}
+          className="flex min-w-0 flex-1 flex-col text-left outline-none"
+        >
+          {inner}
+        </button>
+      ) : item.url ? (
         <a
           href={item.url}
           target="_blank"
@@ -77,35 +99,6 @@ export function ItemCard({ item, onEdit, onDelete, reorderProps, dragHandle, dra
       ) : (
         <div className="flex min-w-0 flex-1 flex-col">{inner}</div>
       )}
-
-      <div className="absolute right-2 top-2 flex opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 hover:text-white"
-          aria-label="Editar item"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onEdit()
-          }}
-        >
-          <Pencil className="size-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-1 size-7 bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 hover:text-white"
-          aria-label="Remover item"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onDelete()
-          }}
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
-      </div>
     </div>
   )
 }

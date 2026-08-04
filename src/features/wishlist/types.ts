@@ -1,6 +1,7 @@
 export interface WishlistSection {
   id: string
   name: string
+  color: string
 }
 
 export interface WishlistItem {
@@ -20,6 +21,7 @@ export interface WishlistOverview {
 
 export interface SectionInput {
   name: string
+  color: string
 }
 
 export interface ItemInput {

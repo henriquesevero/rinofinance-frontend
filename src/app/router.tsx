@@ -19,6 +19,7 @@ const AnnualPage = lazyPage(() => import("@/features/annual/AnnualPage"), "Annua
 const WishlistPage = lazyPage(() => import("@/features/wishlist/WishlistPage"), "WishlistPage")
 const BelongingsPage = lazyPage(() => import("@/features/wishlist/WishlistPage"), "BelongingsPage")
 const CategoriesPage = lazyPage(() => import("@/features/categories/CategoriesPage"), "CategoriesPage")
+const WebAccountsPage = lazyPage(() => import("@/features/web-accounts/WebAccountsPage"), "WebAccountsPage")
 const AccountsPage = lazyPage(() => import("@/features/accounts/AccountsPage"), "AccountsPage")
 const AccountDetailPage = lazyPage(() => import("@/features/accounts/AccountDetailPage"), "AccountDetailPage")
 
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "itens-para-comprar", element: <WishlistPage /> },
       { path: "itens-possuidos", element: <BelongingsPage /> },
       { path: "categories", element: <CategoriesPage /> },
+      { path: "contas-internet", element: <WebAccountsPage /> },
       { path: "accounts", element: <AccountsPage /> },
       { path: "accounts/:accountId", element: <AccountDetailPage /> },
       { path: "settings", element: <SettingsPage /> },

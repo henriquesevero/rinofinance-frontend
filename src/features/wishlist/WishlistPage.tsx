@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronDown, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
+import { Check, ChevronDown, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -84,6 +84,7 @@ function ListPage({
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
   const [deletingItem, setDeletingItem] = useState<WishlistItem | null>(null)
   const [deletingSection, setDeletingSection] = useState<WishlistSection | null>(null)
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
     fetchWishlist()
@@ -186,8 +187,19 @@ function ListPage({
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           <p className="text-muted-foreground">{description}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1.5">
           <ValuesVisibilityToggle />
+          {!isEmpty && (
+            <Button
+              variant={editing ? "default" : "outline"}
+              size="sm"
+              className="h-9"
+              onClick={() => setEditing((e) => !e)}
+            >
+              {editing ? <Check className="size-4" /> : <Pencil className="size-4" />}
+              {editing ? "Concluído" : "Editar"}
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -249,14 +261,17 @@ function ListPage({
               <Section
                 key={section.id}
                 title={section.name}
+                color={section.color}
                 count={sectionItems.length}
                 total={sectionTotal(sectionItems)}
+                editing={editing}
                 onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
               >
                 <ReorderableItemGrid
                   items={sectionItems}
+                  editing={editing}
                   onReorder={persistItemOrder}
                   onEdit={(item) => setItemDialog({ mode: "edit", item })}
                   onDelete={(item) => setDeletingItem(item)}
@@ -270,10 +285,12 @@ function ListPage({
               title="Sem seção"
               count={ungrouped.length}
               total={sectionTotal(ungrouped)}
+              editing={editing}
               onAdd={() => setItemDialog({ mode: "create" })}
             >
               <ReorderableItemGrid
                 items={ungrouped}
+                editing={editing}
                 onReorder={persistItemOrder}
                 onEdit={(item) => setItemDialog({ mode: "edit", item })}
                 onDelete={(item) => setDeletingItem(item)}
@@ -296,6 +313,7 @@ function ListPage({
         open={sectionDialog !== null}
         onOpenChange={(open) => !open && setSectionDialog(null)}
         initialName={sectionDialog?.mode === "edit" ? sectionDialog.section.name : undefined}
+        initialColor={sectionDialog?.mode === "edit" ? sectionDialog.section.color : undefined}
         onSubmit={handleSectionSubmit}
       />
 
@@ -337,16 +355,20 @@ function ListPage({
 
 function Section({
   title,
+  color,
   count,
   total,
+  editing,
   onAdd,
   onEdit,
   onDelete,
   children,
 }: {
   title: string
+  color?: string
   count: number
   total: number
+  editing: boolean
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -365,7 +387,12 @@ function Section({
           <ChevronDown
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
           />
-          <h2 className="truncate text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+          <h2
+            className={cn("truncate text-sm font-semibold tracking-wide", !color && "text-muted-foreground")}
+            style={color ? { color } : undefined}
+          >
+            {title}
+          </h2>
           <span className="shrink-0 text-xs text-muted-foreground">
             ({count})
             {count > 0 && (
@@ -376,21 +403,23 @@ function Section({
             )}
           </span>
         </button>
-        <div className="ml-auto flex shrink-0 items-center gap-0.5">
-          {onEdit && (
-            <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={onEdit}>
-              <Pencil className="size-3.5" />
+        {editing && (
+          <div className="ml-auto flex shrink-0 items-center gap-0.5">
+            {onEdit && (
+              <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={onEdit}>
+                <Pencil className="size-3.5" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button variant="ghost" size="icon" className="size-7" aria-label="Remover seção" onClick={onDelete}>
+                <Trash2 className="size-3.5" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="size-7" aria-label="Adicionar item" onClick={onAdd}>
+              <Plus className="size-4" />
             </Button>
-          )}
-          {onDelete && (
-            <Button variant="ghost" size="icon" className="size-7" aria-label="Remover seção" onClick={onDelete}>
-              <Trash2 className="size-3.5" />
-            </Button>
-          )}
-          <Button variant="ghost" size="icon" className="size-7" aria-label="Adicionar item" onClick={onAdd}>
-            <Plus className="size-4" />
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
       {!collapsed &&
         (count === 0 ? (
@@ -404,11 +433,13 @@ function Section({
 
 function ReorderableItemGrid({
   items,
+  editing,
   onReorder,
   onEdit,
   onDelete,
 }: {
   items: WishlistItem[]
+  editing: boolean
   onReorder: (orderedIds: string[]) => void
   onEdit: (item: WishlistItem) => void
   onDelete: (item: WishlistItem) => void
@@ -420,11 +451,14 @@ function ReorderableItemGrid({
         <ItemCard
           key={item.id}
           item={item}
+          editing={editing}
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item)}
-          reorderProps={getItemProps(item.id)}
+          reorderProps={editing ? getItemProps(item.id) : undefined}
           dragging={draggingId === item.id}
-          dragHandle={<DragHandle {...getHandleProps(item.id)} className="text-white/80 hover:text-white" />}
+          dragHandle={
+            editing ? <DragHandle {...getHandleProps(item.id)} className="text-white/80 hover:text-white" /> : undefined
+          }
         />
       ))}
     </div>

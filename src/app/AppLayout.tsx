@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
-import { ArrowRightLeft, CalendarRange, CreditCard, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
+import { ArrowRightLeft, CalendarRange, CreditCard, Globe, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
 import { MonthSelector } from "@/components/MonthSelector"
@@ -20,6 +20,7 @@ const tabs = [
   { to: "/annual", label: "Visão anual", icon: CalendarRange },
   { to: "/itens-para-comprar", label: "Lista de desejos", icon: ShoppingCart },
   { to: "/itens-possuidos", label: "Itens que possuo", icon: Package },
+  { to: "/contas-internet", label: "Contas na Internet", icon: Globe },
   { to: "/categories", label: "Categorias", icon: Tags },
 ]
 

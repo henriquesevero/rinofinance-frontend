@@ -1,7 +1,7 @@
 // Minimal service worker giving RinoFinance offline/PWA support without a
 // build-time precache manifest: the app shell falls back to a cached index
 // when offline, and same-origin static assets are cached as they're used.
-const CACHE = "rinofinance-v4"
+const CACHE = "rinofinance-v5"
 const APP_SHELL = "/index.html"
 const STATIC_ASSETS = ["/", APP_SHELL, "/manifest.webmanifest", "/favicon.svg", "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png"]
 
@@ -17,6 +17,36 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
   )
   self.clients.claim()
+})
+
+self.addEventListener("push", (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = {}
+  }
+  const title = data.title || "RinoFinance"
+  const body = data.body || "Hora de atualizar suas finanças 💸"
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: "rinofinance-reminder",
+    })
+  )
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then((clients) => {
+      const existing = clients.find((c) => "focus" in c)
+      if (existing) return existing.focus()
+      return self.clients.openWindow("/")
+    })
+  )
 })
 
 self.addEventListener("fetch", (event) => {
