@@ -20,13 +20,18 @@ export function SiteLogo({ name, url, imageUrl, className }: SiteLogoProps) {
         alt={name}
         loading="lazy"
         onError={() => setFailed(true)}
-        className={cn("size-full rounded-2xl object-contain", className)}
+        className={cn("size-full rounded-[26%] object-cover shadow-sm", className)}
       />
     )
   }
 
   return (
-    <div className={cn("flex size-full items-center justify-center rounded-2xl bg-muted text-4xl font-semibold text-muted-foreground", className)}>
+    <div
+      className={cn(
+        "flex size-full items-center justify-center rounded-[26%] bg-muted text-4xl font-semibold text-muted-foreground shadow-sm",
+        className
+      )}
+    >
       {name.trim().charAt(0).toUpperCase() || "?"}
     </div>
   )
