@@ -191,7 +191,7 @@ export function WebAccountsPage() {
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:items-start">
           {sectionReorder.order.map((section) => (
             <Section
               key={section.id}
@@ -381,7 +381,7 @@ function AccountGrid({
 }) {
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, onReorder)
   return (
-    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2">
       {order.map((account) => (
         <AccountTile
           key={account.id}
