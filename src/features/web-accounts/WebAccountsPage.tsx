@@ -23,6 +23,7 @@ type AccountDialogState = { mode: "create"; sectionId?: string } | { mode: "edit
 type SectionDialogState = { mode: "create" } | { mode: "edit"; section: WishlistSection } | null
 
 const NONE = "__none__"
+const NEUTRAL = "#9CA3AF"
 
 export function WebAccountsPage() {
   const sections = useWebAccountsStore((s) => s.sections)
@@ -59,12 +60,11 @@ export function WebAccountsPage() {
   }, [items])
 
   const ungrouped = itemsBySection.get(NONE) ?? []
-
   const sectionReorder = useReorder(sections, (ids) =>
     reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
   )
 
-  function persistOrder(sectionOrderedIds: string[]) {
+  function persistItemOrder(sectionOrderedIds: string[]) {
     const set = new Set(sectionOrderedIds)
     const queue = [...sectionOrderedIds]
     const fullIds = items.map((i) => (set.has(i.id) ? (queue.shift() as string) : i.id))
@@ -135,6 +135,7 @@ export function WebAccountsPage() {
   }
 
   const isEmpty = items.length === 0 && sections.length === 0
+  const gridProps = (id: string) => (editing ? sectionReorder.getItemProps(id) : {})
 
   return (
     <div className="flex flex-col gap-6">
@@ -145,12 +146,7 @@ export function WebAccountsPage() {
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {!isEmpty && (
-            <Button
-              variant={editing ? "default" : "outline"}
-              size="sm"
-              className="h-9"
-              onClick={() => setEditing((e) => !e)}
-            >
+            <Button variant={editing ? "default" : "outline"} size="sm" className="h-9" onClick={() => setEditing((e) => !e)}>
               {editing ? <Check className="size-4" /> : <Pencil className="size-4" />}
               {editing ? "Concluído" : "Editar"}
             </Button>
@@ -178,7 +174,7 @@ export function WebAccountsPage() {
       </div>
 
       {isEmpty ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Globe className="size-6" />
           </span>
@@ -191,15 +187,15 @@ export function WebAccountsPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:items-start">
+        <div className="gap-4 [column-fill:balance] sm:columns-2 xl:columns-3">
           {sectionReorder.order.map((section) => (
-            <Section
+            <SectionCard
               key={section.id}
               title={section.name}
-              color={section.color}
+              color={section.color || NEUTRAL}
               count={(itemsBySection.get(section.id) ?? []).length}
               editing={editing}
-              reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
+              reorderProps={gridProps(section.id)}
               dragging={sectionReorder.draggingId === section.id}
               dragHandle={
                 editing ? (
@@ -216,16 +212,17 @@ export function WebAccountsPage() {
               <AccountGrid
                 accounts={itemsBySection.get(section.id) ?? []}
                 editing={editing}
-                onReorder={persistOrder}
+                onReorder={persistItemOrder}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
               />
-            </Section>
+            </SectionCard>
           ))}
 
           {ungrouped.length > 0 && (
-            <Section
+            <SectionCard
               title="Sem seção"
+              color={NEUTRAL}
               count={ungrouped.length}
               editing={editing}
               onAdd={() => setAccountDialog({ mode: "create" })}
@@ -233,11 +230,11 @@ export function WebAccountsPage() {
               <AccountGrid
                 accounts={ungrouped}
                 editing={editing}
-                onReorder={persistOrder}
+                onReorder={persistItemOrder}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
               />
-            </Section>
+            </SectionCard>
           )}
         </div>
       )}
@@ -282,8 +279,7 @@ export function WebAccountsPage() {
         description={
           deletingSection ? (
             <>
-              Remover a seção <strong>{deletingSection.name}</strong>? As contas dela ficam sem seção (não são
-              apagadas).
+              Remover a seção <strong>{deletingSection.name}</strong>? As contas dela ficam sem seção (não são apagadas).
             </>
           ) : null
         }
@@ -295,7 +291,7 @@ export function WebAccountsPage() {
   )
 }
 
-function Section({
+function SectionCard({
   title,
   color,
   count,
@@ -309,7 +305,7 @@ function Section({
   children,
 }: {
   title: string
-  color?: string
+  color: string
   count: number
   editing: boolean
   reorderProps?: React.HTMLAttributes<HTMLElement>
@@ -322,28 +318,32 @@ function Section({
 }) {
   const [collapsed, setCollapsed] = useState(false)
   return (
-    <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
-      <div className="flex items-center gap-2">
+    <section
+      {...reorderProps}
+      className={cn(
+        "mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm",
+        dragging && "opacity-40"
+      )}
+    >
+      <div className="flex items-center gap-2 px-3 py-2.5">
         {editing && dragHandle}
+        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-expanded={!collapsed}
-          className="flex min-w-0 items-center gap-1.5 text-left"
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
         >
-          <ChevronDown
-            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
-          />
-          <h2
-            className={cn("truncate text-sm font-semibold tracking-wide", !color && "text-muted-foreground")}
-            style={color ? { color } : undefined}
-          >
+          <h2 className="min-w-0 truncate text-sm font-semibold tracking-tight" style={{ color }}>
             {title}
           </h2>
-          <span className="shrink-0 text-xs text-muted-foreground">({count})</span>
+          <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">{count}</span>
+          <ChevronDown
+            className={cn("size-3.5 shrink-0 text-muted-foreground/50 transition-transform", collapsed && "-rotate-90")}
+          />
         </button>
         {editing && (
-          <div className="ml-auto flex shrink-0 items-center gap-0.5">
+          <div className="flex shrink-0 items-center gap-0.5">
             {onEdit && (
               <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={onEdit}>
                 <Pencil className="size-3.5" />
@@ -360,8 +360,16 @@ function Section({
           </div>
         )}
       </div>
-      {!collapsed &&
-        (count === 0 ? <p className="text-sm text-muted-foreground">Nenhuma conta nesta seção.</p> : children)}
+
+      {!collapsed && (
+        <div className="border-t border-border/50 p-3">
+          {count === 0 ? (
+            <p className="py-2 text-center text-xs text-muted-foreground">Nenhuma conta nesta seção.</p>
+          ) : (
+            children
+          )}
+        </div>
+      )}
     </section>
   )
 }
@@ -381,7 +389,7 @@ function AccountGrid({
 }) {
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, onReorder)
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2.5">
       {order.map((account) => (
         <AccountTile
           key={account.id}
@@ -422,7 +430,7 @@ function AccountTile({
   const href = account.url ? (account.url.includes("://") ? account.url : `https://${account.url}`) : undefined
 
   const content = (
-    <div className="flex aspect-square items-center justify-center p-0.5">
+    <div className="flex aspect-square items-center justify-center">
       <SiteLogo
         name={account.name}
         url={account.url}
@@ -430,7 +438,7 @@ function AccountTile({
         imageUrl={account.imageUrl}
         className={cn(
           "max-h-full transition-shadow duration-300",
-          !editing && "group-hover:shadow-[0_18px_44px_-14px_rgba(97,218,251,0.6)]"
+          !editing && "group-hover:shadow-[0_16px_40px_-14px_rgba(97,218,251,0.65)]"
         )}
       />
     </div>
@@ -439,9 +447,10 @@ function AccountTile({
   return (
     <div
       {...reorderProps}
+      title={account.name}
       className={cn(
         "group relative transition-transform duration-300 ease-out",
-        !editing && "hover:scale-[1.06]",
+        !editing && "hover:scale-[1.08]",
         dragging && "opacity-40"
       )}
     >
@@ -456,9 +465,9 @@ function AccountTile({
           type="button"
           aria-label={`Remover ${account.name}`}
           onClick={onDelete}
-          className="absolute right-0 top-0 z-10 flex size-6 items-center justify-center rounded-full bg-destructive text-white shadow-sm transition hover:brightness-110"
+          className="absolute right-0 top-0 z-10 flex size-5 items-center justify-center rounded-full bg-destructive text-white shadow-sm transition hover:brightness-110"
         >
-          <X className="size-3.5" strokeWidth={3} />
+          <X className="size-3" strokeWidth={3} />
         </button>
       )}
 
