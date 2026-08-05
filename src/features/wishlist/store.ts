@@ -13,6 +13,7 @@ interface WishlistState {
   createSection: (input: SectionInput) => Promise<void>
   updateSection: (id: string, input: SectionInput) => Promise<void>
   deleteSection: (id: string) => Promise<void>
+  reorderSections: (ids: string[]) => Promise<void>
   createItem: (input: ItemInput) => Promise<void>
   updateItem: (id: string, input: ItemInput) => Promise<void>
   deleteItem: (id: string) => Promise<void>
@@ -52,6 +53,7 @@ export function createListStore(kind: string) {
       createSection: (input) => mutate(() => wishlistApi.createSection(kind, input)),
       updateSection: (id, input) => mutate(() => wishlistApi.updateSection(id, input)),
       deleteSection: (id) => mutate(() => wishlistApi.removeSection(id)),
+      reorderSections: (ids) => mutate(() => wishlistApi.reorderSections(kind, ids)),
       createItem: (input) => mutate(() => wishlistApi.createItem(kind, input)),
       updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
       deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),

@@ -79,6 +79,7 @@ function ListPage({
   const updateItem = useStore((s) => s.updateItem)
   const deleteItem = useStore((s) => s.deleteItem)
   const reorderItems = useStore((s) => s.reorderItems)
+  const reorderSections = useStore((s) => s.reorderSections)
 
   const [itemDialog, setItemDialog] = useState<ItemDialogState>(null)
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
@@ -107,6 +108,10 @@ function ListPage({
     [items]
   )
   const sectionTotal = (list: WishlistItem[]) => list.reduce((sum, i) => sum + i.price, 0)
+
+  const sectionReorder = useReorder(sections, (ids) =>
+    reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
+  )
 
   function persistItemOrder(sectionOrderedIds: string[]) {
     const set = new Set(sectionOrderedIds)
@@ -255,7 +260,7 @@ function ListPage({
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {sections.map((section) => {
+          {sectionReorder.order.map((section) => {
             const sectionItems = itemsBySection.get(section.id) ?? []
             return (
               <Section
@@ -265,6 +270,16 @@ function ListPage({
                 count={sectionItems.length}
                 total={sectionTotal(sectionItems)}
                 editing={editing}
+                reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
+                dragging={sectionReorder.draggingId === section.id}
+                dragHandle={
+                  editing ? (
+                    <DragHandle
+                      {...sectionReorder.getHandleProps(section.id)}
+                      className="text-muted-foreground/60 hover:text-foreground"
+                    />
+                  ) : undefined
+                }
                 onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
@@ -359,6 +374,9 @@ function Section({
   count,
   total,
   editing,
+  reorderProps,
+  dragHandle,
+  dragging,
   onAdd,
   onEdit,
   onDelete,
@@ -369,6 +387,9 @@ function Section({
   count: number
   total: number
   editing: boolean
+  reorderProps?: React.HTMLAttributes<HTMLElement>
+  dragHandle?: React.ReactNode
+  dragging?: boolean
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -376,8 +397,9 @@ function Section({
 }) {
   const [collapsed, setCollapsed] = useState(false)
   return (
-    <section className="flex flex-col gap-3">
+    <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
       <div className="flex items-center gap-2">
+        {editing && dragHandle}
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}

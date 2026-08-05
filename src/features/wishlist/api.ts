@@ -9,6 +9,8 @@ export const wishlistApi = {
   updateSection: (id: string, input: SectionInput) =>
     apiClient.put<WishlistSection>(`/api/wishlist/sections/${id}`, input),
   removeSection: (id: string) => apiClient.delete(`/api/wishlist/sections/${id}`),
+  reorderSections: (kind: string, ids: string[]) =>
+    apiClient.put(`/api/wishlist/sections/order?kind=${kind}`, { ids }),
   createItem: (kind: string, input: ItemInput) =>
     apiClient.post<WishlistItem>(`/api/wishlist/items?kind=${kind}`, input),
   updateItem: (id: string, input: ItemInput) => apiClient.put<WishlistItem>(`/api/wishlist/items/${id}`, input),

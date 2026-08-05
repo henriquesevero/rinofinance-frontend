@@ -39,6 +39,7 @@ export function AccountFormDialog({ open, onOpenChange, account, sections, defau
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState("")
   const [url, setUrl] = useState("")
+  const [logoUrl, setLogoUrl] = useState("")
   const [imageUrl, setImageUrl] = useState("")
   const [sectionId, setSectionId] = useState(NO_SECTION)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,6 +49,7 @@ export function AccountFormDialog({ open, onOpenChange, account, sections, defau
     if (!open) return
     setName(account?.name ?? "")
     setUrl(account?.url ?? "")
+    setLogoUrl(account?.logoUrl ?? "")
     setImageUrl(account?.imageUrl ?? "")
     setSectionId(account?.sectionId ?? defaultSectionId ?? NO_SECTION)
   }, [open, account, defaultSectionId])
@@ -72,6 +74,7 @@ export function AccountFormDialog({ open, onOpenChange, account, sections, defau
         url: withScheme(url),
         price: 0,
         imageUrl,
+        logoUrl: logoUrl.trim(),
         sectionId: sectionId === NO_SECTION ? "" : sectionId,
       })
       onOpenChange(false)
@@ -85,12 +88,12 @@ export function AccountFormDialog({ open, onOpenChange, account, sections, defau
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Editar conta" : "Nova conta"}</DialogTitle>
-          <DialogDescription>O logo é detectado pelo endereço, ou envie o seu.</DialogDescription>
+          <DialogDescription>O logo vem do site informado, ou envie o seu.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border bg-card">
-              <SiteLogo name={name || "?"} url={url} imageUrl={imageUrl} />
+              <SiteLogo name={name || "?"} url={url} logoUrl={logoUrl} imageUrl={imageUrl} />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
@@ -114,10 +117,26 @@ export function AccountFormDialog({ open, onOpenChange, account, sections, defau
               type="text"
               inputMode="url"
               required
-              placeholder="magazineluiza.com.br"
+              placeholder="magazineluiza.com.br/login"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">Abre este endereço ao tocar na conta.</p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="account-logo">Site do logo (opcional)</Label>
+            <Input
+              id="account-logo"
+              type="text"
+              inputMode="url"
+              placeholder="magazineluiza.com.br"
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Usado só para buscar o logotipo. Se vazio, tenta pelo endereço de login.
+            </p>
           </div>
 
           <div className="flex flex-col gap-1.5">

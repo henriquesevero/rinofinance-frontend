@@ -37,6 +37,7 @@ export function WebAccountsPage() {
   const updateItem = useWebAccountsStore((s) => s.updateItem)
   const deleteItem = useWebAccountsStore((s) => s.deleteItem)
   const reorderItems = useWebAccountsStore((s) => s.reorderItems)
+  const reorderSections = useWebAccountsStore((s) => s.reorderSections)
 
   const [accountDialog, setAccountDialog] = useState<AccountDialogState>(null)
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
@@ -58,6 +59,10 @@ export function WebAccountsPage() {
   }, [items])
 
   const ungrouped = itemsBySection.get(NONE) ?? []
+
+  const sectionReorder = useReorder(sections, (ids) =>
+    reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
+  )
 
   function persistOrder(sectionOrderedIds: string[]) {
     const set = new Set(sectionOrderedIds)
@@ -187,13 +192,23 @@ export function WebAccountsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {sections.map((section) => (
+          {sectionReorder.order.map((section) => (
             <Section
               key={section.id}
               title={section.name}
               color={section.color}
               count={(itemsBySection.get(section.id) ?? []).length}
               editing={editing}
+              reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
+              dragging={sectionReorder.draggingId === section.id}
+              dragHandle={
+                editing ? (
+                  <DragHandle
+                    {...sectionReorder.getHandleProps(section.id)}
+                    className="text-muted-foreground/60 hover:text-foreground"
+                  />
+                ) : undefined
+              }
               onAdd={() => setAccountDialog({ mode: "create", sectionId: section.id })}
               onEdit={() => setSectionDialog({ mode: "edit", section })}
               onDelete={() => setDeletingSection(section)}
@@ -285,6 +300,9 @@ function Section({
   color,
   count,
   editing,
+  reorderProps,
+  dragHandle,
+  dragging,
   onAdd,
   onEdit,
   onDelete,
@@ -294,6 +312,9 @@ function Section({
   color?: string
   count: number
   editing: boolean
+  reorderProps?: React.HTMLAttributes<HTMLElement>
+  dragHandle?: React.ReactNode
+  dragging?: boolean
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -301,8 +322,9 @@ function Section({
 }) {
   const [collapsed, setCollapsed] = useState(false)
   return (
-    <section className="flex flex-col gap-3">
+    <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
       <div className="flex items-center gap-2">
+        {editing && dragHandle}
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
@@ -359,7 +381,7 @@ function AccountGrid({
 }) {
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, onReorder)
   return (
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8">
+    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
       {order.map((account) => (
         <AccountTile
           key={account.id}
@@ -404,6 +426,7 @@ function AccountTile({
       <SiteLogo
         name={account.name}
         url={account.url}
+        logoUrl={account.logoUrl}
         imageUrl={account.imageUrl}
         className={cn(
           "max-h-full transition-shadow duration-300",

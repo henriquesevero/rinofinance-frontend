@@ -11,6 +11,7 @@ export interface WishlistItem {
   url?: string
   price: number
   imageUrl?: string
+  logoUrl?: string
 }
 
 export interface WishlistOverview {
@@ -29,6 +30,7 @@ export interface ItemInput {
   url: string
   price: number
   imageUrl: string
+  logoUrl: string
   sectionId: string
 }
 

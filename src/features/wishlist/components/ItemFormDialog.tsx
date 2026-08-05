@@ -117,6 +117,7 @@ export function ItemFormDialog({ open, onOpenChange, item, sections, defaultSect
         url,
         price,
         imageUrl,
+        logoUrl: "",
         sectionId: sectionId === NO_SECTION ? "" : sectionId,
       })
       onOpenChange(false)

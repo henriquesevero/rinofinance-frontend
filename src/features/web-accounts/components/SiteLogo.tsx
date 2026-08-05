@@ -5,13 +5,15 @@ import { brandLogoSrc, normalizeDomain } from "@/lib/brandLogo"
 interface SiteLogoProps {
   name: string
   url?: string
+  logoUrl?: string
   imageUrl?: string
   className?: string
 }
 
-export function SiteLogo({ name, url, imageUrl, className }: SiteLogoProps) {
+export function SiteLogo({ name, url, logoUrl, imageUrl, className }: SiteLogoProps) {
   const [failed, setFailed] = useState(false)
-  const src = imageUrl || (!failed ? brandLogoSrc(normalizeDomain(url ?? ""), 256) : "")
+  const domain = normalizeDomain(logoUrl || url || "")
+  const src = imageUrl || (!failed && domain ? brandLogoSrc(domain, 256) : "")
 
   if (src) {
     return (
