@@ -1,7 +1,7 @@
 // Minimal service worker giving RinoFinance offline/PWA support without a
 // build-time precache manifest: the app shell falls back to a cached index
 // when offline, and same-origin static assets are cached as they're used.
-const CACHE = "rinofinance-v5"
+const CACHE = "rinofinance-v6"
 const APP_SHELL = "/index.html"
 const STATIC_ASSETS = ["/", APP_SHELL, "/manifest.webmanifest", "/favicon.svg", "/apple-touch-icon.png", "/icon-192.png", "/icon-512.png"]
 
@@ -26,8 +26,8 @@ self.addEventListener("push", (event) => {
   } catch {
     data = {}
   }
-  const title = data.title || "RinoFinance"
-  const body = data.body || "Hora de atualizar suas finanças 💸"
+  const title = data.title || "Hora de atualizar suas finanças 💸"
+  const body = data.body || "Registre os gastos de hoje e mantenha tudo em dia."
   event.waitUntil(
     self.registration.showNotification(title, {
       body,

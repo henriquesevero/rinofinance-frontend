@@ -38,8 +38,8 @@ export function NotificationsCard() {
           Lembretes diários
         </CardTitle>
         <CardDescription>
-          Um lembrete por dia no seu iPhone pra atualizar as finanças — com dicas dos seus cartões (fatura fechando,
-          melhor dia de compra).
+          Lembretes no seu iPhone: um alerta de fatura às 8h (fatura fechando/vencendo, melhor dia de compra) e o
+          lembrete de atualizar as finanças às 20h.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -64,7 +64,7 @@ export function NotificationsCard() {
 
         {status === "unsubscribed" && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">Ative para receber o lembrete diário às 20h.</p>
+            <p className="text-sm text-muted-foreground">Ative para receber os lembretes (8h e 20h).</p>
             <Button onClick={handleSubscribe} className="w-fit">
               <Bell className="size-4" />
               Ativar lembretes
