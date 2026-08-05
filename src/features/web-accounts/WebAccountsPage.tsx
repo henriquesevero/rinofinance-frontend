@@ -401,7 +401,15 @@ function AccountTile({
 
   const content = (
     <div className="flex aspect-square items-center justify-center p-0.5">
-      <SiteLogo name={account.name} url={account.url} imageUrl={account.imageUrl} className="max-h-full" />
+      <SiteLogo
+        name={account.name}
+        url={account.url}
+        imageUrl={account.imageUrl}
+        className={cn(
+          "max-h-full transition-shadow duration-300",
+          !editing && "group-hover:shadow-[0_18px_44px_-14px_rgba(97,218,251,0.6)]"
+        )}
+      />
     </div>
   )
 
@@ -409,7 +417,7 @@ function AccountTile({
     <div
       {...reorderProps}
       className={cn(
-        "relative transition-transform duration-300 ease-out",
+        "group relative transition-transform duration-300 ease-out",
         !editing && "hover:scale-[1.06]",
         dragging && "opacity-40"
       )}
