@@ -359,7 +359,7 @@ function AccountGrid({
 }) {
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, onReorder)
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8">
       {order.map((account) => (
         <AccountTile
           key={account.id}
@@ -400,7 +400,7 @@ function AccountTile({
   const href = account.url ? (account.url.includes("://") ? account.url : `https://${account.url}`) : undefined
 
   const content = (
-    <div className="flex aspect-square items-center justify-center p-1.5">
+    <div className="flex aspect-square items-center justify-center p-0.5">
       <SiteLogo name={account.name} url={account.url} imageUrl={account.imageUrl} className="max-h-full" />
     </div>
   )
@@ -409,7 +409,7 @@ function AccountTile({
     <div
       {...reorderProps}
       className={cn(
-        "relative w-[80%] justify-self-center transition-transform duration-300 ease-out",
+        "relative transition-transform duration-300 ease-out",
         !editing && "hover:scale-[1.06]",
         dragging && "opacity-40"
       )}
