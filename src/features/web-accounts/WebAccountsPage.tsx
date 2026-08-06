@@ -521,6 +521,8 @@ function AccountTile({
 }) {
   const href = account.url ? (account.url.includes("://") ? account.url : `https://${account.url}`) : undefined
   const dragging = dnd.draggingId === account.id
+  const [over, setOver] = useState(false)
+  const isTarget = over && dnd.active && !dragging
 
   const content = (
     <div className="flex aspect-square items-center justify-center">
@@ -549,21 +551,38 @@ function AccountTile({
             }
           : undefined
       }
-      onDragEnd={editing ? dnd.end : undefined}
+      onDragEnd={
+        editing
+          ? () => {
+              setOver(false)
+              dnd.end()
+            }
+          : undefined
+      }
       onDragOver={editing && dnd.active ? (e) => e.preventDefault() : undefined}
+      onDragEnter={editing && dnd.active && !dragging ? () => setOver(true) : undefined}
+      onDragLeave={
+        editing && dnd.active
+          ? (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false)
+            }
+          : undefined
+      }
       onDrop={
         editing && dnd.active
           ? (e) => {
               e.preventDefault()
               e.stopPropagation()
+              setOver(false)
               dnd.drop(sectionId, account.id)
             }
           : undefined
       }
       className={cn(
-        "group relative transition-transform duration-300 ease-out",
+        "group relative rounded-xl transition-all duration-200 ease-out",
         editing && "cursor-grab active:cursor-grabbing",
         !editing && "hover:scale-[1.08]",
+        isTarget && "scale-95 bg-primary/15 ring-2 ring-primary/60",
         dragging && "opacity-40"
       )}
     >
