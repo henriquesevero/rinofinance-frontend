@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Check, ChevronDown, Globe, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,14 @@ type SectionDialogState = { mode: "create" } | { mode: "edit"; section: Wishlist
 const NONE = "__none__"
 const NEUTRAL = "#9CA3AF"
 
+interface AccountDnd {
+  active: boolean
+  draggingId: string | null
+  start: (id: string) => void
+  end: () => void
+  drop: (sectionId: string, beforeId: string | null) => void
+}
+
 export function WebAccountsPage() {
   const sections = useWebAccountsStore((s) => s.sections)
   const items = useWebAccountsStore((s) => s.items)
@@ -37,7 +45,7 @@ export function WebAccountsPage() {
   const createItem = useWebAccountsStore((s) => s.createItem)
   const updateItem = useWebAccountsStore((s) => s.updateItem)
   const deleteItem = useWebAccountsStore((s) => s.deleteItem)
-  const reorderItems = useWebAccountsStore((s) => s.reorderItems)
+  const moveItem = useWebAccountsStore((s) => s.moveItem)
   const reorderSections = useWebAccountsStore((s) => s.reorderSections)
 
   const [accountDialog, setAccountDialog] = useState<AccountDialogState>(null)
@@ -45,6 +53,8 @@ export function WebAccountsPage() {
   const [deletingAccount, setDeletingAccount] = useState<WishlistItem | null>(null)
   const [deletingSection, setDeletingSection] = useState<WishlistSection | null>(null)
   const [editing, setEditing] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const draggingRef = useRef<string | null>(null)
 
   useEffect(() => {
     fetchWishlist()
@@ -64,11 +74,65 @@ export function WebAccountsPage() {
     reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
   )
 
-  function persistItemOrder(sectionOrderedIds: string[]) {
-    const set = new Set(sectionOrderedIds)
-    const queue = [...sectionOrderedIds]
-    const fullIds = items.map((i) => (set.has(i.id) ? (queue.shift() as string) : i.id))
-    reorderItems(fullIds).catch((err) => toast.error(toErrorMessage(err)))
+  function moveAccount(dragId: string, targetSectionId: string, beforeId: string | null) {
+    if (dragId === beforeId) return
+    const source = items.find((i) => i.id === dragId)
+    if (!source) return
+
+    const order = [...sections.map((s) => s.id), NONE]
+    const groups = new Map<string, WishlistItem[]>()
+    for (const key of order) groups.set(key, [])
+    for (const it of items) {
+      const key = it.sectionId ?? NONE
+      groups.set(key, [...(groups.get(key) ?? []), it])
+    }
+    for (const arr of groups.values()) {
+      const idx = arr.findIndex((i) => i.id === dragId)
+      if (idx >= 0) arr.splice(idx, 1)
+    }
+
+    const moved: WishlistItem = { ...source, sectionId: targetSectionId || undefined }
+    const targetKey = targetSectionId || NONE
+    const targetArr = groups.get(targetKey) ?? []
+    if (beforeId) {
+      const idx = targetArr.findIndex((i) => i.id === beforeId)
+      targetArr.splice(idx < 0 ? targetArr.length : idx, 0, moved)
+    } else {
+      targetArr.push(moved)
+    }
+    groups.set(targetKey, targetArr)
+
+    const seen = new Set(order)
+    const newItems = order.flatMap((key) => groups.get(key) ?? [])
+    for (const [key, arr] of groups) if (!seen.has(key)) newItems.push(...arr)
+
+    const changedSection = (source.sectionId ?? "") !== (targetSectionId || "")
+    moveItem(
+      dragId,
+      targetSectionId || "",
+      newItems,
+      newItems.map((i) => i.id),
+      changedSection
+    )
+  }
+
+  const dnd: AccountDnd = {
+    active: draggingId !== null,
+    draggingId,
+    start: (id) => {
+      draggingRef.current = id
+      setDraggingId(id)
+    },
+    end: () => {
+      draggingRef.current = null
+      setDraggingId(null)
+    },
+    drop: (sectionId, beforeId) => {
+      const id = draggingRef.current
+      draggingRef.current = null
+      setDraggingId(null)
+      if (id) moveAccount(id, sectionId, beforeId)
+    },
   }
 
   async function handleDeleteAccount() {
@@ -135,7 +199,6 @@ export function WebAccountsPage() {
   }
 
   const isEmpty = items.length === 0 && sections.length === 0
-  const gridProps = (id: string) => (editing ? sectionReorder.getItemProps(id) : {})
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,6 +236,12 @@ export function WebAccountsPage() {
         </div>
       </div>
 
+      {editing && (
+        <p className="-mt-2 text-xs text-muted-foreground">
+          Arraste uma conta para reordenar ou soltá-la em outra seção.
+        </p>
+      )}
+
       {isEmpty ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -191,11 +260,13 @@ export function WebAccountsPage() {
           {sectionReorder.order.map((section) => (
             <SectionCard
               key={section.id}
+              sectionId={section.id}
               title={section.name}
               color={section.color || NEUTRAL}
               count={(itemsBySection.get(section.id) ?? []).length}
               editing={editing}
-              reorderProps={gridProps(section.id)}
+              dnd={dnd}
+              reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
               dragging={sectionReorder.draggingId === section.id}
               dragHandle={
                 editing ? (
@@ -211,8 +282,9 @@ export function WebAccountsPage() {
             >
               <AccountGrid
                 accounts={itemsBySection.get(section.id) ?? []}
+                sectionId={section.id}
                 editing={editing}
-                onReorder={persistItemOrder}
+                dnd={dnd}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
               />
@@ -221,16 +293,19 @@ export function WebAccountsPage() {
 
           {ungrouped.length > 0 && (
             <SectionCard
+              sectionId=""
               title="Sem seção"
               color={NEUTRAL}
               count={ungrouped.length}
               editing={editing}
+              dnd={dnd}
               onAdd={() => setAccountDialog({ mode: "create" })}
             >
               <AccountGrid
                 accounts={ungrouped}
+                sectionId=""
                 editing={editing}
-                onReorder={persistItemOrder}
+                dnd={dnd}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
               />
@@ -292,10 +367,12 @@ export function WebAccountsPage() {
 }
 
 function SectionCard({
+  sectionId,
   title,
   color,
   count,
   editing,
+  dnd,
   reorderProps,
   dragHandle,
   dragging,
@@ -304,10 +381,12 @@ function SectionCard({
   onDelete,
   children,
 }: {
+  sectionId: string
   title: string
   color: string
   count: number
   editing: boolean
+  dnd: AccountDnd
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
@@ -317,6 +396,9 @@ function SectionCard({
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [dropActive, setDropActive] = useState(false)
+  const canDrop = editing && dnd.active
+
   return (
     <section
       {...reorderProps}
@@ -362,9 +444,25 @@ function SectionCard({
       </div>
 
       {!collapsed && (
-        <div className="border-t border-border/50 p-3">
+        <div
+          onDragOver={canDrop ? (e) => e.preventDefault() : undefined}
+          onDragEnter={canDrop ? () => setDropActive(true) : undefined}
+          onDragLeave={canDrop ? (e) => e.currentTarget.contains(e.relatedTarget as Node) || setDropActive(false) : undefined}
+          onDrop={
+            canDrop
+              ? (e) => {
+                  e.preventDefault()
+                  setDropActive(false)
+                  dnd.drop(sectionId, null)
+                }
+              : undefined
+          }
+          className={cn("border-t border-border/50 p-3 transition-colors", dropActive && "bg-primary/5")}
+        >
           {count === 0 ? (
-            <p className="py-2 text-center text-xs text-muted-foreground">Nenhuma conta nesta seção.</p>
+            <p className={cn("py-2 text-center text-xs text-muted-foreground", canDrop && "rounded-lg border border-dashed")}>
+              {canDrop ? "Solte uma conta aqui" : "Nenhuma conta nesta seção."}
+            </p>
           ) : (
             children
           )}
@@ -376,34 +474,30 @@ function SectionCard({
 
 function AccountGrid({
   accounts,
+  sectionId,
   editing,
-  onReorder,
+  dnd,
   onEdit,
   onDelete,
 }: {
   accounts: WishlistItem[]
+  sectionId: string
   editing: boolean
-  onReorder: (orderedIds: string[]) => void
+  dnd: AccountDnd
   onEdit: (account: WishlistItem) => void
   onDelete: (account: WishlistItem) => void
 }) {
-  const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, onReorder)
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2.5">
-      {order.map((account) => (
+      {accounts.map((account) => (
         <AccountTile
           key={account.id}
           account={account}
+          sectionId={sectionId}
           editing={editing}
+          dnd={dnd}
           onEdit={() => onEdit(account)}
           onDelete={() => onDelete(account)}
-          reorderProps={editing ? getItemProps(account.id) : undefined}
-          dragging={draggingId === account.id}
-          dragHandle={
-            editing ? (
-              <DragHandle {...getHandleProps(account.id)} className="text-muted-foreground/70 hover:text-foreground" />
-            ) : undefined
-          }
         />
       ))}
     </div>
@@ -412,22 +506,21 @@ function AccountGrid({
 
 function AccountTile({
   account,
+  sectionId,
   editing,
+  dnd,
   onEdit,
   onDelete,
-  reorderProps,
-  dragHandle,
-  dragging,
 }: {
   account: WishlistItem
+  sectionId: string
   editing: boolean
+  dnd: AccountDnd
   onEdit: () => void
   onDelete: () => void
-  reorderProps?: React.HTMLAttributes<HTMLDivElement>
-  dragHandle?: React.ReactNode
-  dragging?: boolean
 }) {
   const href = account.url ? (account.url.includes("://") ? account.url : `https://${account.url}`) : undefined
+  const dragging = dnd.draggingId === account.id
 
   const content = (
     <div className="flex aspect-square items-center justify-center">
@@ -446,20 +539,34 @@ function AccountTile({
 
   return (
     <div
-      {...reorderProps}
       title={account.name}
+      draggable={editing}
+      onDragStart={
+        editing
+          ? (e) => {
+              e.dataTransfer.effectAllowed = "move"
+              dnd.start(account.id)
+            }
+          : undefined
+      }
+      onDragEnd={editing ? dnd.end : undefined}
+      onDragOver={editing && dnd.active ? (e) => e.preventDefault() : undefined}
+      onDrop={
+        editing && dnd.active
+          ? (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dnd.drop(sectionId, account.id)
+            }
+          : undefined
+      }
       className={cn(
         "group relative transition-transform duration-300 ease-out",
+        editing && "cursor-grab active:cursor-grabbing",
         !editing && "hover:scale-[1.08]",
         dragging && "opacity-40"
       )}
     >
-      {editing && dragHandle && (
-        <div className="absolute left-0 top-0 z-10 flex items-center justify-center rounded-md bg-background/80 p-0.5 shadow-sm backdrop-blur">
-          {dragHandle}
-        </div>
-      )}
-
       {editing && (
         <button
           type="button"
@@ -476,7 +583,7 @@ function AccountTile({
           type="button"
           onClick={onEdit}
           aria-label={`Editar ${account.name}`}
-          className="block w-full cursor-pointer outline-none"
+          className="block w-full cursor-grab outline-none active:cursor-grabbing"
         >
           {content}
         </button>

@@ -18,6 +18,13 @@ interface WishlistState {
   updateItem: (id: string, input: ItemInput) => Promise<void>
   deleteItem: (id: string) => Promise<void>
   reorderItems: (ids: string[]) => Promise<void>
+  moveItem: (
+    dragId: string,
+    targetSectionId: string,
+    newItems: WishlistItem[],
+    orderedIds: string[],
+    changedSection: boolean
+  ) => void
   reset: () => void
 }
 
@@ -58,6 +65,29 @@ export function createListStore(kind: string) {
       updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
       deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
       reorderItems: (ids) => mutate(() => wishlistApi.reorderItems(kind, ids)),
+
+      moveItem: (dragId, targetSectionId, newItems, orderedIds, changedSection) => {
+        const moved = newItems.find((i) => i.id === dragId)
+        set({ items: newItems })
+        void (async () => {
+          try {
+            if (changedSection && moved) {
+              await wishlistApi.updateItem(dragId, {
+                name: moved.name,
+                url: moved.url ?? "",
+                price: moved.price,
+                imageUrl: moved.imageUrl ?? "",
+                logoUrl: moved.logoUrl ?? "",
+                sectionId: targetSectionId,
+              })
+            }
+            await wishlistApi.reorderItems(kind, orderedIds)
+          } catch (err) {
+            set({ error: toErrorMessage(err) })
+            await get().fetchWishlist()
+          }
+        })()
+      },
 
       reset: () => set({ sections: [], items: [], total: 0, isLoading: false, error: null }),
     }
