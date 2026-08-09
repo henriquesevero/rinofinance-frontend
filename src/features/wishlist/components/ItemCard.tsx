@@ -1,24 +1,27 @@
-import { useState, type ReactNode } from "react"
+import { useState } from "react"
 import { ExternalLink, ShoppingBag, X } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
 import { normalizeDomain } from "@/lib/brandLogo"
 import { cn } from "@/lib/utils"
+import type { ItemDnd } from "../WishlistPage"
 import type { WishlistItem } from "../types"
 
 interface ItemCardProps {
   item: WishlistItem
+  sectionId: string
   editing: boolean
+  dnd: ItemDnd
   onEdit: () => void
   onDelete: () => void
-  reorderProps?: React.HTMLAttributes<HTMLDivElement>
-  dragHandle?: ReactNode
-  dragging?: boolean
 }
 
-export function ItemCard({ item, editing, onEdit, onDelete, reorderProps, dragHandle, dragging }: ItemCardProps) {
+export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete }: ItemCardProps) {
   const [imgFailed, setImgFailed] = useState(false)
+  const [over, setOver] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
   const store = item.url ? normalizeDomain(item.url) : ""
+  const dragging = dnd.draggingId === item.id
+  const isTarget = over && dnd.active && !dragging
 
   const inner = (
     <>
@@ -54,19 +57,50 @@ export function ItemCard({ item, editing, onEdit, onDelete, reorderProps, dragHa
 
   return (
     <div
-      {...reorderProps}
+      draggable={editing}
+      onDragStart={
+        editing
+          ? (e) => {
+              e.dataTransfer.effectAllowed = "move"
+              dnd.start(item.id)
+            }
+          : undefined
+      }
+      onDragEnd={
+        editing
+          ? () => {
+              setOver(false)
+              dnd.end()
+            }
+          : undefined
+      }
+      onDragOver={editing && dnd.active ? (e) => e.preventDefault() : undefined}
+      onDragEnter={editing && dnd.active && !dragging ? () => setOver(true) : undefined}
+      onDragLeave={
+        editing && dnd.active
+          ? (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false)
+            }
+          : undefined
+      }
+      onDrop={
+        editing && dnd.active
+          ? (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setOver(false)
+              dnd.drop(sectionId, item.id)
+            }
+          : undefined
+      }
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out",
+        editing && "cursor-grab active:cursor-grabbing",
         !editing && "hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]",
+        isTarget && "border-primary ring-2 ring-primary/60",
         dragging && "opacity-40"
       )}
     >
-      {editing && dragHandle && (
-        <div className="absolute left-2 top-2 z-10 flex size-7 items-center justify-center rounded-md bg-black/35 text-white shadow-sm backdrop-blur-sm">
-          {dragHandle}
-        </div>
-      )}
-
       {editing && (
         <button
           type="button"
@@ -83,7 +117,7 @@ export function ItemCard({ item, editing, onEdit, onDelete, reorderProps, dragHa
           type="button"
           onClick={onEdit}
           aria-label={`Editar ${item.name}`}
-          className="flex min-w-0 flex-1 flex-col text-left outline-none"
+          className="flex min-w-0 flex-1 cursor-grab flex-col text-left outline-none active:cursor-grabbing"
         >
           {inner}
         </button>

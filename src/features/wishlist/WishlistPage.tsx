@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Check, ChevronDown, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,14 @@ type ItemDialogState = { mode: "create"; sectionId?: string } | { mode: "edit"; 
 type SectionDialogState = { mode: "create" } | { mode: "edit"; section: WishlistSection } | null
 
 const NONE = "__none__"
+
+export interface ItemDnd {
+  active: boolean
+  draggingId: string | null
+  start: (id: string) => void
+  end: () => void
+  drop: (sectionId: string, beforeId: string | null) => void
+}
 
 type StoreHook = typeof useWishlistStore
 
@@ -78,7 +86,7 @@ function ListPage({
   const createItem = useStore((s) => s.createItem)
   const updateItem = useStore((s) => s.updateItem)
   const deleteItem = useStore((s) => s.deleteItem)
-  const reorderItems = useStore((s) => s.reorderItems)
+  const moveItem = useStore((s) => s.moveItem)
   const reorderSections = useStore((s) => s.reorderSections)
 
   const [itemDialog, setItemDialog] = useState<ItemDialogState>(null)
@@ -86,6 +94,8 @@ function ListPage({
   const [deletingItem, setDeletingItem] = useState<WishlistItem | null>(null)
   const [deletingSection, setDeletingSection] = useState<WishlistSection | null>(null)
   const [editing, setEditing] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const draggingRef = useRef<string | null>(null)
 
   useEffect(() => {
     fetchWishlist()
@@ -113,11 +123,65 @@ function ListPage({
     reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
   )
 
-  function persistItemOrder(sectionOrderedIds: string[]) {
-    const set = new Set(sectionOrderedIds)
-    const queue = [...sectionOrderedIds]
-    const fullIds = items.map((i) => (set.has(i.id) ? (queue.shift() as string) : i.id))
-    reorderItems(fullIds).catch((err) => toast.error(toErrorMessage(err)))
+  function moveItemTo(dragId: string, targetSectionId: string, beforeId: string | null) {
+    if (dragId === beforeId) return
+    const source = items.find((i) => i.id === dragId)
+    if (!source) return
+
+    const order = [...sections.map((s) => s.id), NONE]
+    const groups = new Map<string, WishlistItem[]>()
+    for (const key of order) groups.set(key, [])
+    for (const it of items) {
+      const key = it.sectionId ?? NONE
+      groups.set(key, [...(groups.get(key) ?? []), it])
+    }
+    for (const arr of groups.values()) {
+      const idx = arr.findIndex((i) => i.id === dragId)
+      if (idx >= 0) arr.splice(idx, 1)
+    }
+
+    const moved: WishlistItem = { ...source, sectionId: targetSectionId || undefined }
+    const targetKey = targetSectionId || NONE
+    const targetArr = groups.get(targetKey) ?? []
+    if (beforeId) {
+      const idx = targetArr.findIndex((i) => i.id === beforeId)
+      targetArr.splice(idx < 0 ? targetArr.length : idx, 0, moved)
+    } else {
+      targetArr.push(moved)
+    }
+    groups.set(targetKey, targetArr)
+
+    const seen = new Set(order)
+    const newItems = order.flatMap((key) => groups.get(key) ?? [])
+    for (const [key, arr] of groups) if (!seen.has(key)) newItems.push(...arr)
+
+    const changedSection = (source.sectionId ?? "") !== (targetSectionId || "")
+    moveItem(
+      dragId,
+      targetSectionId || "",
+      newItems,
+      newItems.map((i) => i.id),
+      changedSection
+    )
+  }
+
+  const dnd: ItemDnd = {
+    active: draggingId !== null,
+    draggingId,
+    start: (id) => {
+      draggingRef.current = id
+      setDraggingId(id)
+    },
+    end: () => {
+      draggingRef.current = null
+      setDraggingId(null)
+    },
+    drop: (sectionId, beforeId) => {
+      const id = draggingRef.current
+      draggingRef.current = null
+      setDraggingId(null)
+      if (id) moveItemTo(id, sectionId, beforeId)
+    },
   }
 
   async function handleDeleteItem() {
@@ -265,11 +329,13 @@ function ListPage({
             return (
               <Section
                 key={section.id}
+                sectionId={section.id}
                 title={section.name}
                 color={section.color}
                 count={sectionItems.length}
                 total={sectionTotal(sectionItems)}
                 editing={editing}
+                dnd={dnd}
                 reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
                 dragging={sectionReorder.draggingId === section.id}
                 dragHandle={
@@ -284,10 +350,11 @@ function ListPage({
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
               >
-                <ReorderableItemGrid
+                <ItemGrid
                   items={sectionItems}
+                  sectionId={section.id}
                   editing={editing}
-                  onReorder={persistItemOrder}
+                  dnd={dnd}
                   onEdit={(item) => setItemDialog({ mode: "edit", item })}
                   onDelete={(item) => setDeletingItem(item)}
                 />
@@ -297,16 +364,19 @@ function ListPage({
 
           {ungrouped.length > 0 && (
             <Section
+              sectionId=""
               title="Sem seção"
               count={ungrouped.length}
               total={sectionTotal(ungrouped)}
               editing={editing}
+              dnd={dnd}
               onAdd={() => setItemDialog({ mode: "create" })}
             >
-              <ReorderableItemGrid
+              <ItemGrid
                 items={ungrouped}
+                sectionId=""
                 editing={editing}
-                onReorder={persistItemOrder}
+                dnd={dnd}
                 onEdit={(item) => setItemDialog({ mode: "edit", item })}
                 onDelete={(item) => setDeletingItem(item)}
               />
@@ -369,11 +439,13 @@ function ListPage({
 }
 
 function Section({
+  sectionId,
   title,
   color,
   count,
   total,
   editing,
+  dnd,
   reorderProps,
   dragHandle,
   dragging,
@@ -382,11 +454,13 @@ function Section({
   onDelete,
   children,
 }: {
+  sectionId: string
   title: string
   color?: string
   count: number
   total: number
   editing: boolean
+  dnd: ItemDnd
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
@@ -396,6 +470,8 @@ function Section({
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [dropActive, setDropActive] = useState(false)
+  const canDrop = editing && dnd.active
   return (
     <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
       <div className="flex items-center gap-2">
@@ -443,44 +519,63 @@ function Section({
           </div>
         )}
       </div>
-      {!collapsed &&
-        (count === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum item nesta seção.</p>
-        ) : (
-          children
-        ))}
+      {!collapsed && (
+        <div
+          onDragOver={canDrop ? (e) => e.preventDefault() : undefined}
+          onDragEnter={canDrop ? () => setDropActive(true) : undefined}
+          onDragLeave={
+            canDrop ? (e) => e.currentTarget.contains(e.relatedTarget as Node) || setDropActive(false) : undefined
+          }
+          onDrop={
+            canDrop
+              ? (e) => {
+                  e.preventDefault()
+                  setDropActive(false)
+                  dnd.drop(sectionId, null)
+                }
+              : undefined
+          }
+          className={cn("rounded-xl transition-colors", dropActive && "bg-primary/5 outline-1 outline-dashed outline-primary/40")}
+        >
+          {count === 0 ? (
+            <p className={cn("py-3 text-center text-sm text-muted-foreground", canDrop && "rounded-lg border border-dashed")}>
+              {canDrop ? "Solte um item aqui" : "Nenhum item nesta seção."}
+            </p>
+          ) : (
+            children
+          )}
+        </div>
+      )}
     </section>
   )
 }
 
-function ReorderableItemGrid({
+function ItemGrid({
   items,
+  sectionId,
   editing,
-  onReorder,
+  dnd,
   onEdit,
   onDelete,
 }: {
   items: WishlistItem[]
+  sectionId: string
   editing: boolean
-  onReorder: (orderedIds: string[]) => void
+  dnd: ItemDnd
   onEdit: (item: WishlistItem) => void
   onDelete: (item: WishlistItem) => void
 }) {
-  const { order, draggingId, getItemProps, getHandleProps } = useReorder(items, onReorder)
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {order.map((item) => (
+      {items.map((item) => (
         <ItemCard
           key={item.id}
           item={item}
+          sectionId={sectionId}
           editing={editing}
+          dnd={dnd}
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item)}
-          reorderProps={editing ? getItemProps(item.id) : undefined}
-          dragging={draggingId === item.id}
-          dragHandle={
-            editing ? <DragHandle {...getHandleProps(item.id)} className="text-white/80 hover:text-white" /> : undefined
-          }
         />
       ))}
     </div>
