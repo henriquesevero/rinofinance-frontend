@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/MoneyInput"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { resizeImageToDataUrl } from "@/lib/image"
+import { brandLogoSrc, normalizeDomain } from "@/lib/brandLogo"
 import { toErrorMessage } from "@/lib/errors"
 import { wishlistApi } from "../api"
 import type { ItemInput, WishlistItem, WishlistSection } from "../types"
@@ -83,9 +84,17 @@ export function ItemFormDialog({ open, onOpenChange, item, sections, defaultSect
     try {
       const meta = await wishlistApi.unfurl(url.trim())
       let filled = false
+      let usedLogo = false
       if (meta.imageUrl) {
         setImageUrl(meta.imageUrl)
         filled = true
+      } else {
+        const logo = brandLogoSrc(normalizeDomain(url.trim()), 256)
+        if (logo) {
+          setImageUrl(logo)
+          filled = true
+          usedLogo = true
+        }
       }
       if (meta.title && !name.trim()) {
         setName(meta.title)
@@ -98,9 +107,13 @@ export function ItemFormDialog({ open, onOpenChange, item, sections, defaultSect
           filled = true
         }
       }
-      toast[filled ? "success" : "error"](
-        filled ? "Dados do produto preenchidos" : "Não encontramos dados nesse link"
-      )
+      if (!filled) {
+        toast.error("Não encontramos dados nesse link")
+      } else if (usedLogo) {
+        toast.success("Usamos o logo do site (a imagem do produto não estava disponível)")
+      } else {
+        toast.success("Dados do produto preenchidos")
+      }
     } catch (err) {
       toast.error(toErrorMessage(err))
     } finally {
