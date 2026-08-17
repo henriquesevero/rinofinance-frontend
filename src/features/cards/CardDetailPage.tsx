@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Eraser, FileUp, Gauge, Loader2, MoreHorizontal, Pencil, Trash2, Wallet } from "lucide-react"
+import {
+  ArrowLeft,
+  Eraser,
+  FileSpreadsheet,
+  FileUp,
+  Gauge,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Wallet,
+} from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -20,8 +31,10 @@ import { CardSection } from "./components/CardSection"
 import { ClearCardDialog } from "./components/ClearCardDialog"
 import { ImportFaturaDialog } from "./components/ImportFaturaDialog"
 import { computeCardStats } from "./cardStats"
+import { exportCardToXlsx } from "./export"
 import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "./store"
+import { useCategoriesStore } from "@/features/categories/store"
 
 const dayCountdown = (days: number, verb: string) =>
   days === 0 ? `${verb} hoje` : `${verb} em ${days} ${days === 1 ? "dia" : "dias"}`
@@ -39,6 +52,12 @@ export function CardDetailPage() {
   const deleteCard = useCardsStore((s) => s.deleteCard)
   const month = useMonthStore((s) => s.month)
   const updateCard = useCardsStore((s) => s.updateCard)
+  const categories = useCategoriesStore((s) => s.categories)
+  const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
+
+  useEffect(() => {
+    if (categories.length === 0) fetchCategories()
+  }, [categories.length, fetchCategories])
 
   async function handleDeleteCard() {
     try {
@@ -77,6 +96,11 @@ export function CardDetailPage() {
 
   const stats = computeCardStats(card, month)
 
+  const handleExport = () => {
+    const categoryMap = new Map(categories.map((c) => [c.id, c.name]))
+    exportCardToXlsx(card, month, (id) => (id ? categoryMap.get(id) ?? "" : ""))
+  }
+
   const breakdown = [
     { label: "Parcelas", value: stats.installmentMonthly, color: "bg-red-500" },
     { label: "Avulsas", value: stats.oneOffMonthly, color: "bg-orange-400" },
@@ -108,6 +132,16 @@ export function CardDetailPage() {
             title="Importar fatura"
           >
             <FileUp className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={handleExport}
+            aria-label="Exportar para Excel"
+            title="Exportar para Excel"
+          >
+            <FileSpreadsheet className="size-4" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
