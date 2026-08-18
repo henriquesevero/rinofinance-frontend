@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, Check, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, X } from "lucide-react"
+import { ArrowLeft, Check, Eraser, Loader2, MoreHorizontal, Pencil, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -19,6 +19,7 @@ import { CategoryChip } from "@/features/categories/components/CategoryChip"
 import { AccountAvatar } from "./components/AccountAvatar"
 import { AccountFormDialog } from "./components/AccountFormDialog"
 import { AccountPurchaseFormDialog } from "./components/AccountPurchaseFormDialog"
+import { ClearAccountPurchasesDialog } from "./components/ClearAccountPurchasesDialog"
 import { useAccountsStore } from "./store"
 import type { AccountPurchase } from "./types"
 
@@ -40,6 +41,7 @@ export function AccountDetailPage() {
 
   const [isEditing, setIsEditing] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [isClearingPurchases, setIsClearingPurchases] = useState(false)
   const [purchaseDialog, setPurchaseDialog] = useState<PurchaseDialogState>(null)
   const [editingBalance, setEditingBalance] = useState(false)
   const [balanceDraft, setBalanceDraft] = useState(0)
@@ -223,16 +225,29 @@ export function AccountDetailPage() {
               <span className="shrink-0 text-xs text-muted-foreground">({account.purchases.length})</span>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={() => setPurchaseDialog({ mode: "create" })}
-            aria-label="Nova compra"
-            title="Nova compra"
-          >
-            <Plus className="size-4" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setIsClearingPurchases(true)}
+              aria-label="Limpar compras no débito"
+              title="Limpar compras no débito"
+              disabled={account.purchases.length === 0}
+            >
+              <Eraser className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8"
+              onClick={() => setPurchaseDialog({ mode: "create" })}
+              aria-label="Nova compra"
+              title="Nova compra"
+            >
+              <Plus className="size-4" />
+            </Button>
+          </div>
         </div>
 
         {account.purchases.length === 0 ? (
@@ -325,6 +340,12 @@ export function AccountDetailPage() {
             toast.success("Compra lançada")
           }
         }}
+      />
+
+      <ClearAccountPurchasesDialog
+        open={isClearingPurchases}
+        onOpenChange={setIsClearingPurchases}
+        account={account}
       />
 
       <ConfirmDialog
