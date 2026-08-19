@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
-import { BarChart3, CalendarDays } from "lucide-react"
+import { BarChart3, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { useCardsStore } from "@/features/cards/store"
-import { monthLabel, useMonthStore } from "@/lib/monthStore"
+import { currentMonth, monthLabel, useMonthStore } from "@/lib/monthStore"
 import { CategoryBreakdownPanel } from "./components/CategoryBreakdownPanel"
 import { MonthBalanceCard } from "./components/MonthBalanceCard"
 import { FinancialOverview } from "./components/FinancialOverview"
@@ -19,6 +19,9 @@ export function DashboardPage() {
   const fetchSummary = useDashboardStore((s) => s.fetchSummary)
   const fetchCards = useCardsStore((s) => s.fetchCards)
   const month = useMonthStore((s) => s.month)
+  const shift = useMonthStore((s) => s.shift)
+  const goToCurrent = useMonthStore((s) => s.goToCurrent)
+  const atCurrent = month === currentMonth()
   const [showCharts, setShowCharts] = useState(false)
 
   useEffect(() => {
@@ -40,17 +43,43 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rf-fade-up flex items-start justify-between gap-3">
+      <div className="rf-fade-up flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Visão Geral</h1>
           <p className="hidden text-sm text-muted-foreground sm:block">Visão geral dos seus dados financeiros.</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <ValuesVisibilityToggle />
-          <span className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-sm font-medium">
-            <CalendarDays className="size-4 text-muted-foreground" />
-            {monthLabel(month)}
-          </span>
+        <div className="flex shrink-0 flex-col items-end gap-1 self-end sm:self-auto">
+          <div className="flex items-center gap-1">
+            <ValuesVisibilityToggle />
+            <div className="flex items-center gap-0.5 rounded-full border bg-card p-0.5 text-sm font-medium">
+              <button
+                type="button"
+                onClick={() => shift(-1)}
+                aria-label="Mês anterior"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <span className="min-w-0 truncate">{monthLabel(month)}</span>
+              <button
+                type="button"
+                onClick={() => shift(1)}
+                aria-label="Próximo mês"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          </div>
+          {!atCurrent && (
+            <button
+              type="button"
+              onClick={goToCurrent}
+              className="pr-1 text-xs font-medium text-primary hover:underline"
+            >
+              Voltar ao mês atual
+            </button>
+          )}
         </div>
       </div>
 

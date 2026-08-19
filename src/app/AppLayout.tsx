@@ -237,10 +237,6 @@ export function AppLayout() {
             ))}
           </div>
 
-          <div className="pt-5">
-            <MonthSelector />
-          </div>
-
           <div className="mt-4 flex flex-col gap-1 border-t pt-4">
             <NavLink
               to="/settings"
