@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { bankDomain, brandLogoSrc } from "@/lib/brandLogo"
+import { CardBrandLogo } from "./CardBrandLogo"
 import type { CardOverview } from "../types"
 
 interface CardArtProps {
-  card: Pick<CardOverview, "name" | "color" | "imageUrl" | "logoUrl">
+  card: Pick<CardOverview, "name" | "color" | "imageUrl" | "logoUrl" | "brand">
   overlay?: React.ReactNode
   className?: string
 }
@@ -53,6 +54,10 @@ export function CardArt({ card, overlay, className }: CardArtProps) {
         <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-8 text-white @[16rem]:p-4 @[16rem]:pt-12">
           {overlay}
         </div>
+      )}
+
+      {card.brand && (
+        <CardBrandLogo brand={card.brand} className="absolute bottom-3 right-3 z-10 @[16rem]:bottom-4 @[16rem]:right-4" />
       )}
     </div>
   )

@@ -299,6 +299,7 @@ export function CardDetailPage() {
         initial={{
           name: card.name,
           color: card.color ?? "",
+          brand: card.brand ?? "",
           logoUrl: card.logoUrl ?? "",
           imageUrl: card.imageUrl ?? "",
           creditLimit: card.creditLimit,

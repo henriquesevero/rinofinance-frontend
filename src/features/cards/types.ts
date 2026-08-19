@@ -28,6 +28,7 @@ export interface CardOverview {
   id: string
   name: string
   color?: string
+  brand?: string
   logoUrl?: string
   imageUrl?: string
   creditLimit: number
@@ -46,6 +47,7 @@ export interface CardsOverview {
 export interface CardInput {
   name: string
   color: string
+  brand: string
   logoUrl: string
   imageUrl: string
   creditLimit: number

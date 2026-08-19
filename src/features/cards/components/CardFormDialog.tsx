@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/MoneyInput"
 import { CardArt } from "./CardArt"
+import { CARD_BRANDS, CardBrandLogo } from "./CardBrandLogo"
 import { resizeImageToDataUrl } from "@/lib/image"
 import { toErrorMessage } from "@/lib/errors"
 import { toast } from "sonner"
@@ -67,6 +68,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [name, setName] = useState(initial?.name ?? "")
   const [color, setColor] = useState(initial?.color || "#6B7280")
+  const [brand, setBrand] = useState(initial?.brand ?? "")
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? "")
   const [logoUrl, setLogoUrl] = useState(initial?.logoUrl ?? "")
   const [creditLimit, setCreditLimit] = useState(initial?.creditLimit ?? 0)
@@ -78,6 +80,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
     if (open) {
       setName(initial?.name ?? "")
       setColor(initial?.color || "#6B7280")
+      setBrand(initial?.brand ?? "")
       setImageUrl(initial?.imageUrl ?? "")
       setLogoUrl(initial?.logoUrl ?? "")
       setCreditLimit(initial?.creditLimit ?? 0)
@@ -115,6 +118,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
       await onSubmit({
         name,
         color,
+        brand,
         logoUrl,
         imageUrl,
         creditLimit,
@@ -143,7 +147,7 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
                 aria-label={imageUrl ? "Trocar imagem do cartão" : "Adicionar imagem ao cartão"}
                 className="block w-full rounded-xl transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <CardArt card={{ name: name || "Cartão", color, imageUrl, logoUrl }} />
+                <CardArt card={{ name: name || "Cartão", color, imageUrl, logoUrl, brand }} />
               </button>
               <span className="pointer-events-none absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-full bg-black/55 text-white shadow-sm backdrop-blur-sm">
                 <ImagePlus className="size-3.5" />
@@ -243,6 +247,33 @@ export function CardFormDialog({ open, onOpenChange, initial, onSubmit, onDelete
                 className="size-6 cursor-pointer rounded-full border-0 bg-transparent p-0"
                 aria-label="Escolher cor personalizada"
               />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Bandeira</Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setBrand("")}
+                data-selected={brand === ""}
+                className="rounded-full border border-input px-3 py-1 text-xs font-medium text-muted-foreground transition-colors data-[selected=true]:border-foreground data-[selected=true]:text-foreground"
+              >
+                Nenhuma
+              </button>
+              {CARD_BRANDS.map((b) => (
+                <button
+                  key={b.value}
+                  type="button"
+                  title={b.label}
+                  aria-label={b.label}
+                  onClick={() => setBrand(b.value)}
+                  data-selected={brand === b.value}
+                  className="rounded-full p-0.5 ring-1 ring-transparent transition-all data-[selected=true]:ring-2 data-[selected=true]:ring-foreground"
+                >
+                  <CardBrandLogo brand={b.value} className="h-6 w-9" />
+                </button>
+              ))}
             </div>
           </div>
 
