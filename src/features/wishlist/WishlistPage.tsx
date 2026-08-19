@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Check, ChevronDown, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -165,6 +165,17 @@ function ListPage({
     )
   }
 
+  // Touch-friendly alternative to dragging an item, used by the mobile up/down
+  // buttons — reorders within the same section list via the existing move logic.
+  function moveItemBy(item: WishlistItem, sectionItems: WishlistItem[], delta: -1 | 1) {
+    const i = sectionItems.findIndex((x) => x.id === item.id)
+    if (i === -1) return
+    const target = i + delta
+    if (target < 0 || target >= sectionItems.length) return
+    const beforeId = delta < 0 ? sectionItems[i - 1].id : (sectionItems[i + 2]?.id ?? null)
+    moveItemTo(item.id, item.sectionId ?? "", beforeId)
+  }
+
   const dnd: ItemDnd = {
     active: draggingId !== null,
     draggingId,
@@ -324,7 +335,7 @@ function ListPage({
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {sectionReorder.order.map((section) => {
+          {sectionReorder.order.map((section, sectionIndex) => {
             const sectionItems = itemsBySection.get(section.id) ?? []
             return (
               <Section
@@ -346,6 +357,10 @@ function ListPage({
                     />
                   ) : undefined
                 }
+                onMoveUp={sectionIndex > 0 ? () => sectionReorder.moveBy(section.id, -1) : undefined}
+                onMoveDown={
+                  sectionIndex < sectionReorder.order.length - 1 ? () => sectionReorder.moveBy(section.id, 1) : undefined
+                }
                 onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
                 onEdit={() => setSectionDialog({ mode: "edit", section })}
                 onDelete={() => setDeletingSection(section)}
@@ -357,6 +372,7 @@ function ListPage({
                   dnd={dnd}
                   onEdit={(item) => setItemDialog({ mode: "edit", item })}
                   onDelete={(item) => setDeletingItem(item)}
+                  onMove={(item, delta) => moveItemBy(item, sectionItems, delta)}
                 />
               </Section>
             )
@@ -379,6 +395,7 @@ function ListPage({
                 dnd={dnd}
                 onEdit={(item) => setItemDialog({ mode: "edit", item })}
                 onDelete={(item) => setDeletingItem(item)}
+                onMove={(item, delta) => moveItemBy(item, ungrouped, delta)}
               />
             </Section>
           )}
@@ -449,6 +466,8 @@ function Section({
   reorderProps,
   dragHandle,
   dragging,
+  onMoveUp,
+  onMoveDown,
   onAdd,
   onEdit,
   onDelete,
@@ -464,6 +483,8 @@ function Section({
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -476,6 +497,28 @@ function Section({
     <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
       <div className="flex items-center gap-2">
         {editing && dragHandle}
+        {editing && (onMoveUp || onMoveDown) && (
+          <div className="flex shrink-0 items-center gap-0.5 md:hidden">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              aria-label="Mover seção para cima"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronUp className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              aria-label="Mover seção para baixo"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronDown className="size-4" />
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
@@ -557,6 +600,7 @@ function ItemGrid({
   dnd,
   onEdit,
   onDelete,
+  onMove,
 }: {
   items: WishlistItem[]
   sectionId: string
@@ -564,10 +608,11 @@ function ItemGrid({
   dnd: ItemDnd
   onEdit: (item: WishlistItem) => void
   onDelete: (item: WishlistItem) => void
+  onMove: (item: WishlistItem, delta: -1 | 1) => void
 }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <ItemCard
           key={item.id}
           item={item}
@@ -576,6 +621,8 @@ function ItemGrid({
           dnd={dnd}
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item)}
+          onMoveUp={index > 0 ? () => onMove(item, -1) : undefined}
+          onMoveDown={index < items.length - 1 ? () => onMove(item, 1) : undefined}
         />
       ))}
     </div>

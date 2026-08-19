@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
-import { FolderTree, Search } from "lucide-react"
+import { FolderTree, Search, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
@@ -39,6 +42,8 @@ export function EntriesPage() {
   const [categoryId, setCategoryId] = useState("")
   const [groupBy, setGroupBy] = useState(false)
   const [mobileTab, setMobileTab] = useState<"income" | "expense">("income")
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const activeFilterCount = (pendingOnly ? 1 : 0) + (categoryId ? 1 : 0) + (groupBy ? 1 : 0)
 
   useEffect(() => {
     fetchSummary()
@@ -91,7 +96,7 @@ export function EntriesPage() {
         />
       </div>
 
-      <div className="rf-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: "120ms" }}>
+      <div className="rf-fade-up hidden flex-wrap items-center gap-2 lg:flex" style={{ animationDelay: "120ms" }}>
         <div className="relative min-w-[9rem] flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -138,6 +143,73 @@ export function EntriesPage() {
           Agrupar
         </Button>
       </div>
+
+      <div className="rf-fade-up flex items-center gap-2 lg:hidden" style={{ animationDelay: "120ms" }}>
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome..."
+            className="h-10 rounded-full border-transparent bg-muted pl-10"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          aria-label="Filtros"
+          className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/70"
+        >
+          <SlidersHorizontal className="size-4" />
+          {activeFilterCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <DialogContent className="lg:hidden">
+          <DialogHeader>
+            <DialogTitle>Filtros</DialogTitle>
+            <DialogDescription>Refine a lista de entradas e saídas.</DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="entries-pending-only">Somente pendentes</Label>
+            <Switch id="entries-pending-only" checked={pendingOnly} onCheckedChange={(v) => setPendingOnly(v === true)} />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="entries-group-by">Agrupar por categoria</Label>
+            <Switch id="entries-group-by" checked={groupBy} onCheckedChange={(v) => setGroupBy(v === true)} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="entries-category">Categoria</Label>
+            <Select value={categoryId || ALL} onValueChange={(v) => setCategoryId(v === ALL ? "" : (v ?? ""))}>
+              <SelectTrigger id="entries-category" className="w-full" aria-label="Filtrar por categoria">
+                <SelectValue>
+                  {(value: string | null) =>
+                    value && value !== ALL
+                      ? categories.find((c) => c.id === value)?.name ?? "Categoria"
+                      : "Todas categorias"
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>Todas categorias</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="rf-fade-up hidden items-start gap-6 lg:grid lg:grid-cols-2" style={{ animationDelay: "180ms" }}>
         <IncomeSection incomes={summary.incomes} filters={filters} />

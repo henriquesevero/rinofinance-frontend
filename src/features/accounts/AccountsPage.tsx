@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
-import { Loader2, Pencil, Plus } from "lucide-react"
+import { Link } from "react-router-dom"
+import { ChevronRight, Loader2, Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,10 +11,13 @@ import { cn } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/errors"
 import { useReorder } from "@/lib/useReorder"
 import { useMonthStore } from "@/lib/monthStore"
+import { AccountCarousel } from "./components/AccountCarousel"
 import { AccountFormDialog } from "./components/AccountFormDialog"
 import { AccountTile } from "./components/AccountTile"
 import { useAccountsStore } from "./store"
 import type { Account } from "./types"
+
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" })
 
 export function AccountsPage() {
   const accounts = useAccountsStore((s) => s.accounts)
@@ -27,12 +31,19 @@ export function AccountsPage() {
   const month = useMonthStore((s) => s.month)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(accounts, reorderAccounts)
   const totalDebits = useMemo(() => accounts.reduce((sum, a) => sum + a.monthlyDebitTotal, 0), [accounts])
 
   useEffect(() => {
     fetchAccounts()
   }, [fetchAccounts, month])
+
+  useEffect(() => {
+    if (activeIndex >= accounts.length) setActiveIndex(Math.max(0, accounts.length - 1))
+  }, [accounts.length, activeIndex])
+
+  const activeAccount = accounts[activeIndex] ?? null
 
   if (isLoading && accounts.length === 0) {
     return (
@@ -69,62 +80,147 @@ export function AccountsPage() {
         </div>
       </div>
 
-      {order.length > 0 && (
-        <Card className="gap-0 overflow-hidden p-0">
-          <div className="grid gap-px bg-border sm:grid-cols-2">
-            <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Saldo total</span>
-              <MoneyValue
-                value={totalBalance}
-                className={cn(
-                  "text-xl font-bold tracking-tight tabular-nums sm:text-2xl",
-                  totalBalance < 0 ? "text-red-500" : "text-emerald-500"
-                )}
-              />
-              <span className="text-xs text-muted-foreground">somado de todas as contas</span>
-            </div>
-            <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Débitos do mês
-              </span>
-              <MoneyValue value={totalDebits} className="text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl" />
-              <span className="text-xs text-muted-foreground">compras no débito deste mês</span>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {order.length === 0 ? (
+      {accounts.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">Nenhuma conta cadastrada ainda.</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-          {order.map((account) => (
-            <li
-              key={account.id}
-              {...getItemProps(account.id)}
-              className={cn("group relative transition-opacity", draggingId === account.id && "opacity-40")}
-            >
-              <DragHandle
-                {...getHandleProps(account.id)}
-                className="absolute right-10 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setEditingAccount(account)
-                }}
-                title="Editar conta"
-                aria-label="Editar conta"
-                className="absolute right-2 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover:opacity-100"
-              >
-                <Pencil className="size-4" />
-              </button>
-              <AccountTile account={account} />
-            </li>
-          ))}
-        </ul>
+        <>
+          {/* Mobile: swipeable carousel with per-account balance/debits info */}
+          <div className="flex flex-col gap-6 md:hidden">
+            <AccountCarousel
+              accounts={accounts}
+              activeIndex={activeIndex}
+              onActiveIndexChange={setActiveIndex}
+              onEditAccount={setEditingAccount}
+            />
+
+            {activeAccount && (
+              <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
+                <Link
+                  to={`/accounts/${activeAccount.id}`}
+                  viewTransition
+                  className="flex items-center justify-between gap-3 rounded-2xl border bg-card p-4 shadow-sm transition-colors hover:bg-accent/50"
+                >
+                  <span className="text-sm font-medium">Saldo</span>
+                  <span className="flex items-center gap-1.5">
+                    <MoneyValue
+                      value={activeAccount.balance}
+                      className={cn(
+                        "font-bold tabular-nums",
+                        activeAccount.balance >= 0 ? "text-emerald-500" : "text-red-500"
+                      )}
+                    />
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </span>
+                </Link>
+
+                <Card className="gap-3 p-4 sm:p-5">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Débitos do mês
+                    </p>
+                    <MoneyValue
+                      value={activeAccount.monthlyDebitTotal}
+                      className="text-2xl font-bold tracking-tight tabular-nums text-red-500"
+                    />
+                    <p className="text-xs text-muted-foreground">compras no débito deste mês</p>
+                  </div>
+
+                  <Link
+                    to={`/accounts/${activeAccount.id}`}
+                    viewTransition
+                    className="mt-1 flex w-full items-center justify-center rounded-full border border-primary/30 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                  >
+                    Ver conta completa
+                  </Link>
+                </Card>
+
+                <Card className="gap-3 p-4 sm:p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Compras do mês
+                  </p>
+
+                  {activeAccount.purchases.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhuma compra lançada.</p>
+                  ) : (
+                    <div className="scrollbar-hide -mx-1 flex max-h-64 flex-col gap-1 overflow-y-auto px-1">
+                      {activeAccount.purchases.map((purchase) => (
+                        <div key={purchase.id} className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm">{purchase.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {dateFormatter.format(new Date(`${purchase.date}T00:00:00`))}
+                            </p>
+                          </div>
+                          <MoneyValue value={purchase.amount} className="shrink-0 text-sm font-medium tabular-nums" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: aggregate summary + reorderable grid */}
+          <div className="hidden flex-col gap-6 md:flex">
+            <Card className="gap-0 overflow-hidden p-0">
+              <div className="grid gap-px bg-border sm:grid-cols-2">
+                <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Saldo total
+                  </span>
+                  <MoneyValue
+                    value={totalBalance}
+                    className={cn(
+                      "text-xl font-bold tracking-tight tabular-nums sm:text-2xl",
+                      totalBalance < 0 ? "text-red-500" : "text-emerald-500"
+                    )}
+                  />
+                  <span className="text-xs text-muted-foreground">somado de todas as contas</span>
+                </div>
+                <div className="flex flex-col justify-center gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Débitos do mês
+                  </span>
+                  <MoneyValue
+                    value={totalDebits}
+                    className="text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl"
+                  />
+                  <span className="text-xs text-muted-foreground">compras no débito deste mês</span>
+                </div>
+              </div>
+            </Card>
+
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+              {order.map((account) => (
+                <li
+                  key={account.id}
+                  {...getItemProps(account.id)}
+                  className={cn("group relative transition-opacity", draggingId === account.id && "opacity-40")}
+                >
+                  <DragHandle
+                    {...getHandleProps(account.id)}
+                    className="absolute right-10 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm hover:bg-black/40 hover:text-white group-hover:opacity-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setEditingAccount(account)
+                    }}
+                    title="Editar conta"
+                    aria-label="Editar conta"
+                    className="absolute right-2 top-2 z-10 rounded-md bg-black/25 p-1 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/40 group-hover:opacity-100"
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                  <AccountTile account={account} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
 
       <AccountFormDialog

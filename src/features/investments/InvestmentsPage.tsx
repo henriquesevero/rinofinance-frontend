@@ -295,7 +295,7 @@ export function InvestmentsPage() {
               <h2 className="text-sm font-semibold">Posições</h2>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="scrollbar-hide flex max-h-[28rem] flex-col gap-5 overflow-y-auto">
               {groups.map((g) => (
                 <div key={g.meta.value} className="flex flex-col">
                   <div className="flex items-center gap-2 border-b px-1 pb-1.5">

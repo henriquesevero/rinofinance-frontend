@@ -50,5 +50,18 @@ export function useReorder<T extends { id: string }>(items: T[], persist: (order
     }
   }
 
-  return { order, draggingId, getItemProps, getHandleProps }
+  // Touch-friendly alternative to drag-and-drop (native HTML5 DnD doesn't fire on
+  // mobile browsers at all), moving an item by one position and persisting immediately.
+  function moveBy(id: string, delta: number) {
+    const from = order.findIndex((i) => i.id === id)
+    const to = from + delta
+    if (from === -1 || to < 0 || to >= order.length) return
+    const next = [...order]
+    const [moved] = next.splice(from, 1)
+    next.splice(to, 0, moved)
+    setOrder(next)
+    persist(next.map((i) => i.id))
+  }
+
+  return { order, draggingId, getItemProps, getHandleProps, moveBy }
 }

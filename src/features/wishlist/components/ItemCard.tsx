@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ExternalLink, ShoppingBag, X } from "lucide-react"
+import { ChevronDown, ChevronUp, ExternalLink, ShoppingBag, X } from "lucide-react"
 import { MoneyValue } from "@/components/MoneyValue"
 import { normalizeDomain } from "@/lib/brandLogo"
 import { cn } from "@/lib/utils"
@@ -13,9 +13,11 @@ interface ItemCardProps {
   dnd: ItemDnd
   onEdit: () => void
   onDelete: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }
 
-export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete }: ItemCardProps) {
+export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete, onMoveUp, onMoveDown }: ItemCardProps) {
   const [imgFailed, setImgFailed] = useState(false)
   const [over, setOver] = useState(false)
   const showImage = Boolean(item.imageUrl) && !imgFailed
@@ -110,6 +112,29 @@ export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete }: It
         >
           <X className="size-4" strokeWidth={3} />
         </button>
+      )}
+
+      {editing && (onMoveUp || onMoveDown) && (
+        <div className="absolute left-2 top-2 z-10 flex flex-col gap-0.5 md:hidden">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!onMoveUp}
+            aria-label={`Mover ${item.name} para cima`}
+            className="flex size-7 items-center justify-center rounded-full bg-black/40 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronUp className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!onMoveDown}
+            aria-label={`Mover ${item.name} para baixo`}
+            className="flex size-7 items-center justify-center rounded-full bg-black/40 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronDown className="size-4" />
+          </button>
+        </div>
       )}
 
       {editing ? (

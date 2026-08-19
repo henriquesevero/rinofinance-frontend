@@ -208,7 +208,7 @@ export function AnnualPage() {
               <span className="w-24 text-right">Saídas</span>
               <span className="w-24 text-right">Saldo</span>
             </div>
-            <ul className="flex flex-col">
+            <ul className="scrollbar-hide flex max-h-[26rem] flex-col overflow-y-auto">
               {data.months.map((m) => {
                 const empty = m.income === 0 && m.expense === 0
                 return (
@@ -309,7 +309,7 @@ export function AnnualPage() {
             </div>
             <MoneyValue value={totalPatrimony} className="text-lg font-bold tabular-nums text-emerald-500" />
           </div>
-          <ul className="flex flex-col gap-3">
+          <ul className="scrollbar-hide flex max-h-[28rem] flex-col gap-3 overflow-y-auto">
             {activeAssets.map((a) => {
               const share = totalPatrimony > 0 ? (a.currentBalance / totalPatrimony) * 100 : 0
               return (
