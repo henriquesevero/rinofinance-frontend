@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
-import { ArrowRightLeft, CalendarRange, CreditCard, Globe, Home, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
+import { ArrowRightLeft, CalendarRange, CreditCard, Globe, Home, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
 import { MonthSelector } from "@/components/MonthSelector"
@@ -27,10 +27,13 @@ const tabs = [
 const tabRoutes = tabs.map((t) => t.to)
 
 const mobileNavTabs = [
+  { to: "/dashboard", label: "Início", icon: Home },
   { to: "/entradas-saidas", label: "Fluxo", icon: ArrowRightLeft },
   { to: "/cards", label: "Cartões", icon: CreditCard },
   { to: "/accounts", label: "Contas", icon: Wallet },
 ]
+
+const mobileMenuTabs = tabs.filter((t) => !mobileNavTabs.some((m) => m.to === t.to))
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user)
@@ -54,31 +57,13 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-svh">
-      {navOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 md:hidden" onClick={() => setNavOpen(false)} aria-hidden />
-      )}
-
       <aside
         data-swipe-ignore
-        className={cn(
-          "scrollbar-hide fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r bg-background px-3 pb-4 pt-[calc(env(safe-area-inset-top)_+_1rem)] transition-transform duration-200 md:translate-x-0 md:pt-4",
-          navOpen ? "translate-x-0" : "-translate-x-full"
-        )}
+        className="scrollbar-hide fixed inset-y-0 left-0 z-50 hidden w-64 shrink-0 flex-col gap-6 overflow-y-auto border-r bg-background px-3 pb-4 pt-4 md:flex"
       >
-        <div className="flex items-center justify-between gap-2 px-1">
-          <div className="flex items-center gap-2">
-            <Logo showWordmark={false} />
-            <span className="text-lg font-semibold tracking-tight">RinoFinance</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setNavOpen(false)}
-            aria-label="Fechar menu"
-          >
-            <X className="size-5" />
-          </Button>
+        <div className="flex items-center gap-2 px-1">
+          <Logo showWordmark={false} />
+          <span className="text-lg font-semibold tracking-tight">RinoFinance</span>
         </div>
 
         <nav className="flex flex-col gap-1">
@@ -132,17 +117,7 @@ export function AppLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col md:ml-64">
-        <header className="sticky top-0 z-30 flex items-center gap-2 border-b bg-background/95 px-3 pb-2 pt-[calc(env(safe-area-inset-top)_+_0.5rem)] backdrop-blur md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setNavOpen(true)} aria-label="Abrir menu">
-            <Menu className="size-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Logo showWordmark={false} markClassName="size-6" />
-            <span className="text-base font-semibold tracking-tight">RinoFinance</span>
-          </div>
-        </header>
-
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 pb-24 md:px-8 md:pb-6">
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 pb-24 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pb-6 md:pt-6">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -159,17 +134,6 @@ export function AppLayout() {
         data-swipe-ignore
         className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
-        <NavLink
-          to="/dashboard"
-          viewTransition
-          className="flex flex-1 flex-col items-center justify-start pt-1.5"
-          aria-label="Painel"
-        >
-          <span className="-mt-6 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background">
-            <Home className="size-6" />
-          </span>
-        </NavLink>
-
         {mobileNavTabs.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -192,7 +156,7 @@ export function AppLayout() {
           onClick={() => setNavOpen(true)}
           className={cn(
             "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
-            navOpen || !["/dashboard", ...mobileNavTabs.map((t) => t.to)].some((p) => location.pathname.startsWith(p))
+            navOpen || !mobileNavTabs.some((t) => location.pathname.startsWith(t.to))
               ? "text-primary"
               : "text-muted-foreground"
           )}
@@ -202,6 +166,100 @@ export function AppLayout() {
           Menu
         </button>
       </nav>
+
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 md:hidden",
+          navOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setNavOpen(false)}
+        aria-hidden
+      />
+
+      <div
+        data-swipe-ignore
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 flex max-h-[85svh] flex-col rounded-t-3xl border-t bg-background pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-300 ease-out md:hidden",
+          navOpen ? "translate-y-0" : "translate-y-full"
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => setNavOpen(false)}
+          aria-label="Fechar menu"
+          className="flex w-full shrink-0 justify-center pb-2 pt-3"
+        >
+          <span className="h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+        </button>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-2">
+          <h2 className="pb-3 text-lg font-bold tracking-tight">Menu</h2>
+
+          <div className="grid grid-cols-4 gap-x-2 gap-y-4">
+            {mobileMenuTabs.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                viewTransition
+                className={({ isActive }) =>
+                  cn(
+                    "flex flex-col items-center gap-1.5 rounded-2xl py-1 text-center transition-colors",
+                    isActive ? "text-primary" : "text-foreground"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={cn(
+                        "flex size-12 items-center justify-center rounded-2xl transition-colors",
+                        isActive ? "bg-primary/10 text-primary" : "bg-muted text-foreground"
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="text-[11px] font-medium leading-tight">{label}</span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+
+          <div className="pt-5">
+            <MonthSelector />
+          </div>
+
+          <div className="mt-4 flex flex-col gap-1 border-t pt-4">
+            <NavLink
+              to="/settings"
+              viewTransition
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-md px-2 py-2 transition-colors",
+                  isActive ? "bg-primary/10" : "hover:bg-muted"
+                )
+              }
+            >
+              <UserAvatar name={user?.name ?? ""} avatarUrl={user?.avatarUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{firstName ? `${greeting}, ${firstName}` : greeting}</p>
+                <p className="truncate text-xs text-muted-foreground">Ver conta</p>
+              </div>
+            </NavLink>
+            <div className="flex items-center gap-0.5 px-1 pb-2">
+              <Button variant="ghost" size="icon" onClick={logout} aria-label="Sair">
+                <LogOut className="size-4" />
+              </Button>
+              <div className="ml-auto flex items-center gap-0.5">
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
