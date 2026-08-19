@@ -137,12 +137,18 @@
     }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior-x: none;
     }
   html {
     @apply font-sans;
     /* Never let the whole page scroll sideways on mobile — inner scroll
-       containers (tables/charts) still scroll on their own. */
+       containers (tables/charts) still scroll on their own. overscroll-behavior-x
+       stops iOS from rubber-banding/bouncing the whole page (which visibly
+       stretches fixed elements like the bottom nav) once a horizontal scroller,
+       e.g. the cards carousel, hits its edge — installed iOS PWAs lack Safari's
+       own overscroll containment, so this has to be set explicitly. */
     overflow-x: hidden;
+    overscroll-behavior-x: none;
     }
   /* Media never forces the page wider than its container. */
   img,
