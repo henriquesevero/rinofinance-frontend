@@ -104,8 +104,8 @@ export function CategoriesPage() {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">Categorias</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-extrabold tracking-tight">Categorias</h1>
+          <p className="hidden text-sm text-muted-foreground sm:block">
             Como seu dinheiro se divide — organize e acompanhe cada categoria.
           </p>
         </div>

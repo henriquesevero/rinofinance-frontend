@@ -126,8 +126,8 @@ export function CardsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cartões</h1>
-          <p className="text-muted-foreground">Faturas, limites e parcelas dos seus cartões.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Cartões</h1>
+          <p className="hidden text-muted-foreground sm:block">Faturas, limites e parcelas dos seus cartões.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />

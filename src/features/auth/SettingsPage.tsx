@@ -193,8 +193,8 @@ export function SettingsPage() {
         ← Voltar ao painel
       </Link>
       <div className="text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Minha conta</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Perfil, acesso e segurança.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight">Minha conta</h1>
+        <p className="mt-1 hidden text-sm text-muted-foreground sm:block">Perfil, acesso e segurança.</p>
       </div>
 
       <Card>

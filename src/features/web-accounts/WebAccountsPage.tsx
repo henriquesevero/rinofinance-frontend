@@ -204,8 +204,8 @@ export function WebAccountsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Contas na Internet</h1>
-          <p className="text-muted-foreground">Seus acessos, com o logo de cada site. Toque para abrir o login.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Contas na Internet</h1>
+          <p className="hidden text-muted-foreground sm:block">Seus acessos, com o logo de cada site. Toque para abrir o login.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {!isEmpty && (

@@ -70,8 +70,8 @@ export function EntriesPage() {
     <div className="flex flex-col gap-6">
       <div className="rf-fade-up flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Fluxo do mês</h1>
-          <p className="text-muted-foreground">Entradas e saídas — o que entra, o que sai e o que sobra.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Fluxo do mês</h1>
+          <p className="hidden text-muted-foreground sm:block">Entradas e saídas — o que entra, o que sai e o que sobra.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />

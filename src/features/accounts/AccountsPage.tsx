@@ -51,8 +51,8 @@ export function AccountsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Contas</h1>
-          <p className="text-muted-foreground">Seus saldos e compras no débito.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Contas</h1>
+          <p className="hidden text-muted-foreground sm:block">Seus saldos e compras no débito.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />

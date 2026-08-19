@@ -42,8 +42,8 @@ export function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div className="rf-fade-up flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
-          <p className="text-sm text-muted-foreground">Visão geral dos seus dados financeiros.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Visão Geral</h1>
+          <p className="hidden text-sm text-muted-foreground sm:block">Visão geral dos seus dados financeiros.</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ValuesVisibilityToggle />

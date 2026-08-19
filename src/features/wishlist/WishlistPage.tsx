@@ -253,8 +253,8 @@ function ListPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          <p className="text-muted-foreground">{description}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
+          <p className="hidden text-muted-foreground sm:block">{description}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <ValuesVisibilityToggle />

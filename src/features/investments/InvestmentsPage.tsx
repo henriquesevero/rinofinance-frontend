@@ -178,8 +178,8 @@ export function InvestmentsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Investimentos</h1>
-          <p className="text-muted-foreground">Sua carteira, rentabilidade e proventos.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Investimentos</h1>
+          <p className="hidden text-muted-foreground sm:block">Sua carteira, rentabilidade e proventos.</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <ValuesVisibilityToggle />
