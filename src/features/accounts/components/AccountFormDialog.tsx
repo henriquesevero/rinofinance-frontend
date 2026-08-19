@@ -25,6 +25,9 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
   const [color, setColor] = useState(COLOR_PRESETS[0])
   const [imageUrl, setImageUrl] = useState("")
   const [balance, setBalance] = useState(0)
+  const [agency, setAgency] = useState("")
+  const [accountNumber, setAccountNumber] = useState("")
+  const [accountType, setAccountType] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -33,6 +36,9 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
       setColor(initial?.color || COLOR_PRESETS[0])
       setImageUrl(initial?.imageUrl ?? "")
       setBalance(initial?.balance ?? 0)
+      setAgency(initial?.agency ?? "")
+      setAccountNumber(initial?.accountNumber ?? "")
+      setAccountType(initial?.accountType ?? "")
     }
   }, [open, initial])
 
@@ -51,7 +57,7 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      await onSubmit({ name, color, imageUrl, balance })
+      await onSubmit({ name, color, imageUrl, balance, agency, accountNumber, accountType })
       onOpenChange(false)
     } finally {
       setIsSubmitting(false)
@@ -98,6 +104,35 @@ export function AccountFormDialog({ open, onOpenChange, initial, onSubmit }: Acc
           <div className="flex flex-col gap-2">
             <Label htmlFor="account-balance">Saldo atual</Label>
             <MoneyInput id="account-balance" value={balance} onValueChange={setBalance} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="account-agency">Agência</Label>
+              <Input
+                id="account-agency"
+                placeholder="Ex: 0001"
+                value={agency}
+                onChange={(e) => setAgency(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="account-number">Número da conta</Label>
+              <Input
+                id="account-number"
+                placeholder="Ex: 12345-6"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="account-type">Tipo de conta</Label>
+            <Input
+              id="account-type"
+              placeholder="Ex: Conta corrente, Poupança..."
+              value={accountType}
+              onChange={(e) => setAccountType(e.target.value)}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <Label>Cor</Label>

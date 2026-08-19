@@ -17,8 +17,6 @@ import { AccountTile } from "./components/AccountTile"
 import { useAccountsStore } from "./store"
 import type { Account } from "./types"
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" })
-
 export function AccountsPage() {
   const accounts = useAccountsStore((s) => s.accounts)
   const totalBalance = useAccountsStore((s) => s.totalBalance)
@@ -136,24 +134,31 @@ export function AccountsPage() {
 
                 <Card className="gap-3 p-4 sm:p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Compras do mês
+                    Dados da conta
                   </p>
 
-                  {activeAccount.purchases.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Nenhuma compra lançada.</p>
+                  {!activeAccount.agency && !activeAccount.accountNumber && !activeAccount.accountType ? (
+                    <p className="text-sm text-muted-foreground">Nenhum dado cadastrado.</p>
                   ) : (
-                    <div className="scrollbar-hide -mx-1 flex max-h-64 flex-col gap-1 overflow-y-auto px-1">
-                      {activeAccount.purchases.map((purchase) => (
-                        <div key={purchase.id} className="flex items-center justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm">{purchase.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {dateFormatter.format(new Date(`${purchase.date}T00:00:00`))}
-                            </p>
-                          </div>
-                          <MoneyValue value={purchase.amount} className="shrink-0 text-sm font-medium tabular-nums" />
+                    <div className="flex flex-col divide-y divide-border">
+                      {activeAccount.accountType && (
+                        <div className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                          <span className="text-sm text-muted-foreground">Tipo de conta</span>
+                          <span className="text-sm font-medium">{activeAccount.accountType}</span>
                         </div>
-                      ))}
+                      )}
+                      {activeAccount.agency && (
+                        <div className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                          <span className="text-sm text-muted-foreground">Agência</span>
+                          <span className="text-sm font-medium tabular-nums">{activeAccount.agency}</span>
+                        </div>
+                      )}
+                      {activeAccount.accountNumber && (
+                        <div className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                          <span className="text-sm text-muted-foreground">Número da conta</span>
+                          <span className="text-sm font-medium tabular-nums">{activeAccount.accountNumber}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </Card>
@@ -247,6 +252,9 @@ export function AccountsPage() {
                 color: editingAccount.color ?? "",
                 imageUrl: editingAccount.imageUrl ?? "",
                 balance: editingAccount.balance,
+                agency: editingAccount.agency ?? "",
+                accountNumber: editingAccount.accountNumber ?? "",
+                accountType: editingAccount.accountType ?? "",
               }
             : undefined
         }

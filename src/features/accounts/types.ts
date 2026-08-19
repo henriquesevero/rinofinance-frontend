@@ -12,6 +12,9 @@ export interface Account {
   color?: string
   imageUrl?: string
   balance: number
+  agency?: string
+  accountNumber?: string
+  accountType?: string
   monthlyDebitTotal: number
   purchases: AccountPurchase[]
 }
@@ -26,6 +29,9 @@ export interface AccountInput {
   color: string
   imageUrl: string
   balance: number
+  agency: string
+  accountNumber: string
+  accountType: string
 }
 
 export interface AccountPurchaseInput {

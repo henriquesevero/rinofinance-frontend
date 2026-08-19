@@ -315,6 +315,9 @@ export function AccountDetailPage() {
           color: account.color ?? "",
           imageUrl: account.imageUrl ?? "",
           balance: account.balance,
+          agency: account.agency ?? "",
+          accountNumber: account.accountNumber ?? "",
+          accountType: account.accountType ?? "",
         }}
         onSubmit={async (input) => {
           try {
