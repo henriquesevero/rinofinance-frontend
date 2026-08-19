@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { cn } from "@/lib/utils"
 import { useCategoriesStore } from "@/features/categories/store"
@@ -37,6 +38,7 @@ export function EntriesPage() {
   const [pendingOnly, setPendingOnly] = useState(false)
   const [categoryId, setCategoryId] = useState("")
   const [groupBy, setGroupBy] = useState(false)
+  const [mobileTab, setMobileTab] = useState<"income" | "expense">("income")
 
   useEffect(() => {
     fetchSummary()
@@ -137,10 +139,32 @@ export function EntriesPage() {
         </Button>
       </div>
 
-      <div className="rf-fade-up grid items-start gap-6 lg:grid-cols-2" style={{ animationDelay: "180ms" }}>
+      <div className="rf-fade-up hidden items-start gap-6 lg:grid lg:grid-cols-2" style={{ animationDelay: "180ms" }}>
         <IncomeSection incomes={summary.incomes} filters={filters} />
         <ExpenseSection expenses={summary.expenses} filters={filters} />
       </div>
+
+      <Tabs
+        value={mobileTab}
+        onValueChange={(v) => setMobileTab((v as "income" | "expense") ?? "income")}
+        className="rf-fade-up lg:hidden"
+        style={{ animationDelay: "180ms" }}
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="income" className="flex-1">
+            Entradas
+          </TabsTrigger>
+          <TabsTrigger value="expense" className="flex-1">
+            Saídas
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="income">
+          <IncomeSection incomes={summary.incomes} filters={filters} />
+        </TabsContent>
+        <TabsContent value="expense">
+          <ExpenseSection expenses={summary.expenses} filters={filters} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
