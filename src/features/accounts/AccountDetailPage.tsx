@@ -107,6 +107,9 @@ export function AccountDetailPage() {
         color: account.color ?? "",
         imageUrl: account.imageUrl ?? "",
         balance: balanceDraft,
+        agency: account.agency ?? "",
+        accountNumber: account.accountNumber ?? "",
+        accountType: account.accountType ?? "",
       })
       toast.success("Saldo atualizado")
       setEditingBalance(false)
