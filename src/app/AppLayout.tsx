@@ -125,7 +125,7 @@ export function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col md:ml-64">
         <main
           ref={mainRef}
-          className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 pb-24 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pb-6 md:pt-6"
+          className="mx-auto w-full max-w-6xl flex-1 overflow-x-hidden px-4 pb-24 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pb-6 md:pt-6"
         >
           <Suspense
             fallback={
