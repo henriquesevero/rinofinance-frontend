@@ -10,7 +10,7 @@ export function AccountTile({ account, className }: { account: Account; classNam
     <Link to={`/accounts/${account.id}`} viewTransition className="group block">
       <div
         className={cn(
-          "@container relative flex aspect-[1.586] flex-col justify-between overflow-hidden rounded-2xl p-3 shadow-sm ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_16px_44px_-16px_rgba(97,218,251,0.5)]",
+          "@container relative flex aspect-[1.45] flex-col justify-between overflow-hidden rounded-2xl p-3 shadow-sm ring-1 ring-black/10 transition-all duration-300 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_16px_44px_-16px_rgba(97,218,251,0.5)]",
           className
         )}
         style={{ background: `linear-gradient(155deg, ${color} 0%, rgba(0,0,0,0.5) 155%)` }}
