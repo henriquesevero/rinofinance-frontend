@@ -116,8 +116,8 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col md:ml-64">
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 pb-24 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pb-6 md:pt-6">
+      <div className="flex h-dvh min-w-0 flex-1 flex-col overflow-hidden md:h-auto md:min-h-svh md:ml-64 md:overflow-visible">
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto overflow-x-clip px-4 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pt-6">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -128,44 +128,44 @@ export function AppLayout() {
             <Outlet />
           </Suspense>
         </main>
-      </div>
 
-      <nav
-        data-swipe-ignore
-        className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-      >
-        {mobileNavTabs.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            viewTransition
-            className={({ isActive }) =>
-              cn(
-                "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )
-            }
-          >
-            <Icon className="size-5" />
-            {label}
-          </NavLink>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => setNavOpen(true)}
-          className={cn(
-            "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
-            navOpen || !mobileNavTabs.some((t) => location.pathname.startsWith(t.to))
-              ? "text-primary"
-              : "text-muted-foreground"
-          )}
-          aria-label="Abrir menu"
+        <nav
+          data-swipe-ignore
+          className="flex shrink-0 items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
         >
-          <Menu className="size-5" />
-          Menu
-        </button>
-      </nav>
+          {mobileNavTabs.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              viewTransition
+              className={({ isActive }) =>
+                cn(
+                  "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )
+              }
+            >
+              <Icon className="size-5" />
+              {label}
+            </NavLink>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => setNavOpen(true)}
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+              navOpen || !mobileNavTabs.some((t) => location.pathname.startsWith(t.to))
+                ? "text-primary"
+                : "text-muted-foreground"
+            )}
+            aria-label="Abrir menu"
+          >
+            <Menu className="size-5" />
+            Menu
+          </button>
+        </nav>
+      </div>
 
       <div
         className={cn(
@@ -182,7 +182,7 @@ export function AppLayout() {
         aria-modal="true"
         aria-label="Menu"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 flex max-h-[85svh] flex-col rounded-t-3xl border-t bg-background pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-300 ease-out md:hidden",
+          "fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-3xl border-t bg-background pb-[env(safe-area-inset-bottom)] shadow-2xl transition-transform duration-300 ease-out md:hidden",
           navOpen ? "translate-y-0" : "translate-y-full"
         )}
       >
