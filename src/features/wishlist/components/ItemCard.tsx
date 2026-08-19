@@ -96,7 +96,7 @@ export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete, onMo
           : undefined
       }
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card transition-all duration-300 ease-out",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_4px_14px_-6px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out dark:shadow-none",
         editing && "cursor-grab active:cursor-grabbing",
         !editing && "hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_12px_36px_-14px_rgba(97,218,251,0.4)]",
         isTarget && "border-primary ring-2 ring-primary/60",
@@ -108,7 +108,7 @@ export function ItemCard({ item, sectionId, editing, dnd, onEdit, onDelete, onMo
           type="button"
           aria-label={`Remover ${item.name}`}
           onClick={onDelete}
-          className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-destructive text-white shadow-sm transition hover:brightness-110"
+          className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-destructive/90 text-white shadow-sm backdrop-blur-sm transition hover:bg-destructive"
         >
           <X className="size-4" strokeWidth={3} />
         </button>

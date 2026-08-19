@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Check, ChevronDown, Globe, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Globe, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -114,6 +114,17 @@ export function WebAccountsPage() {
       newItems.map((i) => i.id),
       changedSection
     )
+  }
+
+  // Touch-friendly alternative to dragging an account, used by the mobile up/down
+  // buttons — reorders within the same section list via the existing move logic.
+  function moveAccountBy(account: WishlistItem, sectionItems: WishlistItem[], delta: -1 | 1) {
+    const i = sectionItems.findIndex((x) => x.id === account.id)
+    if (i === -1) return
+    const target = i + delta
+    if (target < 0 || target >= sectionItems.length) return
+    const beforeId = delta < 0 ? sectionItems[i - 1].id : (sectionItems[i + 2]?.id ?? null)
+    moveAccount(account.id, account.sectionId ?? "", beforeId)
   }
 
   const dnd: AccountDnd = {
@@ -238,7 +249,8 @@ export function WebAccountsPage() {
 
       {editing && (
         <p className="-mt-2 text-xs text-muted-foreground">
-          Arraste uma conta para reordenar ou soltá-la em outra seção.
+          <span className="hidden md:inline">Arraste uma conta para reordenar ou soltá-la em outra seção.</span>
+          <span className="md:hidden">Use as setas para reordenar contas e seções.</span>
         </p>
       )}
 
@@ -257,7 +269,7 @@ export function WebAccountsPage() {
         </div>
       ) : (
         <div className="gap-4 [column-fill:balance] sm:columns-2 xl:columns-3">
-          {sectionReorder.order.map((section) => (
+          {sectionReorder.order.map((section, sectionIndex) => (
             <SectionCard
               key={section.id}
               sectionId={section.id}
@@ -276,6 +288,10 @@ export function WebAccountsPage() {
                   />
                 ) : undefined
               }
+              onMoveUp={sectionIndex > 0 ? () => sectionReorder.moveBy(section.id, -1) : undefined}
+              onMoveDown={
+                sectionIndex < sectionReorder.order.length - 1 ? () => sectionReorder.moveBy(section.id, 1) : undefined
+              }
               onAdd={() => setAccountDialog({ mode: "create", sectionId: section.id })}
               onEdit={() => setSectionDialog({ mode: "edit", section })}
               onDelete={() => setDeletingSection(section)}
@@ -287,6 +303,7 @@ export function WebAccountsPage() {
                 dnd={dnd}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
+                onMove={(account, delta) => moveAccountBy(account, itemsBySection.get(section.id) ?? [], delta)}
               />
             </SectionCard>
           ))}
@@ -308,6 +325,7 @@ export function WebAccountsPage() {
                 dnd={dnd}
                 onEdit={(account) => setAccountDialog({ mode: "edit", account })}
                 onDelete={(account) => setDeletingAccount(account)}
+                onMove={(account, delta) => moveAccountBy(account, ungrouped, delta)}
               />
             </SectionCard>
           )}
@@ -376,6 +394,8 @@ function SectionCard({
   reorderProps,
   dragHandle,
   dragging,
+  onMoveUp,
+  onMoveDown,
   onAdd,
   onEdit,
   onDelete,
@@ -390,6 +410,8 @@ function SectionCard({
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -409,6 +431,28 @@ function SectionCard({
     >
       <div className="flex items-center gap-2 px-3 py-2.5">
         {editing && dragHandle}
+        {editing && (onMoveUp || onMoveDown) && (
+          <div className="flex shrink-0 items-center gap-0.5 md:hidden">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              aria-label="Mover seção para cima"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronUp className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              aria-label="Mover seção para baixo"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronDown className="size-4" />
+            </button>
+          </div>
+        )}
         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <button
           type="button"
@@ -479,6 +523,7 @@ function AccountGrid({
   dnd,
   onEdit,
   onDelete,
+  onMove,
 }: {
   accounts: WishlistItem[]
   sectionId: string
@@ -486,10 +531,11 @@ function AccountGrid({
   dnd: AccountDnd
   onEdit: (account: WishlistItem) => void
   onDelete: (account: WishlistItem) => void
+  onMove: (account: WishlistItem, delta: -1 | 1) => void
 }) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-2.5">
-      {accounts.map((account) => (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-x-2 gap-y-3">
+      {accounts.map((account, index) => (
         <AccountTile
           key={account.id}
           account={account}
@@ -498,6 +544,8 @@ function AccountGrid({
           dnd={dnd}
           onEdit={() => onEdit(account)}
           onDelete={() => onDelete(account)}
+          onMoveUp={index > 0 ? () => onMove(account, -1) : undefined}
+          onMoveDown={index < accounts.length - 1 ? () => onMove(account, 1) : undefined}
         />
       ))}
     </div>
@@ -511,6 +559,8 @@ function AccountTile({
   dnd,
   onEdit,
   onDelete,
+  onMoveUp,
+  onMoveDown,
 }: {
   account: WishlistItem
   sectionId: string
@@ -518,6 +568,8 @@ function AccountTile({
   dnd: AccountDnd
   onEdit: () => void
   onDelete: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }) {
   const href = account.url ? (account.url.includes("://") ? account.url : `https://${account.url}`) : undefined
   const dragging = dnd.draggingId === account.id
@@ -525,17 +577,20 @@ function AccountTile({
   const isTarget = over && dnd.active && !dragging
 
   const content = (
-    <div className="flex aspect-square items-center justify-center">
-      <SiteLogo
-        name={account.name}
-        url={account.url}
-        logoUrl={account.logoUrl}
-        imageUrl={account.imageUrl}
-        className={cn(
-          "max-h-full transition-shadow duration-300",
-          !editing && "group-hover:shadow-[0_16px_40px_-14px_rgba(97,218,251,0.65)]"
-        )}
-      />
+    <div className="flex flex-col items-center gap-1">
+      <div className="aspect-square w-full">
+        <SiteLogo
+          name={account.name}
+          url={account.url}
+          logoUrl={account.logoUrl}
+          imageUrl={account.imageUrl}
+          className={cn(
+            "size-full transition-shadow duration-300",
+            !editing && "group-hover:shadow-[0_16px_40px_-14px_rgba(97,218,251,0.65)]"
+          )}
+        />
+      </div>
+      <p className="w-full truncate text-center text-[11px] leading-tight text-muted-foreground">{account.name}</p>
     </div>
   )
 
@@ -595,6 +650,29 @@ function AccountTile({
         >
           <X className="size-3" strokeWidth={3} />
         </button>
+      )}
+
+      {editing && (onMoveUp || onMoveDown) && (
+        <div className="absolute left-0 top-0 z-10 flex flex-col gap-0.5 md:hidden">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!onMoveUp}
+            aria-label={`Mover ${account.name} para cima`}
+            className="flex size-5 items-center justify-center rounded-full bg-black/40 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronUp className="size-3" strokeWidth={3} />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!onMoveDown}
+            aria-label={`Mover ${account.name} para baixo`}
+            className="flex size-5 items-center justify-center rounded-full bg-black/40 text-white shadow-sm backdrop-blur-sm transition hover:bg-black/60 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronDown className="size-3" strokeWidth={3} />
+          </button>
+        </div>
       )}
 
       {editing ? (
