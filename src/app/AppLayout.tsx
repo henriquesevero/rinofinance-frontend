@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { ArrowRightLeft, CalendarRange, CreditCard, Globe, Home, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -43,9 +43,15 @@ export function AppLayout() {
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
   const location = useLocation()
   const [navOpen, setNavOpen] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     setNavOpen(false)
+  }, [location.pathname])
+
+  useLayoutEffect(() => {
+    mainRef.current?.scrollTo(0, 0)
+    window.scrollTo(0, 0)
   }, [location.pathname])
 
   useSwipeNavigation(tabRoutes)
@@ -116,8 +122,11 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <div className="flex h-dvh min-w-0 flex-1 flex-col overflow-hidden md:h-auto md:min-h-svh md:ml-64 md:overflow-visible">
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto overflow-x-clip px-4 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pt-6">
+      <div className="flex min-w-0 flex-1 flex-col md:ml-64">
+        <main
+          ref={mainRef}
+          className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 pb-24 pt-[calc(env(safe-area-inset-top)_+_1.5rem)] md:px-8 md:pb-6 md:pt-6"
+        >
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -128,44 +137,44 @@ export function AppLayout() {
             <Outlet />
           </Suspense>
         </main>
-
-        <nav
-          data-swipe-ignore
-          className="flex shrink-0 items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-        >
-          {mobileNavTabs.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              viewTransition
-              className={({ isActive }) =>
-                cn(
-                  "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )
-              }
-            >
-              <Icon className="size-5" />
-              {label}
-            </NavLink>
-          ))}
-
-          <button
-            type="button"
-            onClick={() => setNavOpen(true)}
-            className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
-              navOpen || !mobileNavTabs.some((t) => location.pathname.startsWith(t.to))
-                ? "text-primary"
-                : "text-muted-foreground"
-            )}
-            aria-label="Abrir menu"
-          >
-            <Menu className="size-5" />
-            Menu
-          </button>
-        </nav>
       </div>
+
+      <nav
+        data-swipe-ignore
+        className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      >
+        {mobileNavTabs.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            viewTransition
+            className={({ isActive }) =>
+              cn(
+                "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )
+            }
+          >
+            <Icon className="size-5" />
+            {label}
+          </NavLink>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setNavOpen(true)}
+          className={cn(
+            "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+            navOpen || !mobileNavTabs.some((t) => location.pathname.startsWith(t.to))
+              ? "text-primary"
+              : "text-muted-foreground"
+          )}
+          aria-label="Abrir menu"
+        >
+          <Menu className="size-5" />
+          Menu
+        </button>
+      </nav>
 
       <div
         className={cn(
