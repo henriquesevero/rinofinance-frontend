@@ -21,7 +21,7 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
         <img
           src="/card-brands/visa.png"
           alt="Visa"
-          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+          className={cn("h-7 w-[75px] object-contain drop-shadow-md", className)}
         />
       )
     case "visa-silver":
@@ -29,7 +29,7 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
         <img
           src="/card-brands/visa-silver.png"
           alt="Visa"
-          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+          className={cn("h-7 w-[75px] object-contain drop-shadow-md", className)}
         />
       )
     case "visa-infinite":
@@ -37,14 +37,17 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
         <img
           src="/card-brands/visa-infinite.png"
           alt="Visa Infinite"
-          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+          className={cn("h-7 w-[53px] object-contain drop-shadow-md", className)}
         />
       )
     case "mastercard":
       return (
-        <div className={cn("relative h-7 w-11 drop-shadow-md", className)}>
-          <span className="absolute left-0 top-0 size-7 rounded-full bg-[#EB001B]" />
-          <span className="absolute left-[15px] top-0 size-7 rounded-full bg-[#F79E1B] opacity-90" />
+        <div className={cn("flex h-9 w-11 flex-col items-center justify-end gap-[1.5px] drop-shadow-md", className)}>
+          <div className="relative h-7 w-11 shrink-0">
+            <span className="absolute left-0 top-0 size-7 rounded-full bg-[#EB001B]" />
+            <span className="absolute left-[15px] top-0 size-7 rounded-full bg-[#F79E1B] opacity-90" />
+          </div>
+          <span className="text-[5px] font-semibold leading-none tracking-tight text-white">mastercard</span>
         </div>
       )
     case "mastercard-mono":
