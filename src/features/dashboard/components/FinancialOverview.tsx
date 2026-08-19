@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight, CreditCard, Landmark, TrendingUp } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -25,11 +25,104 @@ export function FinancialOverview() {
     fetchAssets()
   }, [fetchAccounts, fetchAssets, month])
 
+  const panels = [
+    { key: "accounts", node: <AccountsCard /> },
+    { key: "cards", node: <CardsCard /> },
+    { key: "investments", node: <InvestmentsCard /> },
+  ]
+
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <AccountsCard />
-      <CardsCard />
-      <InvestmentsCard />
+    <>
+      <div className="hidden gap-4 lg:grid lg:grid-cols-3">
+        {panels.map((p) => (
+          <div key={p.key}>{p.node}</div>
+        ))}
+      </div>
+      <OverviewCarousel panels={panels} />
+    </>
+  )
+}
+
+function OverviewCarousel({ panels }: { panels: { key: string; node: React.ReactNode }[] }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([])
+  const isProgrammaticScroll = useRef(false)
+  const programmaticTimeout = useRef<number | undefined>(undefined)
+
+  function scrollToIndex(index: number) {
+    const el = itemRefs.current[index]
+    if (!el) return
+    isProgrammaticScroll.current = true
+    window.clearTimeout(programmaticTimeout.current)
+    el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
+    programmaticTimeout.current = window.setTimeout(() => {
+      isProgrammaticScroll.current = false
+    }, 500)
+  }
+
+  function goTo(index: number) {
+    const clamped = Math.max(0, Math.min(panels.length - 1, index))
+    setActiveIndex(clamped)
+    scrollToIndex(clamped)
+  }
+
+  function handleScroll() {
+    if (isProgrammaticScroll.current) return
+    const scroller = scrollerRef.current
+    if (!scroller) return
+    const scrollerRect = scroller.getBoundingClientRect()
+    const scrollerCenter = scrollerRect.left + scrollerRect.width / 2
+    let closest = 0
+    let minDist = Infinity
+    itemRefs.current.forEach((el, i) => {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const dist = Math.abs(rect.left + rect.width / 2 - scrollerCenter)
+      if (dist < minDist) {
+        minDist = dist
+        closest = i
+      }
+    })
+    if (closest !== activeIndex) setActiveIndex(closest)
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3 lg:hidden">
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[6%] pb-1 [overscroll-behavior-x:contain] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {panels.map((p, i) => (
+          <div
+            key={p.key}
+            ref={(el) => {
+              itemRefs.current[i] = el
+            }}
+            className="w-[88%] shrink-0 snap-center"
+          >
+            {p.node}
+          </div>
+        ))}
+      </div>
+
+      {panels.length > 1 && (
+        <div className="flex items-center gap-1.5">
+          {panels.map((p, i) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-label={`Ir para o painel ${i + 1}`}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                i === activeIndex ? "w-5 bg-foreground" : "w-1.5 bg-muted-foreground/30"
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
