@@ -59,7 +59,7 @@ export function AccountCarousel({ accounts, activeIndex, onActiveIndexChange, on
       <div
         ref={scrollerRef}
         onScroll={handleScroll}
-        className="flex w-full snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-[calc(50%-9rem)] pb-14 pt-4 [overscroll-behavior-x:contain] [scrollbar-width:none] sm:px-[calc(50%-10rem)] sm:pb-16 [&::-webkit-scrollbar]:hidden"
+        className="flex w-full snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-[calc(50%-7.5rem)] pb-14 pt-4 [overscroll-behavior-x:contain] [scrollbar-width:none] sm:px-[calc(50%-8rem)] sm:pb-16 [&::-webkit-scrollbar]:hidden"
       >
         {accounts.map((account, i) => (
           <div
@@ -67,7 +67,7 @@ export function AccountCarousel({ accounts, activeIndex, onActiveIndexChange, on
             ref={(el) => {
               itemRefs.current[i] = el
             }}
-            className="relative w-72 shrink-0 snap-center sm:w-80"
+            className="relative w-60 shrink-0 snap-center sm:w-64"
           >
             <AccountTile
               account={account}
