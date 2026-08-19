@@ -11,7 +11,8 @@ import { toErrorMessage } from "@/lib/errors"
 import { CardFormDialog } from "./components/CardFormDialog"
 import { CardCarousel } from "./components/CardCarousel"
 import { CardOverviewTile } from "./components/CardOverviewTile"
-import { computeCardStats } from "./cardStats"
+import { computeCardStats, isPurchaseActiveInMonth, isSubscriptionActiveInMonth } from "./cardStats"
+import { currentInstallment } from "./installments"
 import { useMonthStore } from "@/lib/monthStore"
 import { useCardsStore } from "./store"
 import type { CardOverview } from "./types"
@@ -66,6 +67,25 @@ export function CardsPage() {
     activeStats?.limitUsedFraction !== null && activeStats?.limitUsedFraction !== undefined
       ? Math.min(100, activeStats.limitUsedFraction * 100)
       : null
+
+  const activeAvulsas = useMemo(
+    () =>
+      activeCard
+        ? activeCard.installmentPurchases.filter((p) => p.totalInstallments === 1 && isPurchaseActiveInMonth(p, month))
+        : [],
+    [activeCard, month]
+  )
+  const activeParcelas = useMemo(
+    () =>
+      activeCard
+        ? activeCard.installmentPurchases.filter((p) => p.totalInstallments > 1 && isPurchaseActiveInMonth(p, month))
+        : [],
+    [activeCard, month]
+  )
+  const activeAssinaturas = useMemo(
+    () => (activeCard ? activeCard.subscriptions.filter((s) => isSubscriptionActiveInMonth(s, month)) : []),
+    [activeCard, month]
+  )
 
   function handleDragEnter(overId: string) {
     if (!draggingId || draggingId === overId) return
@@ -203,6 +223,59 @@ export function CardsPage() {
                   >
                     Ver fatura completa
                   </Link>
+                </Card>
+
+                <Card className="gap-3 p-4 sm:p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Fatura completa
+                  </p>
+
+                  {activeAvulsas.length === 0 && activeParcelas.length === 0 && activeAssinaturas.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum lançamento neste mês.</p>
+                  ) : (
+                    <div className="scrollbar-hide -mx-1 flex max-h-64 flex-col gap-3 overflow-y-auto px-1">
+                      {activeAvulsas.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[11px] font-semibold text-muted-foreground">Avulsas</p>
+                          {activeAvulsas.map((p) => (
+                            <div key={p.id} className="flex items-center justify-between gap-3">
+                              <span className="min-w-0 truncate text-sm">{p.name}</span>
+                              <MoneyValue value={p.installmentAmount} className="shrink-0 text-sm font-medium tabular-nums" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {activeParcelas.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[11px] font-semibold text-muted-foreground">Parcelas</p>
+                          {activeParcelas.map((p) => (
+                            <div key={p.id} className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm">{p.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {currentInstallment(p)}/{p.totalInstallments}
+                                </p>
+                              </div>
+                              <MoneyValue value={p.installmentAmount} className="shrink-0 text-sm font-medium tabular-nums" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {activeAssinaturas.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          <p className="text-[11px] font-semibold text-muted-foreground">Assinaturas</p>
+                          {activeAssinaturas.map((s) => (
+                            <div key={s.id} className="flex items-center justify-between gap-3">
+                              <span className="min-w-0 truncate text-sm">{s.name}</span>
+                              <MoneyValue value={s.monthlyAmount} className="shrink-0 text-sm font-medium tabular-nums" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </Card>
               </div>
             )}

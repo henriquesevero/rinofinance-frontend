@@ -211,12 +211,18 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <button
           type="button"
-          onClick={() => setCollapsed((c) => !c)}
+          onClick={() => {
+            if (window.matchMedia("(max-width: 767px)").matches) return
+            setCollapsed((c) => !c)
+          }}
           aria-expanded={!collapsed}
           className="flex min-w-0 items-center gap-2 text-left"
         >
           <ChevronDown
-            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
+            className={cn(
+              "hidden size-4 shrink-0 text-muted-foreground transition-transform md:block",
+              collapsed && "-rotate-90"
+            )}
           />
           <span className="size-2.5 shrink-0 rounded-full bg-emerald-500" />
           <CardTitle className="truncate">Entradas do mês</CardTitle>
@@ -254,9 +260,8 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
           </Button>
         </div>
       </CardHeader>
-      {!collapsed && (
-        <CardContent>
-          {incomes.length === 0 ? (
+      <CardContent className={cn(collapsed && "md:hidden")}>
+        {incomes.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
               <span className="flex size-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
                 <ArrowDownLeft className="size-5" />
@@ -291,8 +296,7 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
               {rows.map((i) => renderRow(i, canReorder))}
             </ul>
           )}
-        </CardContent>
-      )}
+      </CardContent>
 
       <IncomeFormDialog
         open={dialogState !== null}
