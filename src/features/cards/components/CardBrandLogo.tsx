@@ -2,10 +2,10 @@ import { cn } from "@/lib/utils"
 
 export const CARD_BRANDS = [
   { value: "visa", label: "Visa" },
+  { value: "visa-silver", label: "Visa (prateado)" },
   { value: "visa-infinite", label: "Visa Infinite" },
   { value: "mastercard", label: "Mastercard" },
   { value: "mastercard-mono", label: "Mastercard (cinza)" },
-  { value: "elo", label: "Elo" },
   { value: "amex", label: "American Express" },
 ] as const
 
@@ -18,21 +18,27 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
   switch (brand) {
     case "visa":
       return (
-        <div className={cn("flex h-7 w-11 items-center justify-center rounded-[5px] bg-white shadow-md", className)}>
-          <span className="font-serif text-[15px] font-black italic tracking-tight text-[#1A1F71]">VISA</span>
-        </div>
+        <img
+          src="/card-brands/visa.png"
+          alt="Visa"
+          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+        />
+      )
+    case "visa-silver":
+      return (
+        <img
+          src="/card-brands/visa-silver.png"
+          alt="Visa"
+          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+        />
       )
     case "visa-infinite":
       return (
-        <div
-          className={cn(
-            "flex h-7 w-11 flex-col items-center justify-center gap-px rounded-[5px] bg-neutral-950 shadow-md ring-1 ring-white/10",
-            className
-          )}
-        >
-          <span className="font-serif text-[11px] font-black italic leading-none tracking-tight text-white">VISA</span>
-          <span className="text-[5px] font-semibold leading-none tracking-[0.12em] text-[#D4AF6A]">INFINITE</span>
-        </div>
+        <img
+          src="/card-brands/visa-infinite.png"
+          alt="Visa Infinite"
+          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+        />
       )
     case "mastercard":
       return (
@@ -43,29 +49,33 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
       )
     case "mastercard-mono":
       return (
-        <div className={cn("relative h-7 w-11 drop-shadow-md", className)}>
-          <span className="absolute left-0 top-0 size-7 rounded-full bg-neutral-400" />
-          <span className="absolute left-[15px] top-0 size-7 rounded-full bg-neutral-600 opacity-90" />
-        </div>
-      )
-    case "elo":
-      return (
-        <div className={cn("flex h-7 w-11 items-center justify-center rounded-full bg-white shadow-md", className)}>
-          <span className="flex items-center gap-[1.5px] text-[13px] font-black italic tracking-tight text-neutral-900">
-            elo
-            <span className="-ml-px flex gap-[1.5px]">
-              <span className="size-[3.5px] rounded-full bg-[#FFCB05]" />
-              <span className="size-[3.5px] rounded-full bg-[#00A4E0]" />
-              <span className="size-[3.5px] rounded-full bg-[#EF4123]" />
-            </span>
-          </span>
+        <div className={cn("flex h-7 w-11 flex-col items-center justify-center gap-[1.5px] drop-shadow-md", className)}>
+          <div className="relative h-[19px] w-8">
+            <span
+              className="absolute left-0 top-0 size-[19px] rounded-full"
+              style={{
+                background:
+                  "linear-gradient(135deg, #e5e5e5 0%, #ffffff 22%, #cfcfd4 40%, #f0c9dc 52%, #c9e3f0 64%, #ffffff 82%, #d4d4d8 100%)",
+              }}
+            />
+            <span
+              className="absolute left-[10px] top-0 size-[19px] rounded-full opacity-95"
+              style={{
+                background:
+                  "linear-gradient(135deg, #ffffff 0%, #d8d8dc 28%, #efe3c8 50%, #d8d8dc 72%, #ffffff 100%)",
+              }}
+            />
+          </div>
+          <span className="text-[5px] font-semibold leading-none tracking-tight text-neutral-400">mastercard</span>
         </div>
       )
     case "amex":
       return (
-        <div className={cn("flex h-7 w-11 items-center justify-center rounded-[5px] bg-[#006FCF] shadow-md", className)}>
-          <span className="text-[9px] font-extrabold tracking-wide text-white">AMEX</span>
-        </div>
+        <img
+          src="/card-brands/amex.png"
+          alt="American Express"
+          className={cn("h-7 w-11 object-contain drop-shadow-md", className)}
+        />
       )
     default:
       return null
