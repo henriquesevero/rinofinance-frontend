@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
-import { ArrowRightLeft, CalendarRange, CreditCard, Globe, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
+import { ArrowRightLeft, CalendarRange, CreditCard, Globe, Home, LayoutDashboard, Loader2, LogOut, Menu, Package, PiggyBank, ShoppingCart, Tags, Wallet, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/Logo"
 import { MonthSelector } from "@/components/MonthSelector"
@@ -25,6 +25,12 @@ const tabs = [
 ]
 
 const tabRoutes = tabs.map((t) => t.to)
+
+const mobileNavTabs = [
+  { to: "/entradas-saidas", label: "Fluxo", icon: ArrowRightLeft },
+  { to: "/cards", label: "Cartões", icon: CreditCard },
+  { to: "/accounts", label: "Contas", icon: Wallet },
+]
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user)
@@ -136,7 +142,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 md:px-8">
+        <main className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-6 pb-24 md:px-8 md:pb-6">
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -148,6 +154,54 @@ export function AppLayout() {
           </Suspense>
         </main>
       </div>
+
+      <nav
+        data-swipe-ignore
+        className="fixed inset-x-0 bottom-0 z-30 flex items-stretch justify-around border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      >
+        <NavLink
+          to="/dashboard"
+          viewTransition
+          className="flex flex-1 flex-col items-center justify-start pt-1.5"
+          aria-label="Painel"
+        >
+          <span className="-mt-6 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background">
+            <Home className="size-6" />
+          </span>
+        </NavLink>
+
+        {mobileNavTabs.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            viewTransition
+            className={({ isActive }) =>
+              cn(
+                "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )
+            }
+          >
+            <Icon className="size-5" />
+            {label}
+          </NavLink>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setNavOpen(true)}
+          className={cn(
+            "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+            navOpen || !["/dashboard", ...mobileNavTabs.map((t) => t.to)].some((p) => location.pathname.startsWith(p))
+              ? "text-primary"
+              : "text-muted-foreground"
+          )}
+          aria-label="Abrir menu"
+        >
+          <Menu className="size-5" />
+          Menu
+        </button>
+      </nav>
     </div>
   )
 }
