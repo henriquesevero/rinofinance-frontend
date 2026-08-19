@@ -55,11 +55,11 @@ export function CardCarousel({ cards, activeIndex, onActiveIndexChange, onEditCa
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center">
       <div
         ref={scrollerRef}
         onScroll={handleScroll}
-        className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[calc(50%-9rem)] pb-1 [scrollbar-width:none] sm:px-[calc(50%-10rem)] [&::-webkit-scrollbar]:hidden"
+        className="flex w-full snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-[calc(50%-9rem)] pb-14 pt-4 [scrollbar-width:none] sm:px-[calc(50%-10rem)] sm:pb-16 [&::-webkit-scrollbar]:hidden"
       >
         {cards.map((card, i) => (
           <div
@@ -98,7 +98,7 @@ export function CardCarousel({ cards, activeIndex, onActiveIndexChange, onEditCa
       </div>
 
       {cards.length > 1 && (
-        <div className="flex items-center gap-3">
+        <div className="-mt-9 flex items-center gap-3">
           <button
             type="button"
             onClick={() => goTo(activeIndex - 1)}
