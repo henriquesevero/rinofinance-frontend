@@ -49,17 +49,17 @@ export function CardBrandLogo({ brand, className }: CardBrandLogoProps) {
       )
     case "mastercard-mono":
       return (
-        <div className={cn("flex h-7 w-11 flex-col items-center justify-center gap-[1.5px] drop-shadow-md", className)}>
-          <div className="relative h-[19px] w-8">
+        <div className={cn("flex h-9 w-11 flex-col items-center justify-end gap-[1.5px] drop-shadow-md", className)}>
+          <div className="relative h-7 w-11 shrink-0">
             <span
-              className="absolute left-0 top-0 size-[19px] rounded-full"
+              className="absolute left-0 top-0 size-7 rounded-full"
               style={{
                 background:
                   "linear-gradient(135deg, #e5e5e5 0%, #ffffff 22%, #cfcfd4 40%, #f0c9dc 52%, #c9e3f0 64%, #ffffff 82%, #d4d4d8 100%)",
               }}
             />
             <span
-              className="absolute left-[10px] top-0 size-[19px] rounded-full opacity-95"
+              className="absolute left-[15px] top-0 size-7 rounded-full opacity-95"
               style={{
                 background:
                   "linear-gradient(135deg, #ffffff 0%, #d8d8dc 28%, #efe3c8 50%, #d8d8dc 72%, #ffffff 100%)",
