@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Check, ChevronDown, ChevronUp, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Pencil, Plus, ShoppingCart, Tag, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -96,6 +96,7 @@ function ListPage({
   const [editing, setEditing] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const draggingRef = useRef<string | null>(null)
+  const [activeSectionId, setActiveSectionId] = useState<string>("")
 
   useEffect(() => {
     fetchWishlist()
@@ -122,6 +123,45 @@ function ListPage({
   const sectionReorder = useReorder(sections, (ids) =>
     reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
   )
+
+  // Mobile shows one section at a time via tabs, so there's nothing to collapse.
+  // `sectionReorder.order` lags one render behind `sections` right after data loads
+  // (it syncs via its own effect), so fall back to `sections` until it catches up —
+  // otherwise the tab list briefly only contains "Sem seção" and gets stuck selected.
+  const sectionsForTabs = sectionReorder.order.length === sections.length ? sectionReorder.order : sections
+  const mobileTabs = useMemo(() => {
+    const list = sectionsForTabs.map((s) => ({ id: s.id, name: s.name, color: s.color as string | undefined }))
+    if (ungrouped.length > 0) list.push({ id: NONE, name: "Sem seção", color: undefined })
+    return list
+  }, [sectionsForTabs, ungrouped.length])
+
+  useEffect(() => {
+    if (mobileTabs.length === 0) {
+      if (activeSectionId !== "") setActiveSectionId("")
+      return
+    }
+    if (!mobileTabs.some((t) => t.id === activeSectionId)) {
+      setActiveSectionId(mobileTabs[0].id)
+    }
+  }, [mobileTabs, activeSectionId])
+
+  const activeItems = activeSectionId === NONE ? ungrouped : itemsBySection.get(activeSectionId) ?? []
+  const isRealActiveSection = activeSectionId !== "" && activeSectionId !== NONE
+  const activeSectionOrderIndex = sectionReorder.order.findIndex((s) => s.id === activeSectionId)
+
+  function handleMobileAddItem() {
+    setItemDialog({ mode: "create", sectionId: isRealActiveSection ? activeSectionId : undefined })
+  }
+
+  function handleMobileEditSection() {
+    const section = sections.find((s) => s.id === activeSectionId)
+    if (section) setSectionDialog({ mode: "edit", section })
+  }
+
+  function handleMobileDeleteSection() {
+    const section = sections.find((s) => s.id === activeSectionId)
+    if (section) setDeletingSection(section)
+  }
 
   function moveItemTo(dragId: string, targetSectionId: string, beforeId: string | null) {
     if (dragId === beforeId) return
@@ -334,72 +374,147 @@ function ListPage({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
-          {sectionReorder.order.map((section, sectionIndex) => {
-            const sectionItems = itemsBySection.get(section.id) ?? []
-            return (
+        <>
+          {/* Desktop: stacked, collapsible sections */}
+          <div className="hidden flex-col gap-8 md:flex">
+            {sectionReorder.order.map((section) => {
+              const sectionItems = itemsBySection.get(section.id) ?? []
+              return (
+                <Section
+                  key={section.id}
+                  sectionId={section.id}
+                  title={section.name}
+                  color={section.color}
+                  count={sectionItems.length}
+                  total={sectionTotal(sectionItems)}
+                  editing={editing}
+                  dnd={dnd}
+                  reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
+                  dragging={sectionReorder.draggingId === section.id}
+                  dragHandle={
+                    editing ? (
+                      <DragHandle
+                        {...sectionReorder.getHandleProps(section.id)}
+                        className="text-muted-foreground/60 hover:text-foreground"
+                      />
+                    ) : undefined
+                  }
+                  onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
+                  onEdit={() => setSectionDialog({ mode: "edit", section })}
+                  onDelete={() => setDeletingSection(section)}
+                >
+                  <ItemGrid
+                    items={sectionItems}
+                    sectionId={section.id}
+                    editing={editing}
+                    dnd={dnd}
+                    onEdit={(item) => setItemDialog({ mode: "edit", item })}
+                    onDelete={(item) => setDeletingItem(item)}
+                    onMove={(item, delta) => moveItemBy(item, sectionItems, delta)}
+                  />
+                </Section>
+              )
+            })}
+
+            {ungrouped.length > 0 && (
               <Section
-                key={section.id}
-                sectionId={section.id}
-                title={section.name}
-                color={section.color}
-                count={sectionItems.length}
-                total={sectionTotal(sectionItems)}
+                sectionId=""
+                title="Sem seção"
+                count={ungrouped.length}
+                total={sectionTotal(ungrouped)}
                 editing={editing}
                 dnd={dnd}
-                reorderProps={editing ? sectionReorder.getItemProps(section.id) : undefined}
-                dragging={sectionReorder.draggingId === section.id}
-                dragHandle={
-                  editing ? (
-                    <DragHandle
-                      {...sectionReorder.getHandleProps(section.id)}
-                      className="text-muted-foreground/60 hover:text-foreground"
-                    />
-                  ) : undefined
-                }
-                onMoveUp={sectionIndex > 0 ? () => sectionReorder.moveBy(section.id, -1) : undefined}
-                onMoveDown={
-                  sectionIndex < sectionReorder.order.length - 1 ? () => sectionReorder.moveBy(section.id, 1) : undefined
-                }
-                onAdd={() => setItemDialog({ mode: "create", sectionId: section.id })}
-                onEdit={() => setSectionDialog({ mode: "edit", section })}
-                onDelete={() => setDeletingSection(section)}
+                onAdd={() => setItemDialog({ mode: "create" })}
               >
                 <ItemGrid
-                  items={sectionItems}
-                  sectionId={section.id}
+                  items={ungrouped}
+                  sectionId=""
                   editing={editing}
                   dnd={dnd}
                   onEdit={(item) => setItemDialog({ mode: "edit", item })}
                   onDelete={(item) => setDeletingItem(item)}
-                  onMove={(item, delta) => moveItemBy(item, sectionItems, delta)}
+                  onMove={(item, delta) => moveItemBy(item, ungrouped, delta)}
                 />
               </Section>
-            )
-          })}
+            )}
+          </div>
 
-          {ungrouped.length > 0 && (
-            <Section
-              sectionId=""
-              title="Sem seção"
-              count={ungrouped.length}
-              total={sectionTotal(ungrouped)}
-              editing={editing}
-              dnd={dnd}
-              onAdd={() => setItemDialog({ mode: "create" })}
-            >
+          {/* Mobile: one section at a time via tabs, always expanded */}
+          <div className="flex flex-col gap-4 md:hidden">
+            <div className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4">
+              {mobileTabs.map((tab) => {
+                const active = tab.id === activeSectionId
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveSectionId(tab.id)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                      active
+                        ? "border-transparent bg-foreground text-background"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {tab.color && (
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: active ? "currentColor" : tab.color }}
+                      />
+                    )}
+                    {tab.name}
+                  </button>
+                )
+              })}
+            </div>
+
+            {isRealActiveSection && editing && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => sectionReorder.moveBy(activeSectionId, -1)}
+                  disabled={activeSectionOrderIndex <= 0}
+                  aria-label="Mover seção para a esquerda"
+                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => sectionReorder.moveBy(activeSectionId, 1)}
+                  disabled={activeSectionOrderIndex < 0 || activeSectionOrderIndex >= sectionReorder.order.length - 1}
+                  aria-label="Mover seção para a direita"
+                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+                <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={handleMobileEditSection}>
+                  <Pencil className="size-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="size-7" aria-label="Remover seção" onClick={handleMobileDeleteSection}>
+                  <Trash2 className="size-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="ml-auto size-7" aria-label="Adicionar item" onClick={handleMobileAddItem}>
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+            )}
+
+            {activeItems.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">Nenhum item nesta seção.</p>
+            ) : (
               <ItemGrid
-                items={ungrouped}
-                sectionId=""
+                items={activeItems}
+                sectionId={isRealActiveSection ? activeSectionId : ""}
                 editing={editing}
                 dnd={dnd}
                 onEdit={(item) => setItemDialog({ mode: "edit", item })}
                 onDelete={(item) => setDeletingItem(item)}
-                onMove={(item, delta) => moveItemBy(item, ungrouped, delta)}
+                onMove={(item, delta) => moveItemBy(item, activeItems, delta)}
               />
-            </Section>
-          )}
-        </div>
+            )}
+          </div>
+        </>
       )}
 
       <ItemFormDialog
@@ -466,8 +581,6 @@ function Section({
   reorderProps,
   dragHandle,
   dragging,
-  onMoveUp,
-  onMoveDown,
   onAdd,
   onEdit,
   onDelete,
@@ -483,8 +596,6 @@ function Section({
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
-  onMoveUp?: () => void
-  onMoveDown?: () => void
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -497,28 +608,6 @@ function Section({
     <section {...reorderProps} className={cn("flex flex-col gap-3", dragging && "opacity-40")}>
       <div className="flex items-center gap-2">
         {editing && dragHandle}
-        {editing && (onMoveUp || onMoveDown) && (
-          <div className="flex shrink-0 items-center gap-0.5 md:hidden">
-            <button
-              type="button"
-              onClick={onMoveUp}
-              disabled={!onMoveUp}
-              aria-label="Mover seção para cima"
-              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-            >
-              <ChevronUp className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={onMoveDown}
-              disabled={!onMoveDown}
-              aria-label="Mover seção para baixo"
-              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-            >
-              <ChevronDown className="size-4" />
-            </button>
-          </div>
-        )}
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
