@@ -213,6 +213,7 @@ export function AppLayout() {
                 key={to}
                 to={to}
                 viewTransition
+                onClick={() => setNavOpen(false)}
                 className={({ isActive }) =>
                   cn(
                     "flex flex-col items-center gap-1.5 rounded-2xl py-1 text-center transition-colors",
@@ -241,6 +242,7 @@ export function AppLayout() {
             <NavLink
               to="/settings"
               viewTransition
+              onClick={() => setNavOpen(false)}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-md px-2 py-2 transition-colors",
