@@ -428,20 +428,22 @@ export function WebAccountsPage() {
               </div>
             )}
 
-            <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-              {activeAccounts.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma conta nesta seção.</p>
-              ) : (
-                <AccountGrid
-                  accounts={activeAccounts}
-                  sectionId={isRealActiveSection ? activeSectionId : ""}
-                  editing={editing}
-                  dnd={dnd}
-                  onEdit={(account) => setAccountDialog({ mode: "edit", account })}
-                  onDelete={(account) => setDeletingAccount(account)}
-                  onMove={(account, delta) => moveAccountBy(account, activeAccounts, delta)}
-                />
-              )}
+            <div className="flex min-h-[52vh] flex-col justify-center">
+              <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                {activeAccounts.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma conta nesta seção.</p>
+                ) : (
+                  <AccountGrid
+                    accounts={activeAccounts}
+                    sectionId={isRealActiveSection ? activeSectionId : ""}
+                    editing={editing}
+                    dnd={dnd}
+                    onEdit={(account) => setAccountDialog({ mode: "edit", account })}
+                    onDelete={(account) => setDeletingAccount(account)}
+                    onMove={(account, delta) => moveAccountBy(account, activeAccounts, delta)}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </>

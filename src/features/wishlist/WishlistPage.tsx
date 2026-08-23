@@ -500,21 +500,23 @@ function ListPage({
               </div>
             )}
 
-            <Card className="p-4">
-              {activeItems.length === 0 ? (
-                <p className="py-6 text-center text-sm text-muted-foreground">Nenhum item nesta seção.</p>
-              ) : (
-                <ItemGrid
-                  items={activeItems}
-                  sectionId={isRealActiveSection ? activeSectionId : ""}
-                  editing={editing}
-                  dnd={dnd}
-                  onEdit={(item) => setItemDialog({ mode: "edit", item })}
-                  onDelete={(item) => setDeletingItem(item)}
-                  onMove={(item, delta) => moveItemBy(item, activeItems, delta)}
-                />
-              )}
-            </Card>
+            <div className="flex min-h-[52vh] flex-col justify-center">
+              <Card className="p-4">
+                {activeItems.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">Nenhum item nesta seção.</p>
+                ) : (
+                  <ItemGrid
+                    items={activeItems}
+                    sectionId={isRealActiveSection ? activeSectionId : ""}
+                    editing={editing}
+                    dnd={dnd}
+                    onEdit={(item) => setItemDialog({ mode: "edit", item })}
+                    onDelete={(item) => setDeletingItem(item)}
+                    onMove={(item, delta) => moveItemBy(item, activeItems, delta)}
+                  />
+                )}
+              </Card>
+            </div>
           </div>
         </>
       )}
