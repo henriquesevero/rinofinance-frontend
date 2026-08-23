@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Globe, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Globe, Loader2, Pencil, Plus, Tag, Trash2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -55,7 +55,6 @@ export function WebAccountsPage() {
   const [editing, setEditing] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const draggingRef = useRef<string | null>(null)
-  const [activeSectionId, setActiveSectionId] = useState<string>("")
 
   useEffect(() => {
     fetchWishlist()
@@ -74,45 +73,6 @@ export function WebAccountsPage() {
   const sectionReorder = useReorder(sections, (ids) =>
     reorderSections(ids).catch((err) => toast.error(toErrorMessage(err)))
   )
-
-  // Mobile shows one section at a time via tabs, so there's nothing to collapse.
-  // `sectionReorder.order` lags one render behind `sections` right after data loads
-  // (it syncs via its own effect), so fall back to `sections` until it catches up —
-  // otherwise the tab list briefly only contains "Sem seção" and gets stuck selected.
-  const sectionsForTabs = sectionReorder.order.length === sections.length ? sectionReorder.order : sections
-  const mobileTabs = useMemo(() => {
-    const list = sectionsForTabs.map((s) => ({ id: s.id, name: s.name, color: s.color || NEUTRAL }))
-    if (ungrouped.length > 0) list.push({ id: NONE, name: "Sem seção", color: NEUTRAL })
-    return list
-  }, [sectionsForTabs, ungrouped.length])
-
-  useEffect(() => {
-    if (mobileTabs.length === 0) {
-      if (activeSectionId !== "") setActiveSectionId("")
-      return
-    }
-    if (!mobileTabs.some((t) => t.id === activeSectionId)) {
-      setActiveSectionId(mobileTabs[0].id)
-    }
-  }, [mobileTabs, activeSectionId])
-
-  const activeAccounts = activeSectionId === NONE ? ungrouped : itemsBySection.get(activeSectionId) ?? []
-  const isRealActiveSection = activeSectionId !== "" && activeSectionId !== NONE
-  const activeSectionOrderIndex = sectionReorder.order.findIndex((s) => s.id === activeSectionId)
-
-  function handleMobileAddAccount() {
-    setAccountDialog({ mode: "create", sectionId: isRealActiveSection ? activeSectionId : undefined })
-  }
-
-  function handleMobileEditSection() {
-    const section = sections.find((s) => s.id === activeSectionId)
-    if (section) setSectionDialog({ mode: "edit", section })
-  }
-
-  function handleMobileDeleteSection() {
-    const section = sections.find((s) => s.id === activeSectionId)
-    if (section) setDeletingSection(section)
-  }
 
   function moveAccount(dragId: string, targetSectionId: string, beforeId: string | null) {
     if (dragId === beforeId) return
@@ -369,82 +329,60 @@ export function WebAccountsPage() {
             )}
           </div>
 
-          {/* Mobile: one section at a time via tabs, always expanded */}
+          {/* Mobile: every section stacked and always expanded */}
           <div className="flex flex-col gap-4 md:hidden">
-            <div className="scrollbar-hide -mx-4 flex gap-2 overflow-x-auto px-4">
-              {mobileTabs.map((tab) => {
-                const active = tab.id === activeSectionId
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveSectionId(tab.id)}
-                    className={cn(
-                      "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
-                      active
-                        ? "border-transparent bg-foreground text-background"
-                        : "border-border text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: active ? "currentColor" : tab.color }}
-                    />
-                    {tab.name}
-                  </button>
-                )
-              })}
-            </div>
+            {sectionReorder.order.map((section, sectionIndex) => (
+              <SectionCard
+                key={section.id}
+                sectionId={section.id}
+                title={section.name}
+                color={section.color || NEUTRAL}
+                count={(itemsBySection.get(section.id) ?? []).length}
+                editing={editing}
+                dnd={dnd}
+                collapsible={false}
+                onMoveUp={sectionIndex > 0 ? () => sectionReorder.moveBy(section.id, -1) : undefined}
+                onMoveDown={
+                  sectionIndex < sectionReorder.order.length - 1 ? () => sectionReorder.moveBy(section.id, 1) : undefined
+                }
+                onAdd={() => setAccountDialog({ mode: "create", sectionId: section.id })}
+                onEdit={() => setSectionDialog({ mode: "edit", section })}
+                onDelete={() => setDeletingSection(section)}
+              >
+                <AccountGrid
+                  accounts={itemsBySection.get(section.id) ?? []}
+                  sectionId={section.id}
+                  editing={editing}
+                  dnd={dnd}
+                  onEdit={(account) => setAccountDialog({ mode: "edit", account })}
+                  onDelete={(account) => setDeletingAccount(account)}
+                  onMove={(account, delta) => moveAccountBy(account, itemsBySection.get(section.id) ?? [], delta)}
+                />
+              </SectionCard>
+            ))}
 
-            {isRealActiveSection && editing && (
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => sectionReorder.moveBy(activeSectionId, -1)}
-                  disabled={activeSectionOrderIndex <= 0}
-                  aria-label="Mover seção para a esquerda"
-                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => sectionReorder.moveBy(activeSectionId, 1)}
-                  disabled={activeSectionOrderIndex < 0 || activeSectionOrderIndex >= sectionReorder.order.length - 1}
-                  aria-label="Mover seção para a direita"
-                  className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-                <Button variant="ghost" size="icon" className="size-7" aria-label="Editar seção" onClick={handleMobileEditSection}>
-                  <Pencil className="size-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-7" aria-label="Remover seção" onClick={handleMobileDeleteSection}>
-                  <Trash2 className="size-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="ml-auto size-7" aria-label="Adicionar conta" onClick={handleMobileAddAccount}>
-                  <Plus className="size-4" />
-                </Button>
-              </div>
+            {ungrouped.length > 0 && (
+              <SectionCard
+                sectionId=""
+                title="Sem seção"
+                color={NEUTRAL}
+                count={ungrouped.length}
+                editing={editing}
+                dnd={dnd}
+                collapsible={false}
+                onAdd={() => setAccountDialog({ mode: "create" })}
+              >
+                <AccountGrid
+                  accounts={ungrouped}
+                  sectionId=""
+                  editing={editing}
+                  dnd={dnd}
+                  onEdit={(account) => setAccountDialog({ mode: "edit", account })}
+                  onDelete={(account) => setDeletingAccount(account)}
+                  onMove={(account, delta) => moveAccountBy(account, ungrouped, delta)}
+                />
+              </SectionCard>
             )}
-
-            <div className="flex min-h-[52vh] flex-col justify-center">
-              <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-                {activeAccounts.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma conta nesta seção.</p>
-                ) : (
-                  <AccountGrid
-                    accounts={activeAccounts}
-                    sectionId={isRealActiveSection ? activeSectionId : ""}
-                    editing={editing}
-                    dnd={dnd}
-                    onEdit={(account) => setAccountDialog({ mode: "edit", account })}
-                    onDelete={(account) => setDeletingAccount(account)}
-                    onMove={(account, delta) => moveAccountBy(account, activeAccounts, delta)}
-                  />
-                )}
-              </div>
-            </div>
           </div>
         </>
       )}
@@ -511,6 +449,9 @@ function SectionCard({
   reorderProps,
   dragHandle,
   dragging,
+  collapsible = true,
+  onMoveUp,
+  onMoveDown,
   onAdd,
   onEdit,
   onDelete,
@@ -525,12 +466,16 @@ function SectionCard({
   reorderProps?: React.HTMLAttributes<HTMLElement>
   dragHandle?: React.ReactNode
   dragging?: boolean
+  collapsible?: boolean
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   onAdd: () => void
   onEdit?: () => void
   onDelete?: () => void
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsedState, setCollapsed] = useState(false)
+  const collapsed = collapsible && collapsedState
   const [dropActive, setDropActive] = useState(false)
   const canDrop = editing && dnd.active
 
@@ -544,21 +489,52 @@ function SectionCard({
     >
       <div className="flex items-center gap-2 px-3 py-2.5">
         {editing && dragHandle}
+        {editing && (onMoveUp || onMoveDown) && (
+          <div className="flex shrink-0 items-center gap-0.5 md:hidden">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              aria-label="Mover seção para cima"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronUp className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              aria-label="Mover seção para baixo"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronDown className="size-4" />
+            </button>
+          </div>
+        )}
         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-        <button
-          type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-expanded={!collapsed}
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
-        >
-          <h2 className="min-w-0 truncate text-sm font-semibold tracking-tight" style={{ color }}>
-            {title}
-          </h2>
-          <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">{count}</span>
-          <ChevronDown
-            className={cn("size-3.5 shrink-0 text-muted-foreground/50 transition-transform", collapsed && "-rotate-90")}
-          />
-        </button>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-expanded={!collapsed}
+            className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+          >
+            <h2 className="min-w-0 truncate text-sm font-semibold tracking-tight" style={{ color }}>
+              {title}
+            </h2>
+            <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">{count}</span>
+            <ChevronDown
+              className={cn("size-3.5 shrink-0 text-muted-foreground/50 transition-transform", collapsed && "-rotate-90")}
+            />
+          </button>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            <h2 className="min-w-0 truncate text-sm font-semibold tracking-tight" style={{ color }}>
+              {title}
+            </h2>
+            <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">{count}</span>
+          </div>
+        )}
         {editing && (
           <div className="flex shrink-0 items-center gap-0.5">
             {onEdit && (
