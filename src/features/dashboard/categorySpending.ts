@@ -1,4 +1,5 @@
-import type { CardOverview, InstallmentPurchase } from "@/features/cards/types"
+import { isPurchaseActiveInMonth, isSubscriptionActiveInMonth } from "@/features/cards/cardStats"
+import type { CardOverview } from "@/features/cards/types"
 import type { Category } from "@/features/categories/types"
 import type { Expense } from "./types"
 
@@ -12,18 +13,11 @@ export interface CategorySlice {
 
 const UNCATEGORIZED = { id: "__none__", name: "Sem categoria", color: "#9CA3AF" }
 
-function isActiveThisMonth(p: Pick<InstallmentPurchase, "firstInstallmentDate" | "totalInstallments">): boolean {
-  const [year, month] = p.firstInstallmentDate.split("-").map(Number)
-  if (!year || !month) return false
-  const now = new Date()
-  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month)
-  return elapsed >= 0 && elapsed < p.totalInstallments
-}
-
 export function computeCategorySpending(
   cards: CardOverview[],
   expenses: Expense[],
-  categories: Category[]
+  categories: Category[],
+  monthKey: string
 ): { slices: CategorySlice[]; total: number } {
   const totals = new Map<string, number>()
   const add = (categoryId: string | undefined, amount: number) => {
@@ -34,10 +28,10 @@ export function computeCategorySpending(
 
   for (const card of cards) {
     for (const p of card.installmentPurchases) {
-      if (isActiveThisMonth(p)) add(p.categoryId, p.installmentAmount)
+      if (isPurchaseActiveInMonth(p, monthKey)) add(p.categoryId, p.installmentAmount)
     }
     for (const s of card.subscriptions) {
-      add(s.categoryId, s.monthlyAmount)
+      if (isSubscriptionActiveInMonth(s, monthKey)) add(s.categoryId, s.monthlyAmount)
     }
   }
   for (const e of expenses) {

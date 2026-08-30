@@ -8,9 +8,10 @@ import type { Expense } from "../types"
 
 interface CategoryBreakdownPanelProps {
   expenses: Expense[]
+  month: string
 }
 
-export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps) {
+export function CategoryBreakdownPanel({ expenses, month }: CategoryBreakdownPanelProps) {
   const cards = useCardsStore((s) => s.cards)
   const categories = useCategoriesStore((s) => s.categories)
   const fetchCategories = useCategoriesStore((s) => s.fetchCategories)
@@ -21,8 +22,8 @@ export function CategoryBreakdownPanel({ expenses }: CategoryBreakdownPanelProps
   }, [categories.length, fetchCategories])
 
   const { slices, total } = useMemo(
-    () => computeCategorySpending(cards, expenses, categories),
-    [cards, expenses, categories]
+    () => computeCategorySpending(cards, expenses, categories, month),
+    [cards, expenses, categories, month]
   )
 
   const segments = useMemo(() => {

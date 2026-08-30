@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DragHandle } from "@/components/DragHandle"
-import { normalizeDomain } from "@/lib/brandLogo"
 import { useReorder } from "@/lib/useReorder"
 import { cn } from "@/lib/utils"
 import type { WishlistItem, WishlistSection } from "../types"
@@ -47,7 +46,7 @@ export function PriorityList({
   onEdit,
   onDelete,
 }: PriorityListProps) {
-  const groupOrder = useMemo(() => [...prioritySections.map((s) => s.id), NONE], [prioritySections])
+  const groupOrder = useMemo(() => [NONE, ...prioritySections.map((s) => s.id)], [prioritySections])
 
   const groups = useMemo(() => {
     const map = new Map<string, WishlistItem[]>()
@@ -72,8 +71,8 @@ export function PriorityList({
   }
 
   const visibleGroups = [
-    ...prioritySections.map((s) => ({ key: s.id, name: s.name, color: s.color as string | undefined, section: s as WishlistSection | undefined })),
     { key: NONE, name: "Sem seção de prioridade", color: undefined, section: undefined },
+    ...prioritySections.map((s) => ({ key: s.id, name: s.name, color: s.color as string | undefined, section: s as WishlistSection | undefined })),
   ].filter((g) => (groups.get(g.key) ?? []).length > 0)
 
   if (visibleGroups.length === 0) return null
@@ -212,7 +211,6 @@ function PriorityRow({
   onEdit: () => void
   onDelete: () => void
 }) {
-  const store = item.url ? normalizeDomain(item.url) : ""
   const moveTargets = [
     { id: "", name: "Sem seção de prioridade" },
     ...prioritySections.map((s) => ({ id: s.id, name: s.name })),
@@ -237,12 +235,12 @@ function PriorityRow({
         {rank}
       </span>
 
-      <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+      <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-muted">
         {item.imageUrl ? (
           <img src={item.imageUrl} alt={item.name} className="size-full object-cover" loading="lazy" />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <ShoppingBag className="size-5 text-muted-foreground/50" />
+            <ShoppingBag className="size-6 text-muted-foreground/50" />
           </div>
         )}
       </div>
@@ -251,7 +249,6 @@ function PriorityRow({
         <p className="truncate text-base font-semibold leading-tight" title={item.name}>
           {item.name}
         </p>
-        {store && <p className="truncate text-xs text-muted-foreground">{store}</p>}
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5">

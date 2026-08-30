@@ -95,7 +95,7 @@ export function DashboardPage() {
       {showCharts ? (
         <>
           <RecurrencesPanel />
-          <CategoryBreakdownPanel expenses={summary.expenses} />
+          <CategoryBreakdownPanel expenses={summary.expenses} month={month} />
           <button
             type="button"
             onClick={() => setShowCharts(false)}

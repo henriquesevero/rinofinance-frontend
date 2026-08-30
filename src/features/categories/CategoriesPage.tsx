@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BulkActionsMenu, type SortConfig } from "@/components/BulkActionsMenu"
 import { MoneyValue } from "@/components/MoneyValue"
 import { ValuesVisibilityToggle } from "@/components/ValuesVisibilityToggle"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
@@ -27,8 +28,15 @@ import { useCategoriesStore } from "./store"
 import type { Category } from "./types"
 
 type DialogState = { mode: "create" } | { mode: "edit"; category: Category } | null
+type SpendingSortKey = "default" | "amount-desc" | "amount-asc"
 
 const UNCATEGORIZED_ID = "__none__"
+
+const SPENDING_SORT_OPTIONS: { value: SpendingSortKey; label: string }[] = [
+  { value: "default", label: "Ordem manual" },
+  { value: "amount-desc", label: "Quem mais gasto" },
+  { value: "amount-asc", label: "Quem menos gasto" },
+]
 
 export function CategoriesPage() {
   const categories = useCategoriesStore((s) => s.categories)
@@ -49,9 +57,11 @@ export function CategoriesPage() {
   const [toDelete, setToDelete] = useState<Category | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState("")
+  const [sortKey, setSortKey] = useState<SpendingSortKey>("default")
   const renameRef = useRef<HTMLInputElement>(null)
 
   const { order, draggingId, getItemProps, getHandleProps } = useReorder(categories, reorderCategories)
+  const canDrag = sortKey === "default"
 
   useEffect(() => {
     fetchCategories()
@@ -60,8 +70,8 @@ export function CategoriesPage() {
   }, [fetchCategories, fetchCards, fetchSummary])
 
   const { slices, total } = useMemo(
-    () => computeCategorySpending(cards, summary?.expenses ?? [], categories),
-    [cards, summary, categories]
+    () => computeCategorySpending(cards, summary?.expenses ?? [], categories, month),
+    [cards, summary, categories, month]
   )
 
   const usageById = useMemo(() => {
@@ -72,6 +82,18 @@ export function CategoriesPage() {
   const uncategorized = usageById.get(UNCATEGORIZED_ID) ?? 0
   const categorized = total - uncategorized
   const biggest = useMemo(() => slices.find((s) => s.id !== UNCATEGORIZED_ID) ?? null, [slices])
+
+  const displayedCategories = useMemo(() => {
+    if (sortKey === "default") return order
+    const sign = sortKey === "amount-desc" ? -1 : 1
+    return [...order].sort((a, b) => sign * ((usageById.get(a.id) ?? 0) - (usageById.get(b.id) ?? 0)))
+  }, [order, sortKey, usageById])
+
+  const sortConfig: SortConfig = {
+    value: sortKey,
+    onChange: (value) => setSortKey(value as SpendingSortKey),
+    options: SPENDING_SORT_OPTIONS,
+  }
 
   async function handleDelete(category: Category) {
     try {
@@ -173,24 +195,29 @@ export function CategoriesPage() {
           </Card>
 
           <Card className="flex flex-col gap-1 p-2 sm:p-3">
+            <div className="flex items-center justify-end px-1 pt-0.5">
+              <BulkActionsMenu groups={[]} sort={sortConfig} />
+            </div>
             <ul className="scrollbar-hide flex max-h-[24rem] flex-col overflow-y-auto sm:max-h-[30rem]">
-              {order.map((category) => {
+              {displayedCategories.map((category) => {
                 const usage = usageById.get(category.id) ?? 0
                 const share = total > 0 ? (usage / total) * 100 : 0
                 const renaming = renamingId === category.id
                 return (
                   <li
                     key={category.id}
-                    {...getItemProps(category.id)}
+                    {...(canDrag ? getItemProps(category.id) : undefined)}
                     className={cn(
                       "group flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50",
                       draggingId === category.id && "opacity-40"
                     )}
                   >
-                    <DragHandle
-                      {...getHandleProps(category.id)}
-                      className="-ml-1 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100"
-                    />
+                    {canDrag && (
+                      <DragHandle
+                        {...getHandleProps(category.id)}
+                        className="-ml-1 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                      />
+                    )}
                     <span
                       className="flex size-9 shrink-0 items-center justify-center rounded-lg"
                       style={{ backgroundColor: `${category.color}22` }}
