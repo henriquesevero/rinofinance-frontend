@@ -17,4 +17,6 @@ export const wishlistApi = {
   removeItem: (id: string) => apiClient.delete(`/api/wishlist/items/${id}`),
   reorderItems: (kind: string, ids: string[]) =>
     apiClient.put(`/api/wishlist/items/order?kind=${kind}`, { ids }),
+  reorderPriority: (kind: string, ids: string[]) =>
+    apiClient.put(`/api/wishlist/items/priority-order?kind=${kind}`, { ids }),
 }

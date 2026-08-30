@@ -18,6 +18,7 @@ interface WishlistState {
   updateItem: (id: string, input: ItemInput) => Promise<void>
   deleteItem: (id: string) => Promise<void>
   reorderItems: (ids: string[]) => Promise<void>
+  reorderPriority: (ids: string[]) => Promise<void>
   moveItem: (
     dragId: string,
     targetSectionId: string,
@@ -65,6 +66,7 @@ export function createListStore(kind: string) {
       updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
       deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
       reorderItems: (ids) => mutate(() => wishlistApi.reorderItems(kind, ids)),
+      reorderPriority: (ids) => mutate(() => wishlistApi.reorderPriority(kind, ids)),
 
       moveItem: (dragId, targetSectionId, newItems, orderedIds, changedSection) => {
         const moved = newItems.find((i) => i.id === dragId)

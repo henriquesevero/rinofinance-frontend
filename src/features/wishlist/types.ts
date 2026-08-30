@@ -12,6 +12,7 @@ export interface WishlistItem {
   price: number
   imageUrl?: string
   logoUrl?: string
+  priority: number
 }
 
 export interface WishlistOverview {
