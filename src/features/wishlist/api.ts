@@ -19,4 +19,13 @@ export const wishlistApi = {
     apiClient.put(`/api/wishlist/items/order?kind=${kind}`, { ids }),
   reorderPriority: (kind: string, ids: string[]) =>
     apiClient.put(`/api/wishlist/items/priority-order?kind=${kind}`, { ids }),
+  createPrioritySection: (kind: string, input: SectionInput) =>
+    apiClient.post<WishlistSection>(`/api/wishlist/priority-sections?kind=${kind}`, input),
+  updatePrioritySection: (id: string, input: SectionInput) =>
+    apiClient.put<WishlistSection>(`/api/wishlist/priority-sections/${id}`, input),
+  removePrioritySection: (id: string) => apiClient.delete(`/api/wishlist/priority-sections/${id}`),
+  reorderPrioritySections: (kind: string, ids: string[]) =>
+    apiClient.put(`/api/wishlist/priority-sections/order?kind=${kind}`, { ids }),
+  assignItemPrioritySection: (itemId: string, prioritySectionId: string) =>
+    apiClient.put<WishlistItem>(`/api/wishlist/items/${itemId}/priority-section`, { prioritySectionId }),
 }

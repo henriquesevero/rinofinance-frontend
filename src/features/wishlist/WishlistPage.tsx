@@ -90,6 +90,7 @@ function ListPage({
   enablePriorityView?: boolean
 }) {
   const sections = useStore((s) => s.sections)
+  const prioritySections = useStore((s) => s.prioritySections)
   const items = useStore((s) => s.items)
   const total = useStore((s) => s.total)
   const isLoading = useStore((s) => s.isLoading)
@@ -98,6 +99,10 @@ function ListPage({
   const createSection = useStore((s) => s.createSection)
   const updateSection = useStore((s) => s.updateSection)
   const deleteSection = useStore((s) => s.deleteSection)
+  const createPrioritySection = useStore((s) => s.createPrioritySection)
+  const updatePrioritySection = useStore((s) => s.updatePrioritySection)
+  const deletePrioritySection = useStore((s) => s.deletePrioritySection)
+  const assignItemPrioritySection = useStore((s) => s.assignItemPrioritySection)
   const createItem = useStore((s) => s.createItem)
   const updateItem = useStore((s) => s.updateItem)
   const deleteItem = useStore((s) => s.deleteItem)
@@ -107,8 +112,10 @@ function ListPage({
 
   const [itemDialog, setItemDialog] = useState<ItemDialogState>(null)
   const [sectionDialog, setSectionDialog] = useState<SectionDialogState>(null)
+  const [prioritySectionDialog, setPrioritySectionDialog] = useState<SectionDialogState>(null)
   const [deletingItem, setDeletingItem] = useState<WishlistItem | null>(null)
   const [deletingSection, setDeletingSection] = useState<WishlistSection | null>(null)
+  const [deletingPrioritySection, setDeletingPrioritySection] = useState<WishlistSection | null>(null)
   const [editing, setEditing] = useState(false)
   const [view, setView] = useState<"sections" | "priority">("sections")
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -270,6 +277,16 @@ function ListPage({
     }
   }
 
+  async function handleDeletePrioritySection() {
+    if (!deletingPrioritySection) return
+    try {
+      await deletePrioritySection(deletingPrioritySection.id)
+      toast.success("Seção de prioridade removida")
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+    }
+  }
+
   async function handleItemSubmit(input: ItemInput) {
     try {
       if (itemDialog?.mode === "edit") {
@@ -293,6 +310,21 @@ function ListPage({
       } else {
         await createSection(input)
         toast.success("Seção criada")
+      }
+    } catch (err) {
+      toast.error(toErrorMessage(err))
+      throw err
+    }
+  }
+
+  async function handlePrioritySectionSubmit(input: SectionInput) {
+    try {
+      if (prioritySectionDialog?.mode === "edit") {
+        await updatePrioritySection(prioritySectionDialog.section.id, input)
+        toast.success("Seção de prioridade atualizada")
+      } else {
+        await createPrioritySection(input)
+        toast.success("Seção de prioridade criada")
       }
     } catch (err) {
       toast.error(toErrorMessage(err))
@@ -348,10 +380,17 @@ function ListPage({
                 <ShoppingCart className="size-4" />
                 Novo item
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSectionDialog({ mode: "create" })}>
-                <Tag className="size-4" />
-                Nova seção
-              </DropdownMenuItem>
+              {view === "priority" ? (
+                <DropdownMenuItem onClick={() => setPrioritySectionDialog({ mode: "create" })}>
+                  <Tag className="size-4" />
+                  Nova seção de prioridade
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => setSectionDialog({ mode: "create" })}>
+                  <Tag className="size-4" />
+                  Nova seção
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -418,8 +457,13 @@ function ListPage({
       ) : enablePriorityView && view === "priority" ? (
         <PriorityList
           items={items}
-          sections={sections}
+          prioritySections={prioritySections}
           onReorder={(ids) => reorderPriority(ids).catch((err) => toast.error(toErrorMessage(err)))}
+          onEditSection={(section) => setPrioritySectionDialog({ mode: "edit", section })}
+          onDeleteSection={(section) => setDeletingPrioritySection(section)}
+          onAssignSection={(itemId, prioritySectionId) =>
+            assignItemPrioritySection(itemId, prioritySectionId).catch((err) => toast.error(toErrorMessage(err)))
+          }
           onEdit={(item) => setItemDialog({ mode: "edit", item })}
           onDelete={(item) => setDeletingItem(item)}
         />
@@ -521,6 +565,14 @@ function ListPage({
         onSubmit={handleSectionSubmit}
       />
 
+      <SectionFormDialog
+        open={prioritySectionDialog !== null}
+        onOpenChange={(open) => !open && setPrioritySectionDialog(null)}
+        initialName={prioritySectionDialog?.mode === "edit" ? prioritySectionDialog.section.name : undefined}
+        initialColor={prioritySectionDialog?.mode === "edit" ? prioritySectionDialog.section.color : undefined}
+        onSubmit={handlePrioritySectionSubmit}
+      />
+
       <ConfirmDialog
         open={deletingItem !== null}
         onOpenChange={(open) => !open && setDeletingItem(null)}
@@ -552,6 +604,23 @@ function ListPage({
         confirmLabel="Remover"
         destructive
         onConfirm={handleDeleteSection}
+      />
+
+      <ConfirmDialog
+        open={deletingPrioritySection !== null}
+        onOpenChange={(open) => !open && setDeletingPrioritySection(null)}
+        title="Remover seção de prioridade"
+        description={
+          deletingPrioritySection ? (
+            <>
+              Remover a seção <strong>{deletingPrioritySection.name}</strong>? Os itens dela ficam sem seção de
+              prioridade (não são apagados).
+            </>
+          ) : null
+        }
+        confirmLabel="Remover"
+        destructive
+        onConfirm={handleDeletePrioritySection}
       />
     </div>
   )

@@ -5,6 +5,7 @@ import type { ItemInput, SectionInput, WishlistItem, WishlistSection } from "./t
 
 interface WishlistState {
   sections: WishlistSection[]
+  prioritySections: WishlistSection[]
   items: WishlistItem[]
   total: number
   isLoading: boolean
@@ -14,6 +15,11 @@ interface WishlistState {
   updateSection: (id: string, input: SectionInput) => Promise<void>
   deleteSection: (id: string) => Promise<void>
   reorderSections: (ids: string[]) => Promise<void>
+  createPrioritySection: (input: SectionInput) => Promise<void>
+  updatePrioritySection: (id: string, input: SectionInput) => Promise<void>
+  deletePrioritySection: (id: string) => Promise<void>
+  reorderPrioritySections: (ids: string[]) => Promise<void>
+  assignItemPrioritySection: (itemId: string, prioritySectionId: string) => Promise<void>
   createItem: (input: ItemInput) => Promise<void>
   updateItem: (id: string, input: ItemInput) => Promise<void>
   deleteItem: (id: string) => Promise<void>
@@ -43,6 +49,7 @@ export function createListStore(kind: string) {
 
     return {
       sections: [],
+      prioritySections: [],
       items: [],
       total: 0,
       isLoading: false,
@@ -52,7 +59,13 @@ export function createListStore(kind: string) {
         set({ isLoading: true, error: null })
         try {
           const overview = await wishlistApi.overview(kind)
-          set({ sections: overview.sections, items: overview.items, total: overview.total, isLoading: false })
+          set({
+            sections: overview.sections,
+            prioritySections: overview.prioritySections,
+            items: overview.items,
+            total: overview.total,
+            isLoading: false,
+          })
         } catch (err) {
           set({ isLoading: false, error: toErrorMessage(err) })
         }
@@ -62,6 +75,12 @@ export function createListStore(kind: string) {
       updateSection: (id, input) => mutate(() => wishlistApi.updateSection(id, input)),
       deleteSection: (id) => mutate(() => wishlistApi.removeSection(id)),
       reorderSections: (ids) => mutate(() => wishlistApi.reorderSections(kind, ids)),
+      createPrioritySection: (input) => mutate(() => wishlistApi.createPrioritySection(kind, input)),
+      updatePrioritySection: (id, input) => mutate(() => wishlistApi.updatePrioritySection(id, input)),
+      deletePrioritySection: (id) => mutate(() => wishlistApi.removePrioritySection(id)),
+      reorderPrioritySections: (ids) => mutate(() => wishlistApi.reorderPrioritySections(kind, ids)),
+      assignItemPrioritySection: (itemId, prioritySectionId) =>
+        mutate(() => wishlistApi.assignItemPrioritySection(itemId, prioritySectionId)),
       createItem: (input) => mutate(() => wishlistApi.createItem(kind, input)),
       updateItem: (id, input) => mutate(() => wishlistApi.updateItem(id, input)),
       deleteItem: (id) => mutate(() => wishlistApi.removeItem(id)),
@@ -91,7 +110,8 @@ export function createListStore(kind: string) {
         })()
       },
 
-      reset: () => set({ sections: [], items: [], total: 0, isLoading: false, error: null }),
+      reset: () =>
+        set({ sections: [], prioritySections: [], items: [], total: 0, isLoading: false, error: null }),
     }
   })
 }

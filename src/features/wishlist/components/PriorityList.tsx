@@ -1,7 +1,23 @@
 import { useMemo, useState } from "react"
-import { ChevronDown, ChevronUp, ExternalLink, MoreHorizontal, Pencil, ShoppingBag, Trash2 } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  FolderInput,
+  MoreHorizontal,
+  Pencil,
+  ShoppingBag,
+  Trash2,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { DragHandle } from "@/components/DragHandle"
 import { normalizeDomain } from "@/lib/brandLogo"
 import { useReorder } from "@/lib/useReorder"
@@ -12,20 +28,32 @@ const NONE = "__none__"
 
 interface PriorityListProps {
   items: WishlistItem[]
-  sections: WishlistSection[]
+  prioritySections: WishlistSection[]
   onReorder: (ids: string[]) => void
+  onEditSection: (section: WishlistSection) => void
+  onDeleteSection: (section: WishlistSection) => void
+  onAssignSection: (itemId: string, prioritySectionId: string) => void
   onEdit: (item: WishlistItem) => void
   onDelete: (item: WishlistItem) => void
 }
 
-export function PriorityList({ items, sections, onReorder, onEdit, onDelete }: PriorityListProps) {
-  const groupOrder = useMemo(() => [...sections.map((s) => s.id), NONE], [sections])
+export function PriorityList({
+  items,
+  prioritySections,
+  onReorder,
+  onEditSection,
+  onDeleteSection,
+  onAssignSection,
+  onEdit,
+  onDelete,
+}: PriorityListProps) {
+  const groupOrder = useMemo(() => [...prioritySections.map((s) => s.id), NONE], [prioritySections])
 
   const groups = useMemo(() => {
     const map = new Map<string, WishlistItem[]>()
     for (const key of groupOrder) map.set(key, [])
     for (const item of items) {
-      const key = item.sectionId ?? NONE
+      const key = item.prioritySectionId ?? NONE
       const list = map.get(key) ?? []
       list.push(item)
       map.set(key, list)
@@ -44,21 +72,26 @@ export function PriorityList({ items, sections, onReorder, onEdit, onDelete }: P
   }
 
   const visibleGroups = [
-    ...sections.map((s) => ({ key: s.id, name: s.name, color: s.color as string | undefined })),
-    { key: NONE, name: "Sem seção", color: undefined },
+    ...prioritySections.map((s) => ({ key: s.id, name: s.name, color: s.color as string | undefined, section: s as WishlistSection | undefined })),
+    { key: NONE, name: "Sem seção de prioridade", color: undefined, section: undefined },
   ].filter((g) => (groups.get(g.key) ?? []).length > 0)
 
   if (visibleGroups.length === 0) return null
 
   return (
-    <div className="scrollbar-hide flex flex-col gap-6 md:flex-row md:items-start md:gap-4 md:overflow-x-auto md:pb-2">
+    <div className="scrollbar-hide flex flex-row items-start gap-4 overflow-x-auto pb-2">
       {visibleGroups.map((group) => (
         <PriorityGroup
           key={group.key}
           name={group.name}
           color={group.color}
           items={groups.get(group.key) ?? []}
+          prioritySections={prioritySections}
+          currentSectionId={group.key === NONE ? undefined : group.key}
           onReorder={(ids) => persistGroupOrder(group.key, ids)}
+          onEditSection={group.section ? () => onEditSection(group.section as WishlistSection) : undefined}
+          onDeleteSection={group.section ? () => onDeleteSection(group.section as WishlistSection) : undefined}
+          onAssignSection={onAssignSection}
           onEdit={onEdit}
           onDelete={onDelete}
         />
@@ -71,14 +104,24 @@ function PriorityGroup({
   name,
   color,
   items,
+  prioritySections,
+  currentSectionId,
   onReorder,
+  onEditSection,
+  onDeleteSection,
+  onAssignSection,
   onEdit,
   onDelete,
 }: {
   name: string
   color?: string
   items: WishlistItem[]
+  prioritySections: WishlistSection[]
+  currentSectionId?: string
   onReorder: (ids: string[]) => void
+  onEditSection?: () => void
+  onDeleteSection?: () => void
+  onAssignSection: (itemId: string, prioritySectionId: string) => void
   onEdit: (item: WishlistItem) => void
   onDelete: (item: WishlistItem) => void
 }) {
@@ -86,37 +129,52 @@ function PriorityGroup({
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <section className="flex flex-col gap-2 md:w-80 md:shrink-0 md:rounded-xl md:border md:border-border/60 md:bg-muted/20 md:p-3">
-      <button
-        type="button"
-        onClick={() => setCollapsed((c) => !c)}
-        aria-expanded={!collapsed}
-        className="flex min-w-0 items-center gap-1.5 px-0.5 text-left"
-      >
-        <ChevronDown
-          className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
-        />
-        {color && <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />}
-        <h3
-          className={cn("truncate text-sm font-semibold tracking-wide", !color && "text-muted-foreground")}
-          style={color ? { color } : undefined}
+    <section className="flex w-80 shrink-0 flex-col gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="flex min-w-0 flex-1 items-center gap-1.5 px-0.5 text-left"
         >
-          {name}
-        </h3>
-        <span className="shrink-0 text-xs text-muted-foreground">({items.length})</span>
-      </button>
+          <ChevronDown
+            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", collapsed && "-rotate-90")}
+          />
+          {color && <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />}
+          <h3
+            className={cn("truncate text-sm font-semibold tracking-wide", !color && "text-muted-foreground")}
+            style={color ? { color } : undefined}
+          >
+            {name}
+          </h3>
+          <span className="shrink-0 text-xs text-muted-foreground">({items.length})</span>
+        </button>
+        {onEditSection && (
+          <Button variant="ghost" size="icon" className="size-7 shrink-0" aria-label="Editar seção" onClick={onEditSection}>
+            <Pencil className="size-3.5" />
+          </Button>
+        )}
+        {onDeleteSection && (
+          <Button variant="ghost" size="icon" className="size-7 shrink-0" aria-label="Remover seção" onClick={onDeleteSection}>
+            <Trash2 className="size-3.5" />
+          </Button>
+        )}
+      </div>
       {!collapsed && (
-        <ol className="scrollbar-hide flex flex-col gap-2 md:max-h-[65vh] md:overflow-y-auto md:pr-0.5">
+        <ol className="scrollbar-hide flex max-h-[65vh] flex-col gap-2 overflow-y-auto pr-0.5">
           {reorder.order.map((item, index) => (
             <PriorityRow
               key={item.id}
               item={item}
               rank={index + 1}
+              prioritySections={prioritySections}
+              currentSectionId={currentSectionId}
               dragging={reorder.draggingId === item.id}
               itemProps={reorder.getItemProps(item.id)}
               handleProps={reorder.getHandleProps(item.id)}
               onMoveUp={index > 0 ? () => reorder.moveBy(item.id, -1) : undefined}
               onMoveDown={index < reorder.order.length - 1 ? () => reorder.moveBy(item.id, 1) : undefined}
+              onAssignSection={(prioritySectionId) => onAssignSection(item.id, prioritySectionId)}
               onEdit={() => onEdit(item)}
               onDelete={() => onDelete(item)}
             />
@@ -130,25 +188,35 @@ function PriorityGroup({
 function PriorityRow({
   item,
   rank,
+  prioritySections,
+  currentSectionId,
   dragging,
   itemProps,
   handleProps,
   onMoveUp,
   onMoveDown,
+  onAssignSection,
   onEdit,
   onDelete,
 }: {
   item: WishlistItem
   rank: number
+  prioritySections: WishlistSection[]
+  currentSectionId?: string
   dragging: boolean
   itemProps: React.HTMLAttributes<HTMLElement>
   handleProps: React.HTMLAttributes<HTMLSpanElement> & { draggable?: boolean }
   onMoveUp?: () => void
   onMoveDown?: () => void
+  onAssignSection: (prioritySectionId: string) => void
   onEdit: () => void
   onDelete: () => void
 }) {
   const store = item.url ? normalizeDomain(item.url) : ""
+  const moveTargets = [
+    { id: "", name: "Sem seção de prioridade" },
+    ...prioritySections.map((s) => ({ id: s.id, name: s.name })),
+  ].filter((t) => t.id !== (currentSectionId ?? ""))
 
   return (
     <li
@@ -226,6 +294,19 @@ function PriorityRow({
               <Pencil className="size-4" />
               Editar
             </DropdownMenuItem>
+            {moveTargets.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Mover para</DropdownMenuLabel>
+                {moveTargets.map((target) => (
+                  <DropdownMenuItem key={target.id || "none"} onClick={() => onAssignSection(target.id)}>
+                    <FolderInput className="size-4" />
+                    {target.name}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onDelete} className="text-destructive">
               <Trash2 className="size-4" />
               Remover

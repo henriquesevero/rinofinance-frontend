@@ -7,6 +7,7 @@ export interface WishlistSection {
 export interface WishlistItem {
   id: string
   sectionId?: string
+  prioritySectionId?: string
   name: string
   url?: string
   price: number
@@ -17,6 +18,7 @@ export interface WishlistItem {
 
 export interface WishlistOverview {
   sections: WishlistSection[]
+  prioritySections: WishlistSection[]
   items: WishlistItem[]
   total: number
 }
