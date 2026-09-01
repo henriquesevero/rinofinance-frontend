@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { FolderTree, Search, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -55,14 +55,6 @@ export function EntriesPage() {
 
   const filters: EntriesFilters = { search, pendingOnly, categoryId, groupBy }
 
-  const { receivedIncome, paidExpense } = useMemo(() => {
-    let receivedIncome = 0
-    let paidExpense = 0
-    for (const i of summary?.incomes ?? []) if (i.active && i.received) receivedIncome += i.amount
-    for (const e of summary?.expenses ?? []) if (e.active && e.paid) paidExpense += e.amount
-    return { receivedIncome, paidExpense }
-  }, [summary])
-
   if (isLoading && !summary) {
     return <EntriesSkeleton />
   }
@@ -91,8 +83,6 @@ export function EntriesPage() {
           totalIncome={summary.totalIncome}
           totalExpense={summary.totalExpense}
           netBalance={summary.netBalance}
-          receivedIncome={receivedIncome}
-          paidExpense={paidExpense}
         />
       </div>
 

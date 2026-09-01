@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ArrowUpRight, Check, ChevronDown, CreditCard, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowUpRight, ChevronDown, CreditCard, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -54,11 +54,9 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
   const createAccountLinkedExpense = useDashboardStore((s) => s.createAccountLinkedExpense)
   const updateExpense = useDashboardStore((s) => s.updateExpense)
   const toggleExpense = useDashboardStore((s) => s.toggleExpense)
-  const toggleExpensePaid = useDashboardStore((s) => s.toggleExpensePaid)
   const deleteExpense = useDashboardStore((s) => s.deleteExpense)
   const reorderExpenses = useDashboardStore((s) => s.reorderExpenses)
   const setAllActive = useDashboardStore((s) => s.setAllExpensesActive)
-  const setAllPaid = useDashboardStore((s) => s.setAllExpensesPaid)
   const accounts = useAccountsStore((s) => s.accounts)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const categoryById = useCategoriesStore((s) => s.byId)
@@ -129,14 +127,6 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
     }
   }
 
-  async function handleTogglePaid(id: string) {
-    try {
-      await toggleExpensePaid(id)
-    } catch (err) {
-      toast.error(toErrorMessage(err))
-    }
-  }
-
   async function handleDelete(id: string) {
     try {
       await deleteExpense(id)
@@ -170,26 +160,6 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
               />
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => handleTogglePaid(expense.id)}
-            aria-label={expense.paid ? "Marcar como não paga" : "Marcar como paga"}
-            title={expense.paid ? "Paga (desmarcar)" : "Marcar paga"}
-            className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 active:scale-90",
-              expense.paid
-                ? "border-red-500 bg-red-500 text-white"
-                : "border-muted-foreground/30 text-white hover:border-red-500"
-            )}
-          >
-            <Check
-              className={cn(
-                "size-3 transition-all duration-200",
-                expense.paid ? "scale-100 opacity-100" : "scale-0 opacity-0"
-              )}
-              strokeWidth={3}
-            />
-          </button>
           <div className="min-w-0 flex-1">
             <p className="truncate leading-tight" title={expense.name}>
               {expense.name}
@@ -208,7 +178,7 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
+        <div className="flex items-center justify-between gap-2 sm:contents">
           <MoneyValue value={expense.amount} className="shrink-0 font-semibold tabular-nums text-red-500" />
           <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
             <DropdownMenu>
@@ -274,13 +244,6 @@ export function ExpenseSection({ expenses, filters }: { expenses: Expense[]; fil
                   : undefined
               }
               groups={[
-                {
-                  label: "Pago",
-                  actions: [
-                    { label: "Marcar todas", run: () => runBulk(() => setAllPaid(true)) },
-                    { label: "Desmarcar todas", run: () => runBulk(() => setAllPaid(false)) },
-                  ],
-                },
                 {
                   label: "Ativo",
                   actions: [

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ArrowDownLeft, Check, ChevronDown, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { ArrowDownLeft, ChevronDown, MoreHorizontal, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,11 +33,9 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
   const createAccountLinkedIncome = useDashboardStore((s) => s.createAccountLinkedIncome)
   const updateIncome = useDashboardStore((s) => s.updateIncome)
   const toggleIncome = useDashboardStore((s) => s.toggleIncome)
-  const toggleIncomeReceived = useDashboardStore((s) => s.toggleIncomeReceived)
   const deleteIncome = useDashboardStore((s) => s.deleteIncome)
   const reorderIncomes = useDashboardStore((s) => s.reorderIncomes)
   const setAllActive = useDashboardStore((s) => s.setAllIncomesActive)
-  const setAllReceived = useDashboardStore((s) => s.setAllIncomesReceived)
   const fetchAccounts = useAccountsStore((s) => s.fetchAccounts)
   const categoryById = useCategoriesStore((s) => s.byId)
 
@@ -104,14 +102,6 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
     }
   }
 
-  async function handleToggleReceived(id: string) {
-    try {
-      await toggleIncomeReceived(id)
-    } catch (err) {
-      toast.error(toErrorMessage(err))
-    }
-  }
-
   async function handleDelete(id: string) {
     try {
       await deleteIncome(id)
@@ -142,26 +132,6 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
               />
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => handleToggleReceived(income.id)}
-            aria-label={income.received ? "Marcar como não recebida" : "Marcar como recebida"}
-            title={income.received ? "Recebida (desmarcar)" : "Marcar recebida"}
-            className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150 active:scale-90",
-              income.received
-                ? "border-emerald-500 bg-emerald-500 text-white"
-                : "border-muted-foreground/30 text-white hover:border-emerald-500"
-            )}
-          >
-            <Check
-              className={cn(
-                "size-3 transition-all duration-200",
-                income.received ? "scale-100 opacity-100" : "scale-0 opacity-0"
-              )}
-              strokeWidth={3}
-            />
-          </button>
           <div className="min-w-0 flex-1">
             <p className="truncate leading-tight" title={income.name}>
               {income.name}
@@ -174,7 +144,7 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-2 pl-7 sm:contents sm:pl-0">
+        <div className="flex items-center justify-between gap-2 sm:contents">
           <MoneyValue value={income.amount} className="shrink-0 font-semibold tabular-nums text-emerald-500" />
           <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
             <DropdownMenu>
@@ -231,13 +201,6 @@ export function IncomeSection({ incomes, filters }: { incomes: Income[]; filters
           {incomes.length > 0 && (
             <BulkActionsMenu
               groups={[
-                {
-                  label: "Recebido",
-                  actions: [
-                    { label: "Marcar todas", run: () => runBulk(() => setAllReceived(true)) },
-                    { label: "Desmarcar todas", run: () => runBulk(() => setAllReceived(false)) },
-                  ],
-                },
                 {
                   label: "Ativo",
                   actions: [
