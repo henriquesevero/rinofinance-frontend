@@ -28,7 +28,7 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance }: SummaryC
   return (
     <Card className="gap-0 overflow-hidden p-0">
       <div className="grid grid-cols-3 gap-px bg-border">
-        <div className={cn("flex flex-col gap-1 bg-card p-3 sm:p-4", celebrate && "rf-celebrate")}>
+        <div className={cn("flex flex-col gap-0.5 bg-card p-4 sm:gap-1 sm:p-5", celebrate && "rf-celebrate")}>
           <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <Scale className={cn("size-3.5 shrink-0", projectedPositive ? "text-emerald-500" : "text-red-500")} />
             <span className="truncate">Saldo</span>
@@ -36,29 +36,32 @@ export function SummaryCards({ totalIncome, totalExpense, netBalance }: SummaryC
           <MoneyValue
             value={netBalance}
             className={cn(
-              "truncate text-base font-bold tabular-nums sm:text-lg",
+              "truncate text-xl font-bold tracking-tight tabular-nums sm:text-2xl",
               projectedPositive ? "text-emerald-500" : "text-red-500"
             )}
           />
         </div>
 
-        <div className="flex flex-col gap-1 bg-card p-3 sm:p-4">
+        <div className="flex flex-col gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
           <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <ArrowDownLeft className="size-3.5 shrink-0 text-emerald-500" />
             <span className="truncate">Entradas</span>
           </span>
           <MoneyValue
             value={totalIncome}
-            className="truncate text-base font-bold tabular-nums text-emerald-500 sm:text-lg"
+            className="truncate text-xl font-bold tracking-tight tabular-nums text-emerald-500 sm:text-2xl"
           />
         </div>
 
-        <div className="flex flex-col gap-1 bg-card p-3 sm:p-4">
+        <div className="flex flex-col gap-0.5 bg-card p-4 sm:gap-1 sm:p-5">
           <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <ArrowUpRight className="size-3.5 shrink-0 text-red-500" />
             <span className="truncate">Saídas</span>
           </span>
-          <MoneyValue value={totalExpense} className="truncate text-base font-bold tabular-nums text-red-500 sm:text-lg" />
+          <MoneyValue
+            value={totalExpense}
+            className="truncate text-xl font-bold tracking-tight tabular-nums text-red-500 sm:text-2xl"
+          />
         </div>
       </div>
     </Card>
