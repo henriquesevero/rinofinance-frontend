@@ -259,36 +259,6 @@ export function InvestmentsPage() {
             </div>
           </Card>
 
-          {allocation.length > 0 && (
-            <Card className="flex flex-col gap-5 p-4 sm:p-5">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="size-4 shrink-0 text-emerald-500" />
-                <h2 className="text-sm font-semibold">Alocação</h2>
-              </div>
-              <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
-                <AllocationDonut
-                  segments={allocation.map((a) => ({ color: a.meta.color, value: a.value }))}
-                  total={totalPatrimony}
-                />
-                <ul className="flex w-full min-w-0 flex-1 flex-col gap-1">
-                  {allocation.map((a) => {
-                    const share = totalPatrimony > 0 ? (a.value / totalPatrimony) * 100 : 0
-                    return (
-                      <li key={a.meta.value} className="flex items-center gap-3 py-1">
-                        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: a.meta.color }} />
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{a.meta.plural}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                          {Math.round(share)}%
-                        </span>
-                        <MoneyValue value={a.value} className="w-24 shrink-0 text-right text-sm font-semibold tabular-nums" />
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            </Card>
-          )}
-
           <Card className="flex flex-col gap-4 p-4 sm:p-5">
             <div className="flex items-center gap-2">
               <Coins className="size-4 shrink-0 text-emerald-500" />
@@ -498,6 +468,36 @@ export function InvestmentsPage() {
                   )
                 })}
               </ul>
+            </Card>
+          )}
+
+          {allocation.length > 0 && (
+            <Card className="flex flex-col gap-5 p-4 sm:p-5">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="size-4 shrink-0 text-emerald-500" />
+                <h2 className="text-sm font-semibold">Alocação</h2>
+              </div>
+              <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+                <AllocationDonut
+                  segments={allocation.map((a) => ({ color: a.meta.color, value: a.value }))}
+                  total={totalPatrimony}
+                />
+                <ul className="flex w-full min-w-0 flex-1 flex-col gap-1">
+                  {allocation.map((a) => {
+                    const share = totalPatrimony > 0 ? (a.value / totalPatrimony) * 100 : 0
+                    return (
+                      <li key={a.meta.value} className="flex items-center gap-3 py-1">
+                        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: a.meta.color }} />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{a.meta.plural}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                          {Math.round(share)}%
+                        </span>
+                        <MoneyValue value={a.value} className="w-24 shrink-0 text-right text-sm font-semibold tabular-nums" />
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
             </Card>
           )}
         </>
