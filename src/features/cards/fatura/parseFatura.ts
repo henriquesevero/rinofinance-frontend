@@ -23,8 +23,15 @@ function cycleDate(day: number, monthAbbr: string, referenceMonth: string): stri
   return `${year}-${String(mn).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate()
+}
+
 function withDay(monthFirst: string, day: string | null): string {
-  return day ? `${monthFirst.slice(0, 8)}${day}` : monthFirst
+  if (!day) return monthFirst
+  const [y, m] = monthFirst.split("-").map(Number)
+  const clampedDay = Math.min(Number(day), daysInMonth(y, m))
+  return `${monthFirst.slice(0, 8)}${String(clampedDay).padStart(2, "0")}`
 }
 
 export interface ParsedSubscription {
@@ -94,6 +101,14 @@ export function extractReferenceMonth(lines: string[]): string {
       const d = new Date(Number(m[3]), Number(m[2]) - 1, 1)
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
     }
+  }
+  // Some layouts render the "venc. da fatura" label and its date on separate
+  // text lines (different rows in the PDF); retry against the joined text.
+  const joined = lines.join(" ")
+  const m = joined.match(DUE_DATE_RE)
+  if (m) {
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
   }
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
