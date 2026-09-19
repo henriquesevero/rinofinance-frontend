@@ -291,7 +291,7 @@ export function CardDetailPage() {
 
       <CardSection card={card} />
 
-      <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} />
+      <ImportFaturaDialog open={isImporting} onOpenChange={setIsImporting} cardId={card.id} cardName={card.name} card={card} />
       <ClearCardDialog open={isClearing} onOpenChange={setIsClearing} card={card} />
       <CardFormDialog
         open={isEditing}

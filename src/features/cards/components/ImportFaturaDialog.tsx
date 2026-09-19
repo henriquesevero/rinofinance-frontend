@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChevronDown, CreditCard } from "lucide-react"
+import { ChevronDown, CreditCard, RefreshCw, CopyPlus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { BrandLogo } from "./BrandLogo"
@@ -22,13 +22,25 @@ import {
 import { parseNubankCsv } from "../fatura/parseNubankCsv"
 import { installmentEndLabel } from "../installments"
 import { useCardsStore } from "../store"
+import type { CardOverview } from "../types"
 
 interface ImportFaturaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   cardId: string
   cardName: string
+  card: CardOverview
 }
+
+function normalizeName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+}
+
+type Resolution = "replace" | "duplicate"
 
 type Stage = "select" | "parsing" | "preview" | "importing"
 
@@ -42,15 +54,23 @@ interface PreviewInstallment extends ParsedInstallment {
   key: string
   checked: boolean
   categoryId: string
+  existingId?: string
+  existingAmount?: number
+  resolution: Resolution
 }
 interface PreviewSubscription extends ParsedSubscription {
   key: string
   checked: boolean
   categoryId: string
+  existingId?: string
+  existingAmount?: number
+  resolution: Resolution
 }
 
-export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: ImportFaturaDialogProps) {
+export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName, card }: ImportFaturaDialogProps) {
   const importFatura = useCardsStore((s) => s.importFatura)
+  const updateInstallmentPurchase = useCardsStore((s) => s.updateInstallmentPurchase)
+  const updateSubscription = useCardsStore((s) => s.updateSubscription)
   const month = useMonthStore((s) => s.month)
   const setMonth = useMonthStore((s) => s.setMonth)
   const categories = useCategoriesStore((s) => s.categories)
@@ -101,21 +121,46 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
         setStage("select")
         return
       }
+      const usedInstallmentIds = new Set<string>()
       setInstallments(
-        parsed.installmentPurchases.map((p, i) => ({
-          ...p,
-          key: `p-${i}`,
-          checked: true,
-          categoryId: suggestCategoryId(p.name, categories),
-        }))
+        parsed.installmentPurchases.map((p, i) => {
+          const match = p.isSingle
+            ? undefined
+            : card.installmentPurchases.find(
+                (existing) =>
+                  !usedInstallmentIds.has(existing.id) &&
+                  normalizeName(existing.name) === normalizeName(p.name) &&
+                  existing.totalInstallments === p.totalInstallments
+              )
+          if (match) usedInstallmentIds.add(match.id)
+          return {
+            ...p,
+            key: `p-${i}`,
+            checked: true,
+            categoryId: match?.categoryId ?? suggestCategoryId(p.name, categories),
+            existingId: match?.id,
+            existingAmount: match?.installmentAmount,
+            resolution: "replace" as Resolution,
+          }
+        })
       )
+      const usedSubscriptionIds = new Set<string>()
       setSubscriptions(
-        parsed.subscriptions.map((s, i) => ({
-          ...s,
-          key: `s-${i}`,
-          checked: true,
-          categoryId: suggestCategoryId(s.name, categories),
-        }))
+        parsed.subscriptions.map((s, i) => {
+          const match = card.subscriptions.find(
+            (existing) => !usedSubscriptionIds.has(existing.id) && normalizeName(existing.name) === normalizeName(s.name)
+          )
+          if (match) usedSubscriptionIds.add(match.id)
+          return {
+            ...s,
+            key: `s-${i}`,
+            checked: true,
+            categoryId: match?.categoryId ?? suggestCategoryId(s.name, categories),
+            existingId: match?.id,
+            existingAmount: match?.monthlyAmount,
+            resolution: "replace" as Resolution,
+          }
+        })
       )
       setNotImported(parsed.notImported)
       setReferenceMonth(parsed.referenceMonth)
@@ -154,6 +199,12 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
   function setSubscriptionCategory(key: string, categoryId: string) {
     setSubscriptions((prev) => prev.map((s) => (s.key === key ? { ...s, categoryId } : s)))
   }
+  function setInstallmentResolution(key: string, resolution: Resolution) {
+    setInstallments((prev) => prev.map((p) => (p.key === key ? { ...p, resolution } : p)))
+  }
+  function setSubscriptionResolution(key: string, resolution: Resolution) {
+    setSubscriptions((prev) => prev.map((s) => (s.key === key ? { ...s, resolution } : s)))
+  }
   function setInstallmentGroup(predicate: (p: PreviewInstallment) => boolean, checked: boolean) {
     setInstallments((prev) => prev.map((p) => (predicate(p) ? { ...p, checked } : p)))
   }
@@ -169,23 +220,64 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
     setStage("importing")
     try {
       if (referenceMonth) setMonth(referenceMonth)
-      const result = await importFatura(cardId, {
-        installmentPurchases: installments
-          .filter((p) => p.checked)
-          .map((p) => ({
+
+      const checkedInstallments = installments.filter((p) => p.checked)
+      const installmentsToReplace = checkedInstallments.filter((p) => p.existingId && p.resolution === "replace")
+      const installmentsToCreate = checkedInstallments.filter((p) => !p.existingId || p.resolution === "duplicate")
+
+      const checkedSubscriptions = subscriptions.filter((s) => s.checked)
+      const subscriptionsToReplace = checkedSubscriptions.filter((s) => s.existingId && s.resolution === "replace")
+      const subscriptionsToCreate = checkedSubscriptions.filter((s) => !s.existingId || s.resolution === "duplicate")
+
+      await Promise.all([
+        ...installmentsToReplace.map((p) =>
+          updateInstallmentPurchase(p.existingId as string, {
             name: p.name,
             installmentAmount: p.installmentAmount,
             totalInstallments: p.totalInstallments,
             firstInstallmentDate: p.firstInstallmentDate,
             domain: p.domain,
             categoryId: p.categoryId,
-          })),
-        subscriptions: subscriptions
-          .filter((s) => s.checked)
-          .map((s) => ({ name: s.name, monthlyAmount: s.monthlyAmount, domain: s.domain, categoryId: s.categoryId })),
-        referenceMonth: referenceMonth ?? "",
-      })
-      toast.success(`Importado: ${result.installmentPurchases} compra(s) e ${result.subscriptions} assinatura(s)`)
+          })
+        ),
+        ...subscriptionsToReplace.map((s) =>
+          updateSubscription(s.existingId as string, {
+            name: s.name,
+            monthlyAmount: s.monthlyAmount,
+            domain: s.domain,
+            categoryId: s.categoryId,
+          })
+        ),
+      ])
+
+      const result =
+        installmentsToCreate.length > 0 || subscriptionsToCreate.length > 0
+          ? await importFatura(cardId, {
+              installmentPurchases: installmentsToCreate.map((p) => ({
+                name: p.name,
+                installmentAmount: p.installmentAmount,
+                totalInstallments: p.totalInstallments,
+                firstInstallmentDate: p.firstInstallmentDate,
+                domain: p.domain,
+                categoryId: p.categoryId,
+              })),
+              subscriptions: subscriptionsToCreate.map((s) => ({
+                name: s.name,
+                monthlyAmount: s.monthlyAmount,
+                domain: s.domain,
+                categoryId: s.categoryId,
+              })),
+              referenceMonth: referenceMonth ?? "",
+            })
+          : { installmentPurchases: 0, subscriptions: 0 }
+
+      const replaced = installmentsToReplace.length + subscriptionsToReplace.length
+      const created = result.installmentPurchases + result.subscriptions
+      const parts = [
+        created > 0 ? `${created} nova(s)` : null,
+        replaced > 0 ? `${replaced} substituída(s)` : null,
+      ].filter(Boolean)
+      toast.success(`Importado: ${parts.join(" e ")}`)
       handleClose(false)
     } catch (err) {
       toast.error(toErrorMessage(err))
@@ -284,6 +376,15 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
                       key={p.key}
                       checked={p.checked}
                       onToggle={() => toggleInstallment(p.key)}
+                      match={
+                        p.existingId && p.existingAmount !== undefined ? (
+                          <ExistingMatchControl
+                            existingAmount={p.existingAmount}
+                            resolution={p.resolution}
+                            onChange={(resolution) => setInstallmentResolution(p.key, resolution)}
+                          />
+                        ) : undefined
+                      }
                       category={
                         <div className="w-full sm:w-64">
                           <CategorySelect value={p.categoryId} onChange={(id) => setInstallmentCategory(p.key, id)} />
@@ -314,6 +415,15 @@ export function ImportFaturaDialog({ open, onOpenChange, cardId, cardName }: Imp
                       key={s.key}
                       checked={s.checked}
                       onToggle={() => toggleSubscription(s.key)}
+                      match={
+                        s.existingId && s.existingAmount !== undefined ? (
+                          <ExistingMatchControl
+                            existingAmount={s.existingAmount}
+                            resolution={s.resolution}
+                            onChange={(resolution) => setSubscriptionResolution(s.key, resolution)}
+                          />
+                        ) : undefined
+                      }
                       category={
                         <div className="w-full sm:w-64">
                           <CategorySelect value={s.categoryId} onChange={(id) => setSubscriptionCategory(s.key, id)} />
@@ -449,11 +559,13 @@ function PreviewRow({
   checked,
   onToggle,
   category,
+  match,
   children,
 }: {
   checked: boolean
   onToggle: () => void
   category?: React.ReactNode
+  match?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
@@ -462,7 +574,50 @@ function PreviewRow({
         <input type="checkbox" className="size-4 shrink-0" checked={checked} onChange={onToggle} />
         <div className="grid flex-1 grid-cols-[1fr_auto_auto] items-center gap-3 overflow-hidden">{children}</div>
       </label>
+      {match && <div className="mt-1.5 pl-7">{match}</div>}
       {category && <div className="mt-1.5 pl-7">{category}</div>}
+    </div>
+  )
+}
+
+function ExistingMatchControl({
+  existingAmount,
+  resolution,
+  onChange,
+}: {
+  existingAmount: number
+  resolution: Resolution
+  onChange: (resolution: Resolution) => void
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400">
+        Já existe · {formatMoney(existingAmount)}
+      </span>
+      <div className="inline-flex items-center gap-0.5 rounded-md border bg-muted/40 p-0.5">
+        <button
+          type="button"
+          onClick={() => onChange("replace")}
+          className={cn(
+            "flex items-center gap-1 rounded px-2 py-1 transition-colors",
+            resolution === "replace" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <RefreshCw className="size-3" />
+          Substituir
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange("duplicate")}
+          className={cn(
+            "flex items-center gap-1 rounded px-2 py-1 transition-colors",
+            resolution === "duplicate" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <CopyPlus className="size-3" />
+          Duplicar
+        </button>
+      </div>
     </div>
   )
 }
