@@ -26,25 +26,3 @@ export interface DashboardSummary {
   totalExpense: number
   netBalance: number
 }
-
-export interface AnnualMonthSummary {
-  index: number
-  incomeRealized: number
-  incomePlanned: number
-  expenseRealized: number
-  expensePlanned: number
-}
-
-export interface AnnualCategorySummary {
-  id: string
-  total: number
-}
-
-export interface AnnualSummary {
-  year: number
-  months: AnnualMonthSummary[]
-  expenseCategoriesRealized: AnnualCategorySummary[]
-  expenseCategoriesPlanned: AnnualCategorySummary[]
-  incomeCategoriesRealized: AnnualCategorySummary[]
-  incomeCategoriesPlanned: AnnualCategorySummary[]
-}
