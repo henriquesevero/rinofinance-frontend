@@ -2,6 +2,7 @@ import { useCategoriesStore } from "@/features/categories/store"
 import { useCardsStore } from "@/features/cards/store"
 import { useAccountsStore } from "@/features/accounts/store"
 import { useDashboardStore } from "@/features/dashboard/store"
+import { useDebtsStore } from "@/features/debts/store"
 import { useInvestmentsStore } from "@/features/investments/store"
 import { useBelongingsStore, useWishlistStore } from "@/features/wishlist/store"
 
@@ -11,6 +12,7 @@ export function resetDataStores() {
   useAccountsStore.getState().reset()
   useDashboardStore.getState().reset()
   useInvestmentsStore.getState().reset()
+  useDebtsStore.getState().reset()
   useWishlistStore.getState().reset()
   useBelongingsStore.getState().reset()
 }

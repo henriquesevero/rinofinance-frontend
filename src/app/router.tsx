@@ -15,6 +15,7 @@ const EntriesPage = lazyPage(() => import("@/features/dashboard/EntriesPage"), "
 const CardsPage = lazyPage(() => import("@/features/cards/CardsPage"), "CardsPage")
 const CardDetailPage = lazyPage(() => import("@/features/cards/CardDetailPage"), "CardDetailPage")
 const InvestmentsPage = lazyPage(() => import("@/features/investments/InvestmentsPage"), "InvestmentsPage")
+const DebtsPage = lazyPage(() => import("@/features/debts/DebtsPage"), "DebtsPage")
 const AnnualPage = lazyPage(() => import("@/features/annual/AnnualPage"), "AnnualPage")
 const WishlistPage = lazyPage(() => import("@/features/wishlist/WishlistPage"), "WishlistPage")
 const BelongingsPage = lazyPage(() => import("@/features/wishlist/WishlistPage"), "BelongingsPage")
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: "cards", element: <CardsPage /> },
       { path: "cards/:cardId", element: <CardDetailPage /> },
       { path: "investments", element: <InvestmentsPage /> },
+      { path: "dividas", element: <DebtsPage /> },
       { path: "annual", element: <AnnualPage /> },
       { path: "itens-para-comprar", element: <WishlistPage /> },
       { path: "itens-possuidos", element: <BelongingsPage /> },
