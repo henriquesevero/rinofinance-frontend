@@ -25,6 +25,9 @@ function hideSplash() {
 }
 hideSplash()
 
+// Asks the browser not to evict localStorage, where the session of the installed PWA lives.
+navigator.storage?.persist?.().catch(() => {})
+
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
